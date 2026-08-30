@@ -12,7 +12,13 @@ const STATUSES = ["new","contacted","qualified","negotiation","won","lost"];
 const PIPELINE_STATUSES = ["new","contacted","qualified","negotiation","won"];
 
 /* ---------- Auth guard ---------- */
+const authTimeout = setTimeout(() => {
+  const fallback = document.getElementById("loadingFallback");
+  if (fallback) fallback.style.display = "block";
+}, 10000);
+
 auth.onAuthStateChanged(user => {
+  clearTimeout(authTimeout);
   if (!user) {
     window.location.href = "index.html";
     return;
@@ -227,8 +233,98 @@ function leadsTable(list, compact){
           ${compact ? "" : `
           <td class="row-actions">
             <button class="icon-btn" data-edit="${l.id}" title="${t('save')}">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"
-              /* =========================================================
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            </button>
+            <button class="icon-btn" data-delete="${l.id}" title="${t('delete')}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+            </button>
+          </td>`}
+        </tr>
+      `).join("")}
+    </tbody>
+  </table>`;
+}
+
+function bindLeadRowEvents(){
+  document.querySelectorAll("[data-edit]").forEach(btn => {
+    btn.addEventListener("click", () => openLeadModal(btn.dataset.edit));
+  });
+  document.querySelectorAll("[data-delete]").forEach(btn => {
+    btn.addEventListener("click", () => deleteLead(btn.dataset.delete));
+  });
+}
+
+function escapeHtml(str){
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/* ---- Lead modal ---- */
+function openLeadModal(id){
+  const modal = document.getElementById("leadModal");
+  const form = document.getElementById("leadForm");
+  form.reset();
+  document.getElementById("leadId").value = id || "";
+  document.getElementById("leadModalTitle").textContent = id ? t("modal_edit_lead") : t("modal_add_lead");
+
+  if (id) {
+    const lead = LEADS.find(l => l.id === id);
+    if (lead) {
+      document.getElementById("leadName").value = lead.name || "";
+      document.getElementById("leadPhone").value = lead.phone || "";
+      document.getElementById("leadEmail").value = lead.email || "";
+      document.getElementById("leadInterest").value = lead.interest || "";
+      document.getElementById("leadBudget").value = lead.budget || "";
+      document.getElementById("leadSource").value = lead.source || "facebook";
+      document.getElementById("leadStatus").value = lead.status || "new";
+      document.getElementById("leadRating").value = lead.rating || "warm";
+      document.getElementById("leadNotes").value = lead.notes || "";
+    }
+  }
+  modal.classList.add("show");
+}
+
+document.getElementById("leadForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const id = document.getElementById("leadId").value;
+  const data = {
+    name: document.getElementById("leadName").value.trim(),
+    phone: document.getElementById("leadPhone").value.trim(),
+    email: document.getElementById("leadEmail").value.trim(),
+    interest: document.getElementById("leadInterest").value.trim(),
+    budget: document.getElementById("leadBudget").value.trim(),
+    source: document.getElementById("leadSource").value,
+    status: document.getElementById("leadStatus").value,
+    rating: document.getElementById("leadRating").value,
+    notes: document.getElementById("leadNotes").value.trim(),
+    agentId: CURRENT_USER.uid,
+    agentEmail: CURRENT_USER.email,
+  };
+
+  try {
+    if (id) {
+      await db.collection("leads").doc(id).update(data);
+      toast(t("toast_updated"));
+    } else {
+      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      await db.collection("leads").add(data);
+      toast(t("toast_saved"));
+    }
+    closeModal("leadModal");
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  }
+});
+
+async function deleteLead(id){
+  if (!confirm(t("confirm_delete"))) return;
+  await db.collection("leads").doc(id).delete();
+  toast(t("toast_deleted"));
+}
+
+/* =========================================================
    PIPELINE
    ========================================================= */
 function renderPipeline(){
