@@ -43,6 +43,14 @@ document.getElementById("menuBtn").addEventListener("click", () => {
   document.getElementById("sidebar").classList.toggle("open");
 });
 
+document.addEventListener("click", (e) => {
+  const sidebar = document.getElementById("sidebar");
+  const menuBtn = document.getElementById("menuBtn");
+  if (sidebar.classList.contains("open") && !sidebar.contains(e.target) && e.target !== menuBtn && !menuBtn.contains(e.target)) {
+    sidebar.classList.remove("open");
+  }
+});
+
 /* ---------- Firestore live subscriptions ---------- */
 function subscribeData(){
   leadsUnsub = db.collection("leads").orderBy("createdAt","desc")
@@ -184,8 +192,8 @@ function renderLeads(){
     <div class="panel">
       <div class="panel-head" style="gap:12px; flex-wrap:wrap;">
         <input type="text" id="leadSearch" placeholder="${t('search_placeholder')}"
-          style="flex:1; min-width:200px; background:rgba(3,8,20,.55); border:1px solid var(--navy-line); color:var(--ivory); padding:10px 14px; border-radius:8px; font-size:13px; outline:none;">
-        <select id="leadFilter" style="background:rgba(3,8,20,.55); border:1px solid var(--navy-line); color:var(--ivory); padding:10px 14px; border-radius:8px; font-size:13px;">
+          style="flex:1; min-width:200px; background:var(--navy); border:1px solid var(--navy-line); color:var(--ivory); padding:10px 14px; border-radius:8px; font-size:13px; outline:none;">
+        <select id="leadFilter" style="background:var(--navy); border:1px solid var(--navy-line); color:var(--ivory); padding:10px 14px; border-radius:8px; font-size:13px;">
           <option value="all">${t("filter_all")}</option>
           ${STATUSES.map(s => `<option value="${s}">${t('status_'+s)}</option>`).join("")}
         </select>
@@ -492,7 +500,7 @@ function barList(pairs){
         <span style="color:var(--ivory); font-weight:600;">${escapeHtml(label)}</span>
         <span style="color:var(--gold-bright); font-weight:800;">${val}</span>
       </div>
-      <div style="height:8px; background:rgba(255,255,255,.06); border-radius:6px; overflow:hidden;">
+      <div style="height:8px; background:rgba(91,107,140,.12); border-radius:6px; overflow:hidden;">
         <div style="height:100%; width:${(val/max*100)}%; background:linear-gradient(90deg, var(--gold), var(--gold-bright)); border-radius:6px;"></div>
       </div>
     </div>
