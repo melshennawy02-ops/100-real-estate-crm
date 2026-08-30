@@ -217,6 +217,48 @@ tbody tr:last-child td{ border-bottom:none; }
 .team-info{ flex:1; min-width:0; }
 .team-info .name{ font-size:14px; font-weight:700; color:var(--ivory); }
 .team-info .email{ font-size:12px; color:var(--slate); }
+
+.quick-contact{ display:flex; gap:10px; margin:14px 0 18px; }
+.quick-contact-btn{ width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; }
+.quick-contact-btn svg{ width:19px; height:19px; }
+.quick-contact-btn.call{ background:#2E9E5B; }
+.quick-contact-btn.sms{ background:#3B82C4; }
+.quick-contact-btn.whatsapp{ background:#25D366; }
+.quick-contact-label{ display:flex; flex-direction:column; justify-content:center; }
+.quick-contact-label .num{ font-size:14px; font-weight:700; color:var(--ivory); }
+.quick-contact-label .lbl{ font-size:11px; color:var(--slate); }
+
+.tag-list{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.tag-chip{ display:inline-flex; align-items:center; gap:6px; background:rgba(201,162,75,.15); color:var(--gold-bright); padding:5px 10px; border-radius:14px; font-size:11.5px; font-weight:700; }
+.tag-chip button{ background:none; color:inherit; font-size:13px; line-height:1; padding:0; opacity:.7; }
+.tag-add-row{ display:flex; gap:8px; margin-top:10px; }
+.tag-add-row input{ flex:1; }
+
+.tabs-row{ display:flex; gap:4px; border-bottom:1px solid var(--navy-line); margin-bottom:18px; }
+.tab-btn{ padding:10px 16px; font-size:13px; font-weight:700; color:var(--slate); border-bottom:2px solid transparent; background:transparent; }
+.tab-btn.active{ color:var(--gold-bright); border-bottom-color:var(--gold); }
+.tab-panel{ display:none; }
+.tab-panel.active{ display:block; }
+
+.detail-field{ margin-bottom:14px; }
+.detail-field label{ display:block; font-size:11px; color:var(--slate); margin-bottom:5px; font-weight:600; }
+
+.timeline-add{ display:flex; gap:8px; margin-bottom:16px; }
+.timeline-add input{ flex:1; }
+.timeline-list{ max-height:320px; overflow-y:auto; }
+.timeline-item{ display:flex; gap:10px; padding:10px 2px; border-bottom:1px solid rgba(36,64,111,.08); }
+.timeline-item:last-child{ border-bottom:none; }
+.timeline-icon{ width:30px; height:30px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:var(--navy-panel-2); color:var(--gold); }
+.timeline-icon svg{ width:14px; height:14px; }
+.timeline-text{ font-size:13px; color:var(--ivory); font-weight:600; }
+.timeline-meta{ font-size:11px; color:var(--slate); margin-top:2px; }
+
+.row-name-link{ cursor:pointer; }
+.row-name-link:hover{ color:var(--gold-bright); text-decoration:underline; }
+.mini-contact{ display:flex; gap:6px; }
+.mini-contact .icon-btn.call{ color:#2E9E5B; border-color:rgba(46,158,91,.3); }
+.mini-contact .icon-btn.whatsapp{ color:#25D366; border-color:rgba(37,211,102,.3); }
+
 </style>
 </head>
 <body>
@@ -350,6 +392,8 @@ tbody tr:last-child td{ border-bottom:none; }
           <label data-i18n="f_source">Source</label>
           <select id="leadSource">
             <option value="facebook" data-i18n="source_facebook">Facebook</option>
+            <option value="tiktok" data-i18n="source_tiktok">TikTok</option>
+            <option value="whatsapp" data-i18n="source_whatsapp">WhatsApp</option>
             <option value="website" data-i18n="source_website">Website</option>
             <option value="referral" data-i18n="source_referral">Referral</option>
             <option value="walkin" data-i18n="source_walkin">Walk-in</option>
@@ -383,6 +427,117 @@ tbody tr:last-child td{ border-bottom:none; }
         <button type="submit" class="btn-gold" data-i18n="save">Save</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Modal: Import -->
+<div class="modal-backdrop" id="importModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 data-i18n="modal_import">Import Leads from Excel</h3>
+      <button class="modal-close" data-close-modal="importModal">✕</button>
+    </div>
+    <p style="font-size:12.5px; color:var(--slate); line-height:1.6; margin-bottom:14px;" data-i18n="import_instructions"></p>
+    <p style="font-size:11.5px; color:var(--danger); line-height:1.6; margin-bottom:14px;" data-i18n="import_quota_warning"></p>
+    <div class="field">
+      <label data-i18n="import_file_label">Choose file</label>
+      <input type="file" id="importFileInput" accept=".xlsx,.xls,.csv">
+    </div>
+    <div id="importPreview" style="margin-top:14px; font-size:12.5px; color:var(--slate);"></div>
+    <div id="importProgressWrap" style="display:none; margin-top:16px;">
+      <div style="height:8px; background:rgba(91,107,140,.12); border-radius:6px; overflow:hidden;">
+        <div id="importProgressBar" style="height:100%; width:0%; background:linear-gradient(90deg, var(--gold), var(--gold-bright)); border-radius:6px; transition:width .2s;"></div>
+      </div>
+      <div id="importProgressText" style="font-size:12px; color:var(--slate); margin-top:8px; text-align:center;"></div>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn-outline" data-close-modal="importModal" data-i18n="cancel">Cancel</button>
+      <button type="button" class="btn-gold" id="importStartBtn" data-i18n="import_start" disabled>Start Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Lead Detail -->
+<div class="modal-backdrop" id="leadDetailModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="detailLeadName">—</h3>
+      <button class="modal-close" data-close-modal="leadDetailModal">✕</button>
+    </div>
+
+    <div class="quick-contact" id="detailQuickContact"></div>
+
+    <div class="tabs-row">
+      <button class="tab-btn active" data-tab="profile" data-i18n="tab_profile">Profile</button>
+      <button class="tab-btn" data-tab="timeline" data-i18n="tab_timeline">Timeline</button>
+    </div>
+
+    <div class="tab-panel active" id="tabProfile">
+      <form id="detailForm">
+        <input type="hidden" id="detailLeadId">
+        <div class="form-grid">
+          <div class="field">
+            <label data-i18n="f_status">Status</label>
+            <select id="detailStatus">
+              <option value="new" data-i18n="status_new">New</option>
+              <option value="contacted" data-i18n="status_contacted">Contacted</option>
+              <option value="qualified" data-i18n="status_qualified">Qualified</option>
+              <option value="negotiation" data-i18n="status_negotiation">Negotiation</option>
+              <option value="won" data-i18n="status_won">Won</option>
+              <option value="lost" data-i18n="status_lost">Lost</option>
+            </select>
+          </div>
+          <div class="field">
+            <label data-i18n="f_rating">Rating</label>
+            <select id="detailRating">
+              <option value="hot" data-i18n="rating_hot">Hot</option>
+              <option value="warm" data-i18n="rating_warm">Warm</option>
+              <option value="cold" data-i18n="rating_cold">Cold</option>
+            </select>
+          </div>
+          <div class="field"><label data-i18n="f_interest">Interest</label><input type="text" id="detailInterest"></div>
+          <div class="field"><label data-i18n="f_budget">Budget</label><input type="text" id="detailBudget"></div>
+          <div class="field">
+            <label data-i18n="f_source">Source</label>
+            <select id="detailSource">
+              <option value="facebook" data-i18n="source_facebook">Facebook</option>
+              <option value="tiktok" data-i18n="source_tiktok">TikTok</option>
+              <option value="whatsapp" data-i18n="source_whatsapp">WhatsApp</option>
+              <option value="website" data-i18n="source_website">Website</option>
+              <option value="referral" data-i18n="source_referral">Referral</option>
+              <option value="walkin" data-i18n="source_walkin">Walk-in</option>
+              <option value="call" data-i18n="source_call">Call</option>
+              <option value="other" data-i18n="source_other">Other</option>
+            </select>
+          </div>
+          <div class="field"><label data-i18n="f_assigned">Assigned To</label><select id="detailAssigned"></select></div>
+          <div class="field full"><label data-i18n="f_notes">Notes</label><textarea id="detailNotes"></textarea></div>
+          <div class="field full">
+            <label data-i18n="f_tags">Tags</label>
+            <div class="tag-list" id="detailTagList"></div>
+            <div class="tag-add-row">
+              <input type="text" id="detailTagInput" data-i18n-placeholder="f_tag_add_placeholder" placeholder="Add a tag...">
+              <button type="button" class="btn-outline" id="detailTagAddBtn" data-i18n="add">Add</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-outline" data-close-modal="leadDetailModal" data-i18n="cancel">Cancel</button>
+          <button type="submit" class="btn-gold" data-i18n="save">Save</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="tab-panel" id="tabTimeline">
+      <div class="timeline-add">
+        <input type="text" id="detailNoteInput" data-i18n-placeholder="f_add_note_placeholder" placeholder="Add a note...">
+        <button type="button" class="btn-gold" id="detailNoteAddBtn" data-i18n="add">Add</button>
+      </div>
+      <div style="display:flex; gap:8px; margin-bottom:16px;">
+        <button type="button" class="btn-outline" id="detailNewTaskBtn" data-i18n="new_task">+ New Task</button>
+      </div>
+      <div class="timeline-list" id="detailTimelineList"></div>
+    </div>
   </div>
 </div>
 
@@ -444,6 +599,7 @@ tbody tr:last-child td{ border-bottom:none; }
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <script>
 /* =========================================================
@@ -492,6 +648,17 @@ const I18N = {
     f_status: "الحالة", f_rating: "التقييم", f_notes: "ملاحظات", save: "حفظ", cancel: "إلغاء", delete: "حذف",
     source_facebook: "فيسبوك", source_website: "الموقع الإلكتروني", source_referral: "توصية",
     source_walkin: "زيارة مباشرة", source_call: "مكالمة", source_other: "أخرى",
+    source_tiktok: "تيك توك", source_whatsapp: "واتساب",
+    import_leads: "استيراد شيت", modal_import: "استيراد عملاء من ملف Excel",
+    import_instructions: "الملف لازم يكون Excel (.xlsx) أو CSV، وفيه عمود اسمه \"الاسم\" أو \"Name\" على الأقل. الأعمدة المدعومة: الاسم، الهاتف، البريد الإلكتروني، الاهتمام، الميزانية، المصدر، ملاحظات.",
+    import_file_label: "اختر الملف",
+    import_start: "ابدأ الاستيراد",
+    import_progress: "جاري الاستيراد...",
+    import_done: "تم استيراد",
+    import_of: "من",
+    import_quota_warning: "تنبيه: الحساب المجاني بيسمح بـ 20,000 عملية يوميًا. لو الملف أكبر، هيتم الاستيراد جزء بالتوقف تلقائي.",
+    import_no_rows: "لم يتم العثور على بيانات صالحة في الملف",
+    import_row_error: "بعض الصفوف اتخطّت لعدم وجود اسم",
     pipeline_title: "مسار الصفقات", pipeline_sub: "اسحب البطاقات بين المراحل لتحديث حالة الصفقة",
     tasks_title: "المهام والمتابعات", tasks_sub: "لا تفوت متابعة أي عميل", add_task: "إضافة مهمة",
     modal_add_task: "إضافة مهمة متابعة", f_task_title: "عنوان المهمة", f_task_lead: "متعلقة بالعميل",
@@ -506,6 +673,14 @@ const I18N = {
     f_employee_email: "البريد الإلكتروني", f_employee_password: "كلمة المرور",
     empty_team_title: "لا يوجد موظفين بعد", empty_team_sub: "أضف أول موظف في الفريق",
     toast_employee_added: "تم إنشاء حساب الموظف بنجاح",
+    tab_profile: "الملف الشخصي", tab_timeline: "السجل الزمني",
+    f_assigned: "مسؤول عن العميل", f_tags: "الوسوم",
+    f_tag_add_placeholder: "أضف وسم...", f_add_note_placeholder: "اكتب ملاحظة...",
+    add: "إضافة", new_task: "+ مهمة جديدة", unassigned: "غير معيّن",
+    act_created: "تم إنشاء العميل", act_call: "تم تسجيل مكالمة",
+    act_whatsapp: "تم فتح واتساب", act_sms: "تم فتح رسالة نصية",
+    act_status: "تم تغيير الحالة إلى", act_updated: "تم تحديث بيانات العميل",
+    call: "اتصال", whatsapp: "واتساب", sms: "رسالة",
   },
   en: {
     dir: "ltr", brandSub: "REAL ESTATE",
@@ -534,6 +709,17 @@ const I18N = {
     f_status: "Status", f_rating: "Rating", f_notes: "Notes", save: "Save", cancel: "Cancel", delete: "Delete",
     source_facebook: "Facebook", source_website: "Website", source_referral: "Referral",
     source_walkin: "Walk-in", source_call: "Phone Call", source_other: "Other",
+    source_tiktok: "TikTok", source_whatsapp: "WhatsApp",
+    import_leads: "Import Sheet", modal_import: "Import Leads from Excel",
+    import_instructions: "The file must be Excel (.xlsx) or CSV, with at least a \"Name\" column. Supported columns: Name, Phone, Email, Interest, Budget, Source, Notes.",
+    import_file_label: "Choose file",
+    import_start: "Start Import",
+    import_progress: "Importing...",
+    import_done: "Imported",
+    import_of: "of",
+    import_quota_warning: "Note: the free plan allows 20,000 writes/day. Larger files will stop automatically and can resume the next day.",
+    import_no_rows: "No valid data found in the file",
+    import_row_error: "Some rows were skipped for missing a name",
     pipeline_title: "Pipeline", pipeline_sub: "Drag cards between stages to update deal status",
     tasks_title: "Tasks & Follow-ups", tasks_sub: "Never miss a follow-up", add_task: "Add Task",
     modal_add_task: "Add Follow-up Task", f_task_title: "Task Title", f_task_lead: "Related Lead",
@@ -548,6 +734,14 @@ const I18N = {
     f_employee_email: "Email", f_employee_password: "Password",
     empty_team_title: "No employees yet", empty_team_sub: "Add your first team member",
     toast_employee_added: "Employee account created successfully",
+    tab_profile: "Profile", tab_timeline: "Timeline",
+    f_assigned: "Assigned To", f_tags: "Tags",
+    f_tag_add_placeholder: "Add a tag...", f_add_note_placeholder: "Add a note...",
+    add: "Add", new_task: "+ New Task", unassigned: "Unassigned",
+    act_created: "Lead created", act_call: "Call logged",
+    act_whatsapp: "WhatsApp opened", act_sms: "SMS opened",
+    act_status: "Status changed to", act_updated: "Lead details updated",
+    call: "Call", whatsapp: "WhatsApp", sms: "SMS",
   }
 };
 
@@ -681,8 +875,9 @@ function renderView(){
   if (currentView === "dashboard") { title.textContent=t("dash_title"); sub.textContent=t("dash_sub"); renderDashboard(); }
   else if (currentView === "leads") {
     title.textContent=t("leads_title"); sub.textContent=t("leads_sub");
-    actions.innerHTML = `<button class="btn-gold" id="btnAddLead">+ <span>${t("add_lead")}</span></button>`;
+    actions.innerHTML = `<button class="btn-outline" id="btnImportLeads">${t("import_leads")}</button><button class="btn-gold" id="btnAddLead">+ <span>${t("add_lead")}</span></button>`;
     document.getElementById("btnAddLead").addEventListener("click", () => openLeadModal());
+    document.getElementById("btnImportLeads").addEventListener("click", () => openImportModal());
     renderLeads();
   }
   else if (currentView === "pipeline") { title.textContent=t("pipeline_title"); sub.textContent=t("pipeline_sub"); renderPipeline(); }
@@ -746,6 +941,7 @@ function renderDashboard(){
       <div class="panel-head"><h2>${t("today_tasks")}</h2><a href="#tasks" style="font-size:12px;color:var(--gold-bright);">${t("view_all")}</a></div>
       ${todaysTasks.length ? todaysTasks.map(taskItem).join("") : emptyState(t("empty_tasks_title"), t("empty_tasks_sub"))}
     </div>`;
+  bindLeadRowEvents();
 }
 function statCard(label,value){ return `<div class="stat-card"><div class="stat-label">${label}</div><div class="stat-value">${value}</div></div>`; }
 function emptyState(title,sub){ return `<div class="empty-state"><span class="ring-mark" style="display:inline-block;"></span><div style="font-weight:700;color:var(--ivory);">${title}</div><p>${sub}</p></div>`; }
@@ -782,11 +978,15 @@ function leadsTable(list, compact){
     ${compact?"":`<th>${t("col_actions")}</th>`}
     </tr></thead><tbody>
     ${list.map(l => `<tr>
-      <td>${escapeHtml(l.name||"")}</td><td>${escapeHtml(l.phone||"")}</td>
+      <td><span class="row-name-link" data-open="${l.id}">${escapeHtml(l.name||"")}</span></td><td>${escapeHtml(l.phone||"")}</td>
       ${compact?"":`<td>${escapeHtml(l.interest||"—")}</td>`}
       <td><span class="badge ${l.status}">${t('status_'+l.status)}</span></td>
       <td><span class="badge ${l.rating}">${t('rating_'+l.rating)}</span></td>
       ${compact?"":`<td class="row-actions">
+        <div class="mini-contact">
+          <button class="icon-btn call" data-call="${escapeHtml(l.phone||"")}" data-call-id="${l.id}" title="${t('call')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.34 1.79.65 2.65a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.43-1.42a2 2 0 0 1 2.11-.45c.86.31 1.75.53 2.65.65A2 2 0 0 1 22 16.92z"/></svg></button>
+          <button class="icon-btn whatsapp" data-whatsapp="${escapeHtml(l.phone||"")}" data-whatsapp-id="${l.id}" title="${t('whatsapp')}"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.6-.8-1.9-.9-.2-.1-.4-.1-.6.1-.2.3-.7.9-.8 1-.2.2-.3.2-.5.1-.3-.1-1.2-.4-2.2-1.4-.8-.7-1.4-1.6-1.6-1.9-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.1.2-.3.2-.4.1-.2 0-.3 0-.5-.1-.1-.6-1.5-.8-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s1 2.5 1.1 2.7c.1.2 2 3 4.8 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.6-.7 1.9-1.3.2-.6.2-1.1.2-1.3-.1-.1-.3-.2-.6-.3z"/><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.5A10 10 0 1 0 12 2z"/></svg></button>
+        </div>
         <button class="icon-btn" data-edit="${l.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
         <button class="icon-btn" data-delete="${l.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>
       </td>`}
@@ -796,6 +996,9 @@ function leadsTable(list, compact){
 function bindLeadRowEvents(){
   document.querySelectorAll("[data-edit]").forEach(btn => btn.addEventListener("click", () => openLeadModal(btn.dataset.edit)));
   document.querySelectorAll("[data-delete]").forEach(btn => btn.addEventListener("click", () => deleteLead(btn.dataset.delete)));
+  document.querySelectorAll("[data-open]").forEach(el => el.addEventListener("click", () => openLeadDetail(el.dataset.open)));
+  document.querySelectorAll("[data-call]").forEach(btn => btn.addEventListener("click", (e) => { e.stopPropagation(); doCall(btn.dataset.call, btn.dataset.callId); }));
+  document.querySelectorAll("[data-whatsapp]").forEach(btn => btn.addEventListener("click", (e) => { e.stopPropagation(); doWhatsapp(btn.dataset.whatsapp, btn.dataset.whatsappId); }));
 }
 function openLeadModal(id){
   const form = document.getElementById("leadForm");
@@ -835,11 +1038,154 @@ document.getElementById("leadForm").addEventListener("submit", async (e) => {
   };
   try {
     if (id) { await db.collection("leads").doc(id).update(data); toast(t("toast_updated")); }
-    else { data.createdAt = firebase.firestore.FieldValue.serverTimestamp(); await db.collection("leads").add(data); toast(t("toast_saved")); }
+    else {
+      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      data.tags = [];
+      const ref = await db.collection("leads").add(data);
+      await logActivity(ref.id, "created", t("act_created"));
+      toast(t("toast_saved"));
+    }
     closeModal("leadModal");
   } catch (err) { console.error(err); alert(err.message); }
 });
 async function deleteLead(id){ if (!confirm(t("confirm_delete"))) return; await db.collection("leads").doc(id).delete(); toast(t("toast_deleted")); }
+
+/* =========================================================
+   BULK IMPORT (Excel / CSV)
+   ========================================================= */
+let IMPORT_ROWS = [];
+
+const HEADER_MAP = {
+  name: ["name","الاسم","اسم","full name","الاسم الكامل","اسم العميل"],
+  phone: ["phone","رقم الهاتف","الهاتف","mobile","phone number","رقم","موبايل","تليفون"],
+  email: ["email","البريد الالكتروني","البريد الإلكتروني","mail","الايميل"],
+  interest: ["interest","الاهتمام","نوع العقار","property","العقار"],
+  budget: ["budget","الميزانية","الميزانيه"],
+  source: ["source","المصدر"],
+  notes: ["notes","ملاحظات","note"],
+};
+
+function findHeaderKey(headers, candidates){
+  for (const h of headers) {
+    const norm = String(h).trim().toLowerCase();
+    if (candidates.some(c => norm === c.toLowerCase())) return h;
+  }
+  return null;
+}
+
+function normalizeSource(val){
+  if (!val) return "other";
+  const v = String(val).trim().toLowerCase();
+  if (v.includes("face") || v.includes("فيس")) return "facebook";
+  if (v.includes("tiktok") || v.includes("تيك")) return "tiktok";
+  if (v.includes("whats") || v.includes("واتس")) return "whatsapp";
+  if (v.includes("web") || v.includes("موقع")) return "website";
+  if (v.includes("refer") || v.includes("توصي")) return "referral";
+  if (v.includes("walk") || v.includes("زيار")) return "walkin";
+  if (v.includes("call") || v.includes("مكالم")) return "call";
+  return "other";
+}
+
+function openImportModal(){
+  IMPORT_ROWS = [];
+  document.getElementById("importFileInput").value = "";
+  document.getElementById("importPreview").innerHTML = "";
+  document.getElementById("importProgressWrap").style.display = "none";
+  document.getElementById("importProgressBar").style.width = "0%";
+  document.getElementById("importStartBtn").disabled = true;
+  document.getElementById("importModal").classList.add("show");
+}
+
+document.getElementById("importFileInput").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    try {
+      const wb = XLSX.read(evt.target.result, { type: "array" });
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+      if (!rows.length) { document.getElementById("importPreview").textContent = t("import_no_rows"); return; }
+
+      const headers = Object.keys(rows[0]);
+      const map = {
+        name: findHeaderKey(headers, HEADER_MAP.name),
+        phone: findHeaderKey(headers, HEADER_MAP.phone),
+        email: findHeaderKey(headers, HEADER_MAP.email),
+        interest: findHeaderKey(headers, HEADER_MAP.interest),
+        budget: findHeaderKey(headers, HEADER_MAP.budget),
+        source: findHeaderKey(headers, HEADER_MAP.source),
+        notes: findHeaderKey(headers, HEADER_MAP.notes),
+      };
+
+      let skipped = 0;
+      IMPORT_ROWS = rows.map(r => {
+        const name = map.name ? String(r[map.name]||"").trim() : "";
+        if (!name) { skipped++; return null; }
+        return {
+          name,
+          phone: map.phone ? String(r[map.phone]||"").trim() : "",
+          email: map.email ? String(r[map.email]||"").trim() : "",
+          interest: map.interest ? String(r[map.interest]||"").trim() : "",
+          budget: map.budget ? String(r[map.budget]||"").trim() : "",
+          source: normalizeSource(map.source ? r[map.source] : ""),
+          notes: map.notes ? String(r[map.notes]||"").trim() : "",
+          status: "new", rating: "warm",
+        };
+      }).filter(Boolean);
+
+      let preview = `<strong style="color:var(--ivory);">${IMPORT_ROWS.length}</strong> ${t("import_of")} ${rows.length}`;
+      if (skipped) preview += `<br>${t("import_row_error")}: ${skipped}`;
+      document.getElementById("importPreview").innerHTML = preview;
+      document.getElementById("importStartBtn").disabled = IMPORT_ROWS.length === 0;
+    } catch (err) {
+      console.error(err);
+      document.getElementById("importPreview").textContent = t("import_no_rows");
+    }
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+document.getElementById("importStartBtn").addEventListener("click", async () => {
+  if (!IMPORT_ROWS.length) return;
+  const btn = document.getElementById("importStartBtn");
+  btn.disabled = true;
+  document.getElementById("importProgressWrap").style.display = "block";
+
+  const CHUNK = 400;
+  let done = 0;
+  const total = IMPORT_ROWS.length;
+
+  for (let i = 0; i < total; i += CHUNK) {
+    const chunk = IMPORT_ROWS.slice(i, i + CHUNK);
+    const batch = db.batch();
+    chunk.forEach(row => {
+      const ref = db.collection("leads").doc();
+      batch.set(ref, {
+        ...row,
+        tags: [],
+        agentId: CURRENT_USER.uid,
+        agentEmail: CURRENT_USER.email,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    });
+    try {
+      await batch.commit();
+      done += chunk.length;
+    } catch (err) {
+      console.error("import batch error", err);
+      document.getElementById("importProgressText").textContent = err.message;
+      break;
+    }
+    const pct = Math.round((done/total)*100);
+    document.getElementById("importProgressBar").style.width = pct + "%";
+    document.getElementById("importProgressText").textContent = `${t("import_done")} ${done} ${t("import_of")} ${total}`;
+  }
+
+  toast(`${t("import_done")} ${done} ${t("import_of")} ${total}`);
+  btn.disabled = false;
+  setTimeout(() => closeModal("importModal"), 1200);
+});
 
 /* ---------- Pipeline ---------- */
 function renderPipeline(){
@@ -848,13 +1194,14 @@ function renderPipeline(){
     return `<div class="pipe-col" data-status="${status}">
       <div class="pipe-col-head"><span>${t('status_'+status)}</span><span class="count">${items.length}</span></div>
       <div>${items.map(l => `<div class="pipe-card" draggable="true" data-id="${l.id}">
-        <div class="pipe-card-name">${escapeHtml(l.name||"")}</div>
+        <div class="pipe-card-name row-name-link" data-open="${l.id}">${escapeHtml(l.name||"")}</div>
         <div class="pipe-card-meta">${escapeHtml(l.interest||"—")} · ${escapeHtml(l.phone||"")}</div>
         <div class="pipe-card-value">${escapeHtml(l.budget||"—")}</div>
       </div>`).join("")}</div></div>`;
   }).join("");
   document.getElementById("content").innerHTML = `<div class="pipeline-board">${cols}</div>`;
   bindPipelineDrag();
+  document.querySelectorAll("[data-open]").forEach(el => el.addEventListener("click", () => openLeadDetail(el.dataset.open)));
 }
 function bindPipelineDrag(){
   let draggedId = null;
@@ -998,8 +1345,182 @@ document.getElementById("employeeForm").addEventListener("submit", async (e) => 
   }
 });
 
+/* =========================================================
+   LEAD DETAIL (Profile / Timeline / Tags / Quick Contact)
+   ========================================================= */
+let DETAIL_LEAD_ID = null;
+let DETAIL_TAGS = [];
+let timelineUnsub = null;
+
+const ACT_ICONS = {
+  created: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>',
+  call: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.34 1.79.65 2.65a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.43-1.42a2 2 0 0 1 2.11-.45c.86.31 1.75.53 2.65.65A2 2 0 0 1 22 16.92z"/></svg>',
+  whatsapp: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.5A10 10 0 1 0 12 2z"/></svg>',
+  sms: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+  status: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>',
+  note: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>',
+  task: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
+  updated: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+};
+
+function cleanPhone(p){ return (p||"").replace(/[^\d+]/g,""); }
+function waPhone(p){
+  let d = (p||"").replace(/\D/g,"");
+  if (d.startsWith("0")) d = "20" + d.slice(1);
+  return d;
+}
+async function logActivity(leadId, type, text){
+  try {
+    await db.collection("leads").doc(leadId).collection("activities").add({
+      type, text,
+      agentEmail: CURRENT_USER ? CURRENT_USER.email : "",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+  } catch(err){ console.error("activity log error", err); }
+}
+function doCall(phone, leadId){
+  if (!phone) return;
+  window.location.href = "tel:" + cleanPhone(phone);
+  if (leadId) logActivity(leadId, "call", t("act_call"));
+}
+function doWhatsapp(phone, leadId){
+  if (!phone) return;
+  window.open("https://wa.me/" + waPhone(phone), "_blank");
+  if (leadId) logActivity(leadId, "whatsapp", t("act_whatsapp"));
+}
+function doSms(phone, leadId){
+  if (!phone) return;
+  window.location.href = "sms:" + cleanPhone(phone);
+  if (leadId) logActivity(leadId, "sms", t("act_sms"));
+}
+
+function openLeadDetail(id){
+  const lead = LEADS.find(l => l.id===id);
+  if (!lead) return;
+  DETAIL_LEAD_ID = id;
+  DETAIL_TAGS = Array.isArray(lead.tags) ? [...lead.tags] : [];
+
+  document.getElementById("detailLeadName").textContent = lead.name || "—";
+  document.getElementById("detailLeadId").value = id;
+  document.getElementById("detailStatus").value = lead.status || "new";
+  document.getElementById("detailRating").value = lead.rating || "warm";
+  document.getElementById("detailInterest").value = lead.interest || "";
+  document.getElementById("detailBudget").value = lead.budget || "";
+  document.getElementById("detailSource").value = lead.source || "facebook";
+  document.getElementById("detailNotes").value = lead.notes || "";
+
+  const assignedSelect = document.getElementById("detailAssigned");
+  assignedSelect.innerHTML = `<option value="">${t("unassigned")}</option>` + AGENTS.map(a => `<option value="${a.id}">${escapeHtml(a.name||a.email)}</option>`).join("");
+  assignedSelect.value = lead.assignedTo || "";
+
+  renderDetailQuickContact(lead);
+  renderDetailTags();
+  switchDetailTab("profile");
+  subscribeTimeline(id);
+
+  document.getElementById("leadDetailModal").classList.add("show");
+}
+
+function renderDetailQuickContact(lead){
+  const phone = lead.phone || "";
+  document.getElementById("detailQuickContact").innerHTML = `
+    <button type="button" class="quick-contact-btn call" data-qc-call>${ACT_ICONS.call}</button>
+    <button type="button" class="quick-contact-btn sms" data-qc-sms>${ACT_ICONS.sms}</button>
+    <button type="button" class="quick-contact-btn whatsapp" data-qc-whatsapp>${ACT_ICONS.whatsapp}</button>
+    <div class="quick-contact-label"><div class="num">${escapeHtml(phone||"—")}</div><div class="lbl">${escapeHtml(lead.interest||"")}</div></div>
+  `;
+  const qc = document.getElementById("detailQuickContact");
+  qc.querySelector("[data-qc-call]").addEventListener("click", () => doCall(phone, DETAIL_LEAD_ID));
+  qc.querySelector("[data-qc-sms]").addEventListener("click", () => doSms(phone, DETAIL_LEAD_ID));
+  qc.querySelector("[data-qc-whatsapp]").addEventListener("click", () => doWhatsapp(phone, DETAIL_LEAD_ID));
+}
+
+function renderDetailTags(){
+  document.getElementById("detailTagList").innerHTML = DETAIL_TAGS.map(tag => `
+    <span class="tag-chip">${escapeHtml(tag)}<button type="button" data-remove-tag="${escapeHtml(tag)}">✕</button></span>
+  `).join("") || "";
+  document.querySelectorAll("[data-remove-tag]").forEach(btn => btn.addEventListener("click", () => {
+    DETAIL_TAGS = DETAIL_TAGS.filter(tg => tg !== btn.dataset.removeTag);
+    renderDetailTags();
+  }));
+}
+document.getElementById("detailTagAddBtn").addEventListener("click", () => {
+  const input = document.getElementById("detailTagInput");
+  const val = input.value.trim();
+  if (val && !DETAIL_TAGS.includes(val)) { DETAIL_TAGS.push(val); renderDetailTags(); }
+  input.value = "";
+});
+
+document.querySelectorAll(".tab-btn").forEach(btn => btn.addEventListener("click", () => switchDetailTab(btn.dataset.tab)));
+function switchDetailTab(tab){
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab===tab));
+  document.getElementById("tabProfile").classList.toggle("active", tab==="profile");
+  document.getElementById("tabTimeline").classList.toggle("active", tab==="timeline");
+}
+
+function subscribeTimeline(leadId){
+  if (timelineUnsub) timelineUnsub();
+  timelineUnsub = db.collection("leads").doc(leadId).collection("activities").orderBy("createdAt","desc")
+    .onSnapshot(snap => {
+      const items = snap.docs.map(d => d.data());
+      const list = document.getElementById("detailTimelineList");
+      if (!items.length) { list.innerHTML = emptyState(t("empty_tasks_title"), t("empty_tasks_sub")); return; }
+      list.innerHTML = items.map(a => `
+        <div class="timeline-item">
+          <div class="timeline-icon">${ACT_ICONS[a.type]||ACT_ICONS.note}</div>
+          <div>
+            <div class="timeline-text">${escapeHtml(a.text||"")}</div>
+            <div class="timeline-meta">${escapeHtml(a.agentEmail||"")} · ${fmtDate(a.createdAt)}</div>
+          </div>
+        </div>`).join("");
+    }, err => console.error("timeline error", err));
+}
+
+document.getElementById("detailNoteAddBtn").addEventListener("click", async () => {
+  const input = document.getElementById("detailNoteInput");
+  const val = input.value.trim();
+  if (!val || !DETAIL_LEAD_ID) return;
+  await logActivity(DETAIL_LEAD_ID, "note", val);
+  input.value = "";
+});
+
+document.getElementById("detailNewTaskBtn").addEventListener("click", () => {
+  if (!DETAIL_LEAD_ID) return;
+  openTaskModal();
+  document.getElementById("taskLead").value = DETAIL_LEAD_ID;
+});
+
+document.getElementById("detailForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const id = document.getElementById("detailLeadId").value;
+  const lead = LEADS.find(l => l.id===id) || {};
+  const newStatus = document.getElementById("detailStatus").value;
+  const statusChanged = lead.status !== newStatus;
+
+  const data = {
+    status: newStatus,
+    rating: document.getElementById("detailRating").value,
+    interest: document.getElementById("detailInterest").value.trim(),
+    budget: document.getElementById("detailBudget").value.trim(),
+    source: document.getElementById("detailSource").value,
+    assignedTo: document.getElementById("detailAssigned").value || null,
+    notes: document.getElementById("detailNotes").value.trim(),
+    tags: DETAIL_TAGS,
+  };
+  try {
+    await db.collection("leads").doc(id).update(data);
+    if (statusChanged) await logActivity(id, "status", t("act_status") + " " + t("status_"+newStatus));
+    else await logActivity(id, "updated", t("act_updated"));
+    toast(t("toast_updated"));
+    closeModal("leadDetailModal");
+  } catch(err){ console.error(err); alert(err.message); }
+});
+
 /* ---------- Modals ---------- */
-function closeModal(id){ document.getElementById(id).classList.remove("show"); }
+function closeModal(id){
+  document.getElementById(id).classList.remove("show");
+  if (id === "leadDetailModal" && timelineUnsub) { timelineUnsub(); timelineUnsub = null; }
+}
 document.querySelectorAll("[data-close-modal]").forEach(btn => btn.addEventListener("click", () => closeModal(btn.dataset.closeModal)));
 document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.addEventListener("click", e => { if (e.target===backdrop) backdrop.classList.remove("show"); }));
 </script>
