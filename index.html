@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>100% Real Estate — CRM</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="login-shell">
+  <div class="login-card">
+    <div class="lang-toggle">
+      <button data-lang="ar">AR</button>
+      <button data-lang="en">EN</button>
+    </div>
+
+    <div class="brand-emblem">
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 30 L24 16 L42 30" stroke="#C9A24B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12 28 V40 H36 V28" stroke="#C9A24B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="21" y="8" width="8" height="20" stroke="#C9A24B" stroke-width="2.2"/>
+      </svg>
+    </div>
+    <div class="brand-title">100%</div>
+    <div class="brand-sub" data-i18n="brandSub">REAL ESTATE</div>
+
+    <form id="loginForm">
+      <div class="field">
+        <label data-i18n="login_email">Email</label>
+        <input type="email" id="email" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label data-i18n="login_password">Password</label>
+        <input type="password" id="password" required autocomplete="current-password">
+      </div>
+
+      <div class="login-error" id="loginError" data-i18n="login_error"></div>
+
+      <button type="submit" class="btn-primary" id="loginBtn" data-i18n="login_btn">Sign In</button>
+    </form>
+
+    <div class="login-foot" data-i18n="login_foot">CRM — 100% Real Estate Consultants</div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script src="js/i18n.js"></script>
+<script src="js/firebase-config.js"></script>
+<script>
+  // If already signed in, go straight to the app
+  auth.onAuthStateChanged(user => {
+    if (user) window.location.href = "app.html";
+  });
+
+  const form = document.getElementById("loginForm");
+  const errorBox = document.getElementById("loginError");
+  const btn = document.getElementById("loginBtn");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorBox.classList.remove("show");
+    btn.disabled = true;
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+      window.location.href = "app.html";
+    } catch (err) {
+      errorBox.classList.add("show");
+      btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
