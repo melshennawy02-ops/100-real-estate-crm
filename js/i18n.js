@@ -137,6 +137,7 @@ const I18N = {
     recent_leads: "Recent Leads",
     today_tasks: "Today's Tasks",
     view_all: "View all",
+
     leads_title: "Leads",
     leads_sub: "Manage contacts and leads",
     add_lead: "Add Lead",
@@ -258,6 +259,5 @@ document.addEventListener("DOMContentLoaded", () => {
   applyLang(getLang());
   document.querySelectorAll(".lang-toggle button").forEach(btn => {
     btn.addEventListener("click", () => setLang(btn.dataset.lang));
-    
   });
 });
