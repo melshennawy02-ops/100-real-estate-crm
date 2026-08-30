@@ -140,7 +140,12 @@ tbody tr:last-child td{ border-bottom:none; }
 .badge.new{ background:rgba(143,160,194,.15); color:var(--slate); }
 .badge.contacted{ background:rgba(201,162,75,.15); color:var(--gold-bright); }
 .badge.qualified{ background:rgba(78,156,130,.15); color:var(--success); }
+.badge.matched{ background:rgba(201,162,75,.15); color:var(--gold-bright); }
+.badge.meeting{ background:rgba(91,107,140,.18); color:var(--ivory); }
+.badge.offer{ background:rgba(39,107,78,.12); color:var(--success); }
 .badge.negotiation{ background:rgba(233,204,126,.2); color:var(--gold-bright); }
+.badge.booking{ background:rgba(165,121,58,.22); color:var(--gold-bright); }
+.badge.contract{ background:rgba(39,107,78,.2); color:var(--success); }
 .badge.won{ background:rgba(39,107,78,.15); color:var(--success); }
 .badge.lost{ background:rgba(166,57,44,.12); color:var(--danger); }
 .badge.hot{ background:rgba(166,57,44,.12); color:var(--danger); }
@@ -387,7 +392,6 @@ tbody tr:last-child td{ border-bottom:none; }
         <div class="field"><label data-i18n="f_phone">Phone</label><input type="tel" id="leadPhone" required></div>
         <div class="field"><label data-i18n="f_email">Email</label><input type="email" id="leadEmail"></div>
         <div class="field"><label data-i18n="f_interest">Interest</label><input type="text" id="leadInterest"></div>
-        <div class="field"><label data-i18n="f_budget">Budget</label><input type="text" id="leadBudget"></div>
         <div class="field">
           <label data-i18n="f_source">Source</label>
           <select id="leadSource">
@@ -402,13 +406,49 @@ tbody tr:last-child td{ border-bottom:none; }
           </select>
         </div>
         <div class="field">
+          <label data-i18n="f_requirement">Requirement</label>
+          <select id="leadRequirement">
+            <option value="buy" data-i18n="requirement_buy">Buy</option>
+            <option value="invest" data-i18n="requirement_invest">Invest</option>
+            <option value="rent" data-i18n="requirement_rent">Rent</option>
+            <option value="resale" data-i18n="requirement_resale">Resale</option>
+          </select>
+        </div>
+        <div class="field"><label data-i18n="f_project">Project</label><input type="text" id="leadProject"></div>
+        <div class="field">
+          <label data-i18n="f_unit_type">Unit Type</label>
+          <select id="leadUnitType">
+            <option value="apartment" data-i18n="unit_apartment">Apartment</option>
+            <option value="villa" data-i18n="unit_villa">Villa</option>
+            <option value="townhouse" data-i18n="unit_townhouse">Townhouse</option>
+            <option value="twin" data-i18n="unit_twin">Twin House</option>
+            <option value="chalet" data-i18n="unit_chalet">Chalet</option>
+            <option value="commercial" data-i18n="unit_commercial">Commercial</option>
+            <option value="land" data-i18n="unit_land">Land</option>
+          </select>
+        </div>
+        <div class="field"><label data-i18n="f_area">Area</label><input type="text" id="leadArea"></div>
+        <div class="field"><label data-i18n="f_budget_from">Budget From</label><input type="text" id="leadBudgetFrom"></div>
+        <div class="field"><label data-i18n="f_budget_to">To</label><input type="text" id="leadBudgetTo"></div>
+        <div class="field">
+          <label data-i18n="f_payment_method">Payment Method</label>
+          <select id="leadPaymentMethod">
+            <option value="cash" data-i18n="payment_cash">Cash</option>
+            <option value="installments" data-i18n="payment_installments">Installments</option>
+          </select>
+        </div>
+        <div class="field">
           <label data-i18n="f_status">Status</label>
           <select id="leadStatus">
             <option value="new" data-i18n="status_new">New</option>
-            <option value="contacted" data-i18n="status_contacted">Contacted</option>
             <option value="qualified" data-i18n="status_qualified">Qualified</option>
+            <option value="matched" data-i18n="status_matched">Project Matched</option>
+            <option value="meeting" data-i18n="status_meeting">Meeting/Viewing</option>
+            <option value="offer" data-i18n="status_offer">Offer</option>
             <option value="negotiation" data-i18n="status_negotiation">Negotiation</option>
-            <option value="won" data-i18n="status_won">Won</option>
+            <option value="booking" data-i18n="status_booking">Booking</option>
+            <option value="contract" data-i18n="status_contract">Contract</option>
+            <option value="won" data-i18n="status_won">Closed Won</option>
             <option value="lost" data-i18n="status_lost">Lost</option>
           </select>
         </div>
@@ -418,6 +458,31 @@ tbody tr:last-child td{ border-bottom:none; }
             <option value="hot" data-i18n="rating_hot">Hot</option>
             <option value="warm" data-i18n="rating_warm">Warm</option>
             <option value="cold" data-i18n="rating_cold">Cold</option>
+          </select>
+        </div>
+        <div class="field">
+          <label data-i18n="f_next_action">Next Action</label>
+          <select id="leadNextAction">
+            <option value="call" data-i18n="next_call">Call</option>
+            <option value="whatsapp" data-i18n="next_whatsapp">WhatsApp</option>
+            <option value="meeting" data-i18n="next_meeting">Meeting</option>
+            <option value="viewing" data-i18n="next_viewing">Viewing</option>
+            <option value="offer" data-i18n="next_offer">Offer</option>
+            <option value="followup" data-i18n="next_followup">Follow-up</option>
+          </select>
+        </div>
+        <div class="field"><label data-i18n="f_expected_closing">Expected Closing</label><input type="date" id="leadExpectedClosing"></div>
+        <div class="field"><label data-i18n="f_deal_value">Deal Value</label><input type="text" id="leadDealValue"></div>
+        <div class="field">
+          <label data-i18n="f_lost_reason">Lost Reason</label>
+          <select id="leadLostReason">
+            <option value="" data-i18n="none">—</option>
+            <option value="budget" data-i18n="lost_budget">Budget</option>
+            <option value="project" data-i18n="lost_project">Project</option>
+            <option value="timing" data-i18n="lost_timing">Timing</option>
+            <option value="competitor" data-i18n="lost_competitor">Competitor</option>
+            <option value="noresponse" data-i18n="lost_noresponse">No Response</option>
+            <option value="other" data-i18n="lost_other">Other</option>
           </select>
         </div>
         <div class="field full"><label data-i18n="f_notes">Notes</label><textarea id="leadNotes"></textarea></div>
@@ -480,10 +545,14 @@ tbody tr:last-child td{ border-bottom:none; }
             <label data-i18n="f_status">Status</label>
             <select id="detailStatus">
               <option value="new" data-i18n="status_new">New</option>
-              <option value="contacted" data-i18n="status_contacted">Contacted</option>
               <option value="qualified" data-i18n="status_qualified">Qualified</option>
+              <option value="matched" data-i18n="status_matched">Project Matched</option>
+              <option value="meeting" data-i18n="status_meeting">Meeting/Viewing</option>
+              <option value="offer" data-i18n="status_offer">Offer</option>
               <option value="negotiation" data-i18n="status_negotiation">Negotiation</option>
-              <option value="won" data-i18n="status_won">Won</option>
+              <option value="booking" data-i18n="status_booking">Booking</option>
+              <option value="contract" data-i18n="status_contract">Contract</option>
+              <option value="won" data-i18n="status_won">Closed Won</option>
               <option value="lost" data-i18n="status_lost">Lost</option>
             </select>
           </div>
@@ -496,7 +565,6 @@ tbody tr:last-child td{ border-bottom:none; }
             </select>
           </div>
           <div class="field"><label data-i18n="f_interest">Interest</label><input type="text" id="detailInterest"></div>
-          <div class="field"><label data-i18n="f_budget">Budget</label><input type="text" id="detailBudget"></div>
           <div class="field">
             <label data-i18n="f_source">Source</label>
             <select id="detailSource">
@@ -508,6 +576,63 @@ tbody tr:last-child td{ border-bottom:none; }
               <option value="walkin" data-i18n="source_walkin">Walk-in</option>
               <option value="call" data-i18n="source_call">Call</option>
               <option value="other" data-i18n="source_other">Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label data-i18n="f_requirement">Requirement</label>
+            <select id="detailRequirement">
+              <option value="buy" data-i18n="requirement_buy">Buy</option>
+              <option value="invest" data-i18n="requirement_invest">Invest</option>
+              <option value="rent" data-i18n="requirement_rent">Rent</option>
+              <option value="resale" data-i18n="requirement_resale">Resale</option>
+            </select>
+          </div>
+          <div class="field"><label data-i18n="f_project">Project</label><input type="text" id="detailProject"></div>
+          <div class="field">
+            <label data-i18n="f_unit_type">Unit Type</label>
+            <select id="detailUnitType">
+              <option value="apartment" data-i18n="unit_apartment">Apartment</option>
+              <option value="villa" data-i18n="unit_villa">Villa</option>
+              <option value="townhouse" data-i18n="unit_townhouse">Townhouse</option>
+              <option value="twin" data-i18n="unit_twin">Twin House</option>
+              <option value="chalet" data-i18n="unit_chalet">Chalet</option>
+              <option value="commercial" data-i18n="unit_commercial">Commercial</option>
+              <option value="land" data-i18n="unit_land">Land</option>
+            </select>
+          </div>
+          <div class="field"><label data-i18n="f_area">Area</label><input type="text" id="detailArea"></div>
+          <div class="field"><label data-i18n="f_budget_from">Budget From</label><input type="text" id="detailBudgetFrom"></div>
+          <div class="field"><label data-i18n="f_budget_to">To</label><input type="text" id="detailBudgetTo"></div>
+          <div class="field">
+            <label data-i18n="f_payment_method">Payment Method</label>
+            <select id="detailPaymentMethod">
+              <option value="cash" data-i18n="payment_cash">Cash</option>
+              <option value="installments" data-i18n="payment_installments">Installments</option>
+            </select>
+          </div>
+          <div class="field">
+            <label data-i18n="f_next_action">Next Action</label>
+            <select id="detailNextAction">
+              <option value="call" data-i18n="next_call">Call</option>
+              <option value="whatsapp" data-i18n="next_whatsapp">WhatsApp</option>
+              <option value="meeting" data-i18n="next_meeting">Meeting</option>
+              <option value="viewing" data-i18n="next_viewing">Viewing</option>
+              <option value="offer" data-i18n="next_offer">Offer</option>
+              <option value="followup" data-i18n="next_followup">Follow-up</option>
+            </select>
+          </div>
+          <div class="field"><label data-i18n="f_expected_closing">Expected Closing</label><input type="date" id="detailExpectedClosing"></div>
+          <div class="field"><label data-i18n="f_deal_value">Deal Value</label><input type="text" id="detailDealValue"></div>
+          <div class="field">
+            <label data-i18n="f_lost_reason">Lost Reason</label>
+            <select id="detailLostReason">
+              <option value="" data-i18n="none">—</option>
+              <option value="budget" data-i18n="lost_budget">Budget</option>
+              <option value="project" data-i18n="lost_project">Project</option>
+              <option value="timing" data-i18n="lost_timing">Timing</option>
+              <option value="competitor" data-i18n="lost_competitor">Competitor</option>
+              <option value="noresponse" data-i18n="lost_noresponse">No Response</option>
+              <option value="other" data-i18n="lost_other">Other</option>
             </select>
           </div>
           <div class="field"><label data-i18n="f_assigned">Assigned To</label><select id="detailAssigned"></select></div>
@@ -640,7 +765,9 @@ const I18N = {
     col_rating: "التقييم", col_actions: "إجراءات",
     empty_leads_title: "لا يوجد عملاء محتملين بعد", empty_leads_sub: "ابدأ بإضافة أول عميل محتمل لمتابعته",
     status_new: "جديد", status_contacted: "تم التواصل", status_qualified: "مؤهل",
-    status_negotiation: "تفاوض", status_won: "تم الإغلاق", status_lost: "خسارة",
+    status_matched: "تطابق مشروع", status_meeting: "معاينة", status_offer: "عرض سعر",
+    status_negotiation: "تفاوض", status_booking: "حجز", status_contract: "تعاقد",
+    status_won: "مُغلق (فايز)", status_lost: "خسارة",
     rating_hot: "ساخن", rating_warm: "دافئ", rating_cold: "بارد",
     modal_add_lead: "إضافة عميل محتمل", modal_edit_lead: "تعديل بيانات العميل",
     f_name: "الاسم الكامل", f_phone: "رقم الهاتف", f_email: "البريد الإلكتروني",
@@ -659,6 +786,20 @@ const I18N = {
     import_quota_warning: "تنبيه: الحساب المجاني بيسمح بـ 20,000 عملية يوميًا. لو الملف أكبر، هيتم الاستيراد جزء بالتوقف تلقائي.",
     import_no_rows: "لم يتم العثور على بيانات صالحة في الملف",
     import_row_error: "بعض الصفوف اتخطّت لعدم وجود اسم",
+
+    f_requirement: "الغرض", f_project: "المشروع", f_unit_type: "نوع الوحدة",
+    f_budget_from: "الميزانية من", f_budget_to: "إلى", f_payment_method: "طريقة السداد",
+    f_area: "المنطقة", f_next_action: "الإجراء التالي", f_expected_closing: "تاريخ الإغلاق المتوقع",
+    f_deal_value: "قيمة الصفقة", f_lost_reason: "سبب الخسارة",
+    requirement_buy: "شراء", requirement_invest: "استثمار", requirement_rent: "إيجار", requirement_resale: "إعادة بيع",
+    unit_apartment: "شقة", unit_villa: "فيلا", unit_townhouse: "تاون هاوس", unit_twin: "توين هاوس",
+    unit_chalet: "شاليه", unit_commercial: "تجاري", unit_land: "أرض",
+    payment_cash: "كاش", payment_installments: "تقسيط",
+    next_call: "مكالمة", next_whatsapp: "واتساب", next_meeting: "اجتماع",
+    next_viewing: "معاينة", next_offer: "عرض سعر", next_followup: "متابعة",
+    lost_budget: "الميزانية", lost_project: "المشروع", lost_timing: "التوقيت",
+    lost_competitor: "منافس", lost_noresponse: "عدم رد", lost_other: "أخرى",
+    by_lost_reason: "توزيع أسباب الخسارة",
     pipeline_title: "مسار الصفقات", pipeline_sub: "اسحب البطاقات بين المراحل لتحديث حالة الصفقة",
     tasks_title: "المهام والمتابعات", tasks_sub: "لا تفوت متابعة أي عميل", add_task: "إضافة مهمة",
     modal_add_task: "إضافة مهمة متابعة", f_task_title: "عنوان المهمة", f_task_lead: "متعلقة بالعميل",
@@ -676,7 +817,7 @@ const I18N = {
     tab_profile: "الملف الشخصي", tab_timeline: "السجل الزمني",
     f_assigned: "مسؤول عن العميل", f_tags: "الوسوم",
     f_tag_add_placeholder: "أضف وسم...", f_add_note_placeholder: "اكتب ملاحظة...",
-    add: "إضافة", new_task: "+ مهمة جديدة", unassigned: "غير معيّن",
+    add: "إضافة", new_task: "+ مهمة جديدة", unassigned: "غير معيّن", none: "—",
     act_created: "تم إنشاء العميل", act_call: "تم تسجيل مكالمة",
     act_whatsapp: "تم فتح واتساب", act_sms: "تم فتح رسالة نصية",
     act_status: "تم تغيير الحالة إلى", act_updated: "تم تحديث بيانات العميل",
@@ -701,7 +842,9 @@ const I18N = {
     col_rating: "Rating", col_actions: "Actions",
     empty_leads_title: "No leads yet", empty_leads_sub: "Start by adding your first lead to follow up on",
     status_new: "New", status_contacted: "Contacted", status_qualified: "Qualified",
-    status_negotiation: "Negotiation", status_won: "Won", status_lost: "Lost",
+    status_matched: "Project Matched", status_meeting: "Meeting/Viewing", status_offer: "Offer",
+    status_negotiation: "Negotiation", status_booking: "Booking", status_contract: "Contract",
+    status_won: "Closed Won", status_lost: "Lost",
     rating_hot: "Hot", rating_warm: "Warm", rating_cold: "Cold",
     modal_add_lead: "Add Lead", modal_edit_lead: "Edit Lead",
     f_name: "Full Name", f_phone: "Phone Number", f_email: "Email",
@@ -720,6 +863,20 @@ const I18N = {
     import_quota_warning: "Note: the free plan allows 20,000 writes/day. Larger files will stop automatically and can resume the next day.",
     import_no_rows: "No valid data found in the file",
     import_row_error: "Some rows were skipped for missing a name",
+
+    f_requirement: "Requirement", f_project: "Project", f_unit_type: "Unit Type",
+    f_budget_from: "Budget From", f_budget_to: "To", f_payment_method: "Payment Method",
+    f_area: "Area", f_next_action: "Next Action", f_expected_closing: "Expected Closing",
+    f_deal_value: "Deal Value", f_lost_reason: "Lost Reason",
+    requirement_buy: "Buy", requirement_invest: "Invest", requirement_rent: "Rent", requirement_resale: "Resale",
+    unit_apartment: "Apartment", unit_villa: "Villa", unit_townhouse: "Townhouse", unit_twin: "Twin House",
+    unit_chalet: "Chalet", unit_commercial: "Commercial", unit_land: "Land",
+    payment_cash: "Cash", payment_installments: "Installments",
+    next_call: "Call", next_whatsapp: "WhatsApp", next_meeting: "Meeting",
+    next_viewing: "Viewing", next_offer: "Offer", next_followup: "Follow-up",
+    lost_budget: "Budget", lost_project: "Project", lost_timing: "Timing",
+    lost_competitor: "Competitor", lost_noresponse: "No Response", lost_other: "Other",
+    by_lost_reason: "Lost Reason Breakdown",
     pipeline_title: "Pipeline", pipeline_sub: "Drag cards between stages to update deal status",
     tasks_title: "Tasks & Follow-ups", tasks_sub: "Never miss a follow-up", add_task: "Add Task",
     modal_add_task: "Add Follow-up Task", f_task_title: "Task Title", f_task_lead: "Related Lead",
@@ -737,7 +894,7 @@ const I18N = {
     tab_profile: "Profile", tab_timeline: "Timeline",
     f_assigned: "Assigned To", f_tags: "Tags",
     f_tag_add_placeholder: "Add a tag...", f_add_note_placeholder: "Add a note...",
-    add: "Add", new_task: "+ New Task", unassigned: "Unassigned",
+    add: "Add", new_task: "+ New Task", unassigned: "Unassigned", none: "—",
     act_created: "Lead created", act_call: "Call logged",
     act_whatsapp: "WhatsApp opened", act_sms: "SMS opened",
     act_status: "Status changed to", act_updated: "Lead details updated",
@@ -770,8 +927,8 @@ let CURRENT_USER = null;
 let LEADS = [], TASKS = [], AGENTS = [];
 let currentView = "dashboard";
 
-const STATUSES = ["new","contacted","qualified","negotiation","won","lost"];
-const PIPELINE_STATUSES = ["new","contacted","qualified","negotiation","won"];
+const STATUSES = ["new","qualified","matched","meeting","offer","negotiation","booking","contract","won","lost"];
+const PIPELINE_STATUSES = ["new","qualified","matched","meeting","offer","negotiation","booking","contract","won"];
 
 const authTimeout = setTimeout(() => {
   const fb = document.getElementById("loadingFallback");
@@ -1012,10 +1169,20 @@ function openLeadModal(id){
       document.getElementById("leadPhone").value = lead.phone||"";
       document.getElementById("leadEmail").value = lead.email||"";
       document.getElementById("leadInterest").value = lead.interest||"";
-      document.getElementById("leadBudget").value = lead.budget||"";
       document.getElementById("leadSource").value = lead.source||"facebook";
+      document.getElementById("leadRequirement").value = lead.requirement||"buy";
+      document.getElementById("leadProject").value = lead.project||"";
+      document.getElementById("leadUnitType").value = lead.unitType||"apartment";
+      document.getElementById("leadArea").value = lead.area||"";
+      document.getElementById("leadBudgetFrom").value = lead.budgetFrom||"";
+      document.getElementById("leadBudgetTo").value = lead.budgetTo||"";
+      document.getElementById("leadPaymentMethod").value = lead.paymentMethod||"cash";
       document.getElementById("leadStatus").value = lead.status||"new";
       document.getElementById("leadRating").value = lead.rating||"warm";
+      document.getElementById("leadNextAction").value = lead.nextAction||"call";
+      document.getElementById("leadExpectedClosing").value = lead.expectedClosing||"";
+      document.getElementById("leadDealValue").value = lead.dealValue||"";
+      document.getElementById("leadLostReason").value = lead.lostReason||"";
       document.getElementById("leadNotes").value = lead.notes||"";
     }
   }
@@ -1029,10 +1196,20 @@ document.getElementById("leadForm").addEventListener("submit", async (e) => {
     phone: document.getElementById("leadPhone").value.trim(),
     email: document.getElementById("leadEmail").value.trim(),
     interest: document.getElementById("leadInterest").value.trim(),
-    budget: document.getElementById("leadBudget").value.trim(),
     source: document.getElementById("leadSource").value,
+    requirement: document.getElementById("leadRequirement").value,
+    project: document.getElementById("leadProject").value.trim(),
+    unitType: document.getElementById("leadUnitType").value,
+    area: document.getElementById("leadArea").value.trim(),
+    budgetFrom: document.getElementById("leadBudgetFrom").value.trim(),
+    budgetTo: document.getElementById("leadBudgetTo").value.trim(),
+    paymentMethod: document.getElementById("leadPaymentMethod").value,
     status: document.getElementById("leadStatus").value,
     rating: document.getElementById("leadRating").value,
+    nextAction: document.getElementById("leadNextAction").value,
+    expectedClosing: document.getElementById("leadExpectedClosing").value,
+    dealValue: document.getElementById("leadDealValue").value.trim(),
+    lostReason: document.getElementById("leadLostReason").value,
     notes: document.getElementById("leadNotes").value.trim(),
     agentId: CURRENT_USER.uid, agentEmail: CURRENT_USER.email,
   };
@@ -1062,6 +1239,8 @@ const HEADER_MAP = {
   interest: ["interest","الاهتمام","نوع العقار","property","العقار"],
   budget: ["budget","الميزانية","الميزانيه"],
   source: ["source","المصدر"],
+  project: ["project","المشروع"],
+  area: ["area","المنطقة"],
   notes: ["notes","ملاحظات","note"],
 };
 
@@ -1115,6 +1294,8 @@ document.getElementById("importFileInput").addEventListener("change", (e) => {
         interest: findHeaderKey(headers, HEADER_MAP.interest),
         budget: findHeaderKey(headers, HEADER_MAP.budget),
         source: findHeaderKey(headers, HEADER_MAP.source),
+        project: findHeaderKey(headers, HEADER_MAP.project),
+        area: findHeaderKey(headers, HEADER_MAP.area),
         notes: findHeaderKey(headers, HEADER_MAP.notes),
       };
 
@@ -1127,10 +1308,13 @@ document.getElementById("importFileInput").addEventListener("change", (e) => {
           phone: map.phone ? String(r[map.phone]||"").trim() : "",
           email: map.email ? String(r[map.email]||"").trim() : "",
           interest: map.interest ? String(r[map.interest]||"").trim() : "",
-          budget: map.budget ? String(r[map.budget]||"").trim() : "",
+          budgetFrom: map.budget ? String(r[map.budget]||"").trim() : "",
+          budgetTo: "",
+          project: map.project ? String(r[map.project]||"").trim() : "",
+          area: map.area ? String(r[map.area]||"").trim() : "",
           source: normalizeSource(map.source ? r[map.source] : ""),
           notes: map.notes ? String(r[map.notes]||"").trim() : "",
-          status: "new", rating: "warm",
+          status: "new", rating: "warm", requirement: "buy", unitType: "apartment", paymentMethod: "cash", nextAction: "call",
         };
       }).filter(Boolean);
 
@@ -1277,11 +1461,14 @@ function renderReports(){
   LEADS.forEach(l => { if (byStatus[l.status]!==undefined) byStatus[l.status]++; });
   const bySource = {}; LEADS.forEach(l => { const s=l.source||"other"; bySource[s]=(bySource[s]||0)+1; });
   const byAgent = {}; LEADS.forEach(l => { const a=l.agentEmail||"—"; byAgent[a]=(byAgent[a]||0)+1; });
+  const byLostReason = {};
+  LEADS.filter(l => l.status==="lost" && l.lostReason).forEach(l => { byLostReason[l.lostReason]=(byLostReason[l.lostReason]||0)+1; });
 
   document.getElementById("content").innerHTML = `
     <div class="panel"><div class="panel-head"><h2>${t("by_status")}</h2></div>${barList(Object.entries(byStatus).map(([k,v])=>[t('status_'+k),v]))}</div>
     <div class="panel"><div class="panel-head"><h2>${t("by_source")}</h2></div>${barList(Object.entries(bySource).map(([k,v])=>[t('source_'+k)||k,v]))}</div>
-    <div class="panel"><div class="panel-head"><h2>${t("by_agent")}</h2></div>${barList(Object.entries(byAgent))}</div>`;
+    <div class="panel"><div class="panel-head"><h2>${t("by_agent")}</h2></div>${barList(Object.entries(byAgent))}</div>
+    <div class="panel"><div class="panel-head"><h2>${t("by_lost_reason")}</h2></div>${barList(Object.entries(byLostReason).map(([k,v])=>[t('lost_'+k)||k,v]))}</div>`;
 }
 function barList(pairs){
   const max = Math.max(1, ...pairs.map(p=>p[1]));
@@ -1405,8 +1592,18 @@ function openLeadDetail(id){
   document.getElementById("detailStatus").value = lead.status || "new";
   document.getElementById("detailRating").value = lead.rating || "warm";
   document.getElementById("detailInterest").value = lead.interest || "";
-  document.getElementById("detailBudget").value = lead.budget || "";
   document.getElementById("detailSource").value = lead.source || "facebook";
+  document.getElementById("detailRequirement").value = lead.requirement || "buy";
+  document.getElementById("detailProject").value = lead.project || "";
+  document.getElementById("detailUnitType").value = lead.unitType || "apartment";
+  document.getElementById("detailArea").value = lead.area || "";
+  document.getElementById("detailBudgetFrom").value = lead.budgetFrom || "";
+  document.getElementById("detailBudgetTo").value = lead.budgetTo || "";
+  document.getElementById("detailPaymentMethod").value = lead.paymentMethod || "cash";
+  document.getElementById("detailNextAction").value = lead.nextAction || "call";
+  document.getElementById("detailExpectedClosing").value = lead.expectedClosing || "";
+  document.getElementById("detailDealValue").value = lead.dealValue || "";
+  document.getElementById("detailLostReason").value = lead.lostReason || "";
   document.getElementById("detailNotes").value = lead.notes || "";
 
   const assignedSelect = document.getElementById("detailAssigned");
@@ -1501,15 +1698,29 @@ document.getElementById("detailForm").addEventListener("submit", async (e) => {
     status: newStatus,
     rating: document.getElementById("detailRating").value,
     interest: document.getElementById("detailInterest").value.trim(),
-    budget: document.getElementById("detailBudget").value.trim(),
     source: document.getElementById("detailSource").value,
+    requirement: document.getElementById("detailRequirement").value,
+    project: document.getElementById("detailProject").value.trim(),
+    unitType: document.getElementById("detailUnitType").value,
+    area: document.getElementById("detailArea").value.trim(),
+    budgetFrom: document.getElementById("detailBudgetFrom").value.trim(),
+    budgetTo: document.getElementById("detailBudgetTo").value.trim(),
+    paymentMethod: document.getElementById("detailPaymentMethod").value,
+    nextAction: document.getElementById("detailNextAction").value,
+    expectedClosing: document.getElementById("detailExpectedClosing").value,
+    dealValue: document.getElementById("detailDealValue").value.trim(),
+    lostReason: document.getElementById("detailLostReason").value,
     assignedTo: document.getElementById("detailAssigned").value || null,
     notes: document.getElementById("detailNotes").value.trim(),
     tags: DETAIL_TAGS,
   };
   try {
     await db.collection("leads").doc(id).update(data);
-    if (statusChanged) await logActivity(id, "status", t("act_status") + " " + t("status_"+newStatus));
+    if (statusChanged) {
+      let msg = t("act_status") + " " + t("status_"+newStatus);
+      if (newStatus === "lost" && data.lostReason) msg += " (" + t("lost_"+data.lostReason) + ")";
+      await logActivity(id, "status", msg);
+    }
     else await logActivity(id, "updated", t("act_updated"));
     toast(t("toast_updated"));
     closeModal("leadDetailModal");
