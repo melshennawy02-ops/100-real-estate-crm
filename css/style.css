@@ -7,24 +7,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap');
 
 :root{
-  --navy-deep:   #081123;
-  --navy:        #0E1F3D;
-  --navy-panel:  #142A52;
-  --navy-panel-2:#1B3562;
-  --navy-line:   #24406F;
-  --gold:        #C9A24B;
-  --gold-bright: #E9CC7E;
-  --gold-dim:    #8B7434;
-  --ivory:       #F3F0E7;
-  --slate:       #8FA0C2;
-  --slate-dim:   #5E6E8F;
-  --danger:      #C0574B;
-  --success:     #4E9C82;
+  --navy-deep:   #F6F1E3;
+  --navy:        #FBF8EF;
+  --navy-panel:  #FFFFFF;
+  --navy-panel-2:#F2EAD4;
+  --navy-line:   #DCCEA3;
+  --gold:        #A5793A;
+  --gold-bright: #6E4E1E;
+  --gold-dim:    #C9A24B;
+  --ivory:       #17253F;
+  --slate:       #5B6B8C;
+  --slate-dim:   #8B98B0;
+  --danger:      #A6392C;
+  --success:     #276B4E;
 
   --radius-lg: 18px;
   --radius-md: 12px;
   --radius-sm: 8px;
-  --shadow: 0 10px 30px rgba(3,8,20,.45);
+  --shadow: 0 10px 30px rgba(80,60,20,.12);
   --font: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
 }
 
@@ -39,9 +39,9 @@ html,body{
 
 body{
   background:
-    radial-gradient(1200px 600px at 15% -10%, rgba(201,162,75,.08), transparent 60%),
-    radial-gradient(900px 500px at 110% 10%, rgba(27,53,98,.55), transparent 55%),
-    linear-gradient(180deg, var(--navy-deep), var(--navy) 60%, var(--navy-deep));
+    radial-gradient(1200px 600px at 15% -10%, rgba(165,121,58,.07), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, rgba(165,121,58,.06), transparent 55%),
+    var(--navy-deep);
   min-height:100vh;
 }
 
@@ -152,7 +152,7 @@ input,select,textarea{ font-family:var(--font); }
 }
 .lang-toggle button.active{
   background:var(--gold);
-  color:var(--navy-deep);
+  color:#fff;
 }
 
 .field{
@@ -167,7 +167,7 @@ input,select,textarea{ font-family:var(--font); }
 }
 .field input{
   width:100%;
-  background:rgba(3,8,20,.55);
+  background:var(--navy);
   border:1px solid var(--navy-line);
   color:var(--ivory);
   padding:12px 14px;
@@ -181,8 +181,8 @@ input,select,textarea{ font-family:var(--font); }
 .btn-primary{
   width:100%;
   margin-top:24px;
-  background:linear-gradient(180deg, var(--gold-bright), var(--gold));
-  color:var(--navy-deep);
+  background:linear-gradient(180deg, var(--gold-dim), var(--gold));
+  color:var(--ivory);
   font-weight:800;
   padding:13px;
   border-radius:var(--radius-sm);
@@ -196,9 +196,9 @@ input,select,textarea{ font-family:var(--font); }
 
 .login-error{
   margin-top:16px;
-  background:rgba(192,87,75,.12);
-  border:1px solid rgba(192,87,75,.4);
-  color:#F1B3AB;
+  background:rgba(166,57,44,.08);
+  border:1px solid rgba(166,57,44,.3);
+  color:var(--danger);
   font-size:13px;
   padding:10px 12px;
   border-radius:var(--radius-sm);
@@ -306,7 +306,7 @@ input,select,textarea{ font-family:var(--font); }
   font-weight:700;
   transition:border-color .12s, color .12s;
 }
-.logout-btn:hover{ border-color:var(--danger); color:#F1B3AB; }
+.logout-btn:hover{ border-color:var(--danger); color:var(--danger); }
 
 .main{
   flex:1;
@@ -335,8 +335,8 @@ input,select,textarea{ font-family:var(--font); }
 .topbar-actions{ display:flex; align-items:center; gap:10px; }
 
 .btn-gold{
-  background:linear-gradient(180deg, var(--gold-bright), var(--gold));
-  color:var(--navy-deep);
+  background:linear-gradient(180deg, var(--gold-dim), var(--gold));
+  color:#fff;
   font-weight:800;
   font-size:13px;
   padding:10px 16px;
@@ -436,9 +436,9 @@ tbody tr:last-child td{ border-bottom:none; }
 .badge.contacted{ background:rgba(201,162,75,.15); color:var(--gold-bright); }
 .badge.qualified{ background:rgba(78,156,130,.15); color:var(--success); }
 .badge.negotiation{ background:rgba(233,204,126,.2); color:var(--gold-bright); }
-.badge.won{ background:rgba(78,156,130,.25); color:#7fe0bd; }
-.badge.lost{ background:rgba(192,87,75,.18); color:#F1B3AB; }
-.badge.hot{ background:rgba(192,87,75,.18); color:#F1B3AB; }
+.badge.won{ background:rgba(39,107,78,.15); color:var(--success); }
+.badge.lost{ background:rgba(166,57,44,.12); color:var(--danger); }
+.badge.hot{ background:rgba(166,57,44,.12); color:var(--danger); }
 .badge.warm{ background:rgba(201,162,75,.18); color:var(--gold-bright); }
 .badge.cold{ background:rgba(143,160,194,.15); color:var(--slate); }
 
@@ -472,7 +472,7 @@ tbody tr:last-child td{ border-bottom:none; }
   padding-bottom:8px;
 }
 .pipe-col{
-  background:rgba(3,8,20,.35);
+  background:rgba(165,121,58,.05);
   border:1px solid var(--navy-line);
   border-radius:var(--radius-md);
   padding:12px;
@@ -523,7 +523,7 @@ tbody tr:last-child td{ border-bottom:none; }
   border:1px solid var(--gold-dim);
   border-radius:20px;
   padding:24px 22px;
-  box-shadow:0 25px 60px rgba(0,0,0,.65), 0 0 0 1px rgba(201,162,75,.12);
+  box-shadow:0 25px 50px rgba(60,45,15,.18), 0 0 0 1px rgba(165,121,58,.15);
 }
 .modal-head{
   display:flex; align-items:center; justify-content:space-between;
@@ -546,7 +546,7 @@ tbody tr:last-child td{ border-bottom:none; }
 .form-grid .full{ grid-column:1/-1; }
 .field select, .field textarea{
   width:100%;
-  background:rgba(3,8,20,.55);
+  background:var(--navy);
   border:1px solid var(--navy-line);
   color:var(--ivory);
   padding:12px 14px;
@@ -573,7 +573,7 @@ tbody tr:last-child td{ border-bottom:none; }
   transition:.12s;
 }
 .task-check.done{ background:var(--success); border-color:var(--success); }
-.task-check.done svg{ width:12px; height:12px; color:var(--navy-deep); }
+.task-check.done svg{ width:12px; height:12px; color:#fff; }
 .task-body{ flex:1; }
 .task-title{ font-size:13.5px; font-weight:700; color:var(--ivory); }
 .task-title.done{ text-decoration:line-through; color:var(--slate-dim); }
@@ -598,9 +598,10 @@ tbody tr:last-child td{ border-bottom:none; }
 .toast.show{ transform:translateY(0); opacity:1; }
 
 @media (max-width:900px){
-  .sidebar{ position:fixed; z-index:50; height:100vh; transform:translateX(-110%); transition:.2s; }
+  .sidebar{ position:fixed; inset-inline-start:0; top:0; z-index:50; height:100vh; transform:translateX(-110%); transition:.2s; }
   html[dir="rtl"] .sidebar{ transform:translateX(110%); }
   .sidebar.open{ transform:translateX(0); }
+  html[dir="rtl"] .sidebar.open{ transform:translateX(0); }
   .stat-grid{ grid-template-columns:repeat(2,1fr); }
   .form-grid{ grid-template-columns:1fr; }
   .content{ padding:18px; }
