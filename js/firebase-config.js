@@ -3,7 +3,7 @@
    ========================================================= */
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBvKB7VeUxGu9XEGSqb-2m7xh1P6O01BVw",
+  apiKey: "AIzaSyBvKB7VeUxGu9XEGSqb-2m7xh1P6OO1BVw",
   authDomain: "real-estate-crm-65b58.firebaseapp.com",
   projectId: "real-estate-crm-65b58",
   storageBucket: "real-estate-crm-65b58.firebasestorage.app",
