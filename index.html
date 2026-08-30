@@ -1,25 +1,238 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" id="htmlRoot">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>100% Real Estate — CRM</title>
-<link rel="stylesheet" href="css/style.css">
+<style>
+/* =========================================================
+   100% Real Estate Consultants — CRM (single-file build)
+   ========================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap');
+
+:root{
+  --navy-deep:   #F6F1E3;
+  --navy:        #FBF8EF;
+  --navy-panel:  #FFFFFF;
+  --navy-panel-2:#F2EAD4;
+  --navy-line:   #DCCEA3;
+  --gold:        #A5793A;
+  --gold-bright: #6E4E1E;
+  --gold-dim:    #C9A24B;
+  --ivory:       #17253F;
+  --slate:       #5B6B8C;
+  --slate-dim:   #8B98B0;
+  --danger:      #A6392C;
+  --success:     #276B4E;
+
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 10px 30px rgba(80,60,20,.12);
+  --font: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+}
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+html,body{ height:100%; font-family:var(--font); background:var(--navy-deep); color:var(--ivory); }
+
+body{
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgba(165,121,58,.07), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, rgba(165,121,58,.06), transparent 55%),
+    var(--navy-deep);
+  min-height:100vh;
+}
+
+html[dir="rtl"] body{ direction:rtl; }
+html[dir="ltr"] body{ direction:ltr; }
+
+a{ color:inherit; text-decoration:none; }
+button{ font-family:var(--font); cursor:pointer; border:none; }
+input,select,textarea{ font-family:var(--font); }
+
+.ring-mark{ width:14px; height:14px; border-radius:50%; border:2px solid var(--gold); display:inline-block; position:relative; }
+.ring-mark::after{ content:""; position:absolute; inset:-6px; border:1px solid rgba(201,162,75,.35); border-radius:50%; }
+
+::-webkit-scrollbar{ width:8px; height:8px; }
+::-webkit-scrollbar-thumb{ background:var(--navy-line); border-radius:8px; }
+::-webkit-scrollbar-track{ background:transparent; }
+
+/* ---- Login ---- */
+.login-shell{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; position:relative; overflow:hidden; }
+.login-shell::before{
+  content:""; position:absolute; inset:0;
+  background-image:
+    repeating-linear-gradient(115deg, rgba(233,204,126,.035) 0px, rgba(233,204,126,.035) 1px, transparent 1px, transparent 90px),
+    repeating-linear-gradient(25deg, rgba(233,204,126,.025) 0px, rgba(233,204,126,.025) 1px, transparent 1px, transparent 140px);
+  pointer-events:none;
+}
+.login-card{ position:relative; width:100%; max-width:420px; background:linear-gradient(180deg, var(--navy-panel), var(--navy)); border:1px solid var(--navy-line); border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:40px 34px 34px; }
+.brand-emblem{ width:76px; height:76px; margin:0 auto 14px; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; position:relative; }
+.brand-emblem::after{ content:""; position:absolute; inset:-8px; border:1px solid rgba(201,162,75,.3); border-radius:50%; }
+.brand-emblem svg{ width:38px; height:38px; }
+.brand-title{ text-align:center; font-weight:800; font-size:30px; letter-spacing:.5px; background:linear-gradient(180deg, var(--gold-bright), var(--gold)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.brand-sub{ text-align:center; color:var(--slate); font-size:13px; letter-spacing:2px; margin-top:4px; text-transform:uppercase; }
+.lang-toggle{ position:absolute; top:18px; inset-inline-end:18px; display:flex; gap:4px; background:rgba(0,0,0,.25); border:1px solid var(--navy-line); border-radius:20px; padding:3px; }
+.lang-toggle button{ background:transparent; color:var(--slate); font-size:12px; font-weight:700; padding:5px 12px; border-radius:16px; }
+.lang-toggle button.active{ background:var(--gold); color:#fff; }
+.field{ margin-top:20px; }
+.field label{ display:block; font-size:12px; color:var(--slate); margin-bottom:6px; letter-spacing:.3px; }
+.field input, .field select, .field textarea{ width:100%; background:var(--navy); border:1px solid var(--navy-line); color:var(--ivory); padding:12px 14px; border-radius:var(--radius-sm); font-size:14px; outline:none; transition:border-color .15s; }
+.field input:focus, .field select:focus, .field textarea:focus{ border-color:var(--gold); }
+.field textarea{ resize:vertical; min-height:70px; }
+.btn-primary{ width:100%; margin-top:24px; background:linear-gradient(180deg, var(--gold-dim), var(--gold)); color:var(--ivory); font-weight:800; padding:13px; border-radius:var(--radius-sm); font-size:15px; letter-spacing:.3px; transition:transform .12s, box-shadow .12s; }
+.btn-primary:hover{ transform:translateY(-1px); box-shadow:0 8px 20px rgba(201,162,75,.25); }
+.btn-primary:active{ transform:translateY(0); }
+.btn-primary:disabled{ opacity:.6; transform:none; box-shadow:none; cursor:default; }
+.login-error{ margin-top:16px; background:rgba(166,57,44,.08); border:1px solid rgba(166,57,44,.3); color:var(--danger); font-size:13px; padding:10px 12px; border-radius:var(--radius-sm); display:none; }
+.login-error.show{ display:block; }
+.login-foot{ text-align:center; margin-top:22px; font-size:11px; color:var(--slate-dim); letter-spacing:.5px; }
+
+/* ---- App shell ---- */
+.app-shell{ display:flex; min-height:100vh; }
+.sidebar{ width:230px; flex-shrink:0; background:linear-gradient(180deg, var(--navy-panel), var(--navy-deep)); border-inline-end:1px solid var(--navy-line); display:flex; flex-direction:column; padding:22px 14px; }
+.sidebar-brand{ display:flex; align-items:center; gap:10px; padding:0 8px 22px; border-bottom:1px solid var(--navy-line); margin-bottom:18px; }
+.sidebar-brand .ring-mark{ width:20px; height:20px; }
+.sidebar-brand-text{ font-weight:800; font-size:16px; color:var(--gold-bright); line-height:1.1; }
+.sidebar-brand-text small{ display:block; font-weight:400; color:var(--slate); font-size:10px; letter-spacing:1.5px; margin-top:2px; }
+.nav-item{ display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:var(--radius-sm); color:var(--slate); font-size:14px; font-weight:600; margin-bottom:4px; transition:background .12s, color .12s; }
+.nav-item svg{ width:18px; height:18px; flex-shrink:0; opacity:.85; }
+.nav-item:hover{ background:rgba(233,204,126,.06); color:var(--ivory); }
+.nav-item.active{ background:linear-gradient(90deg, rgba(201,162,75,.18), rgba(201,162,75,.02)); color:var(--gold-bright); border-inline-start:3px solid var(--gold); padding-inline-start:11px; }
+.sidebar-foot{ margin-top:auto; padding-top:16px; border-top:1px solid var(--navy-line); }
+.user-chip{ display:flex; align-items:center; gap:10px; padding:8px; border-radius:var(--radius-sm); }
+.user-avatar{ width:34px; height:34px; border-radius:50%; background:var(--navy-panel-2); border:1px solid var(--gold-dim); display:flex; align-items:center; justify-content:center; font-weight:800; color:var(--gold); font-size:13px; }
+.user-meta{ line-height:1.2; overflow:hidden; }
+.user-meta .name{ font-size:13px; font-weight:700; color:var(--ivory); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.user-meta .role{ font-size:11px; color:var(--slate); }
+.logout-btn{ width:100%; margin-top:10px; background:transparent; border:1px solid var(--navy-line); color:var(--slate); padding:8px; border-radius:var(--radius-sm); font-size:12px; font-weight:700; transition:border-color .12s, color .12s; }
+.logout-btn:hover{ border-color:var(--danger); color:var(--danger); }
+
+.main{ flex:1; min-width:0; display:flex; flex-direction:column; }
+.topbar{ display:flex; align-items:center; justify-content:space-between; padding:18px 28px; border-bottom:1px solid var(--navy-line); gap:16px; }
+.topbar h1{ font-size:20px; font-weight:800; color:var(--ivory); }
+.topbar-sub{ font-size:12px; color:var(--slate); margin-top:2px; }
+.topbar-actions{ display:flex; align-items:center; gap:10px; }
+.btn-gold{ background:linear-gradient(180deg, var(--gold-dim), var(--gold)); color:#fff; font-weight:800; font-size:13px; padding:10px 16px; border-radius:var(--radius-sm); display:inline-flex; align-items:center; gap:6px; transition:transform .12s; }
+.btn-gold:hover{ transform:translateY(-1px); }
+.btn-outline{ background:transparent; border:1px solid var(--navy-line); color:var(--ivory); font-size:13px; font-weight:700; padding:9px 14px; border-radius:var(--radius-sm); }
+.btn-outline:hover{ border-color:var(--gold); color:var(--gold-bright); }
+.content{ flex:1; padding:24px 28px 40px; overflow-y:auto; }
+
+.stat-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+.stat-card{ background:linear-gradient(180deg, var(--navy-panel), var(--navy)); border:1px solid var(--navy-line); border-radius:var(--radius-lg); padding:18px 20px; position:relative; overflow:hidden; }
+.stat-card::after{ content:""; position:absolute; top:-30px; inset-inline-end:-30px; width:90px; height:90px; border:1px solid rgba(201,162,75,.15); border-radius:50%; }
+.stat-label{ font-size:12px; color:var(--slate); font-weight:600; letter-spacing:.3px; }
+.stat-value{ font-size:30px; font-weight:800; margin-top:8px; color:var(--gold-bright); }
+
+.panel{ background:linear-gradient(180deg, var(--navy-panel), var(--navy)); border:1px solid var(--navy-line); border-radius:var(--radius-lg); padding:20px; margin-bottom:22px; }
+.panel-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:12px; }
+.panel-head h2{ font-size:15px; font-weight:800; color:var(--ivory); }
+
+table{ width:100%; border-collapse:collapse; }
+thead th{ text-align:start; font-size:11px; color:var(--slate); text-transform:uppercase; letter-spacing:.5px; font-weight:700; padding:0 10px 10px; border-bottom:1px solid var(--navy-line); }
+tbody td{ padding:12px 10px; font-size:13.5px; border-bottom:1px solid rgba(36,64,111,.12); color:var(--ivory); }
+tbody tr:hover{ background:rgba(233,204,126,.04); }
+tbody tr:last-child td{ border-bottom:none; }
+
+.badge{ display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; }
+.badge.new{ background:rgba(143,160,194,.15); color:var(--slate); }
+.badge.contacted{ background:rgba(201,162,75,.15); color:var(--gold-bright); }
+.badge.qualified{ background:rgba(78,156,130,.15); color:var(--success); }
+.badge.negotiation{ background:rgba(233,204,126,.2); color:var(--gold-bright); }
+.badge.won{ background:rgba(39,107,78,.15); color:var(--success); }
+.badge.lost{ background:rgba(166,57,44,.12); color:var(--danger); }
+.badge.hot{ background:rgba(166,57,44,.12); color:var(--danger); }
+.badge.warm{ background:rgba(201,162,75,.18); color:var(--gold-bright); }
+.badge.cold{ background:rgba(143,160,194,.15); color:var(--slate); }
+
+.row-actions{ display:flex; gap:8px; }
+.icon-btn{ width:30px; height:30px; border-radius:8px; background:transparent; border:1px solid var(--navy-line); display:flex; align-items:center; justify-content:center; color:var(--slate); transition:.12s; }
+.icon-btn:hover{ border-color:var(--gold); color:var(--gold-bright); }
+.icon-btn svg{ width:14px; height:14px; }
+
+.empty-state{ text-align:center; padding:50px 20px; color:var(--slate); }
+.empty-state .ring-mark{ width:30px; height:30px; margin-bottom:14px; }
+.empty-state p{ font-size:13px; margin-top:6px; }
+
+.pipeline-board{ display:grid; grid-auto-flow:column; grid-auto-columns:260px; gap:14px; overflow-x:auto; padding-bottom:8px; }
+.pipe-col{ background:rgba(165,121,58,.05); border:1px solid var(--navy-line); border-radius:var(--radius-md); padding:12px; min-height:200px; }
+.pipe-col-head{ display:flex; align-items:center; justify-content:space-between; font-size:12px; font-weight:800; color:var(--slate); text-transform:uppercase; letter-spacing:.4px; margin-bottom:10px; padding:0 4px; }
+.pipe-col-head .count{ background:rgba(201,162,75,.15); color:var(--gold-bright); border-radius:10px; padding:1px 8px; font-size:11px; }
+.pipe-card{ background:linear-gradient(180deg, var(--navy-panel-2), var(--navy-panel)); border:1px solid var(--navy-line); border-radius:var(--radius-sm); padding:12px; margin-bottom:10px; cursor:grab; transition:border-color .12s, transform .12s; }
+.pipe-card:hover{ border-color:var(--gold-dim); }
+.pipe-card.dragging{ opacity:.4; }
+.pipe-card-name{ font-size:13.5px; font-weight:700; color:var(--ivory); }
+.pipe-card-meta{ font-size:11.5px; color:var(--slate); margin-top:4px; }
+.pipe-card-value{ font-size:13px; font-weight:800; color:var(--gold-bright); margin-top:8px; }
+.pipe-col.drag-over{ border-color:var(--gold); background:rgba(201,162,75,.08); }
+
+.modal-backdrop{ position:fixed; inset:0; background:rgba(2,6,16,.85); backdrop-filter:blur(6px); display:none; align-items:center; justify-content:center; z-index:100; padding:16px; }
+.modal-backdrop.show{ display:flex; }
+.modal{ width:100%; max-width:480px; max-height:90vh; overflow-y:auto; background:linear-gradient(180deg, var(--navy-panel-2), var(--navy-deep)); border:1px solid var(--gold-dim); border-radius:20px; padding:24px 22px; box-shadow:0 25px 50px rgba(60,45,15,.18), 0 0 0 1px rgba(165,121,58,.15); }
+.modal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid var(--navy-line); }
+.modal-head h3{ font-size:17px; font-weight:800; color:var(--gold-bright); }
+.modal-close{ width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,.5); border:1px solid var(--navy-line); color:var(--slate); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.modal-close:hover{ color:var(--ivory); border-color:var(--gold); }
+.form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.form-grid .full{ grid-column:1/-1; }
+.modal-actions{ display:flex; gap:10px; margin-top:22px; }
+.modal-actions button{ flex:1; }
+
+.task-item{ display:flex; align-items:flex-start; gap:12px; padding:14px 6px; border-bottom:1px solid rgba(36,64,111,.12); }
+.task-item:last-child{ border-bottom:none; }
+.task-check{ width:20px; height:20px; border-radius:6px; border:1.5px solid var(--navy-line); flex-shrink:0; margin-top:2px; display:flex; align-items:center; justify-content:center; transition:.12s; cursor:pointer; }
+.task-check.done{ background:var(--success); border-color:var(--success); }
+.task-check.done svg{ width:12px; height:12px; color:#fff; }
+.task-body{ flex:1; }
+.task-title{ font-size:13.5px; font-weight:700; color:var(--ivory); }
+.task-title.done{ text-decoration:line-through; color:var(--slate-dim); }
+.task-meta{ font-size:11.5px; color:var(--slate); margin-top:3px; }
+.task-meta.overdue{ color:var(--danger); font-weight:700; }
+
+.toast{ position:fixed; bottom:24px; inset-inline-end:24px; background:var(--navy-panel-2); border:1px solid var(--gold-dim); color:var(--ivory); padding:13px 18px; border-radius:var(--radius-sm); font-size:13px; font-weight:600; box-shadow:var(--shadow); transform:translateY(20px); opacity:0; transition:.2s; z-index:200; pointer-events:none; }
+.toast.show{ transform:translateY(0); opacity:1; }
+
+@media (max-width:900px){
+  .sidebar{ position:fixed; inset-inline-start:0; top:0; z-index:50; height:100vh; transform:translateX(-110%); transition:.2s; }
+  html[dir="rtl"] .sidebar{ transform:translateX(110%); }
+  .sidebar.open{ transform:translateX(0); }
+  html[dir="rtl"] .sidebar.open{ transform:translateX(0); }
+  .stat-grid{ grid-template-columns:repeat(2,1fr); }
+  .form-grid{ grid-template-columns:1fr; }
+  .content{ padding:18px; }
+  .topbar{ padding:14px 18px; }
+  .menu-btn{ display:flex !important; }
+}
+.menu-btn{ display:none; width:36px; height:36px; border-radius:8px; background:rgba(255,255,255,.5); border:1px solid var(--navy-line); align-items:center; justify-content:center; color:var(--ivory); }
+
+.loading-screen{ position:fixed; inset:0; background:var(--navy-deep); display:flex; align-items:center; justify-content:center; z-index:999; flex-direction:column; gap:14px; }
+.spinner{ width:36px; height:36px; border-radius:50%; border:3px solid var(--navy-line); border-top-color:var(--gold); animation:spin .8s linear infinite; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+.team-row{ display:flex; align-items:center; gap:12px; padding:12px 6px; border-bottom:1px solid rgba(36,64,111,.12); }
+.team-row:last-child{ border-bottom:none; }
+.team-avatar{ width:38px; height:38px; border-radius:50%; background:var(--navy-panel-2); border:1px solid var(--gold-dim); display:flex; align-items:center; justify-content:center; font-weight:800; color:var(--gold); font-size:14px; flex-shrink:0; }
+.team-info{ flex:1; min-width:0; }
+.team-info .name{ font-size:14px; font-weight:700; color:var(--ivory); }
+.team-info .email{ font-size:12px; color:var(--slate); }
+</style>
 </head>
 <body>
 
-<div class="login-shell">
+<!-- LOGIN -->
+<div class="login-shell" id="loginScreen">
   <div class="login-card">
     <div class="lang-toggle">
       <button data-lang="ar">AR</button>
       <button data-lang="en">EN</button>
     </div>
-
     <div class="brand-emblem">
       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M6 30 L24 16 L42 30" stroke="#C9A24B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M12 28 V40 H36 V28" stroke="#C9A24B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-        <rect x="21" y="8" width="8" height="20" stroke="#C9A24B" stroke-width="2.2"/>
+        <path d="M6 30 L24 16 L42 30" stroke="#A5793A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12 28 V40 H36 V28" stroke="#A5793A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="21" y="8" width="8" height="20" stroke="#A5793A" stroke-width="2.2"/>
       </svg>
     </div>
     <div class="brand-title">100%</div>
@@ -34,48 +247,761 @@
         <label data-i18n="login_password">Password</label>
         <input type="password" id="password" required autocomplete="current-password">
       </div>
-
-      <div class="login-error" id="loginError" data-i18n="login_error"></div>
-
+      <div class="login-error" id="loginError"></div>
       <button type="submit" class="btn-primary" id="loginBtn" data-i18n="login_btn">Sign In</button>
     </form>
-
     <div class="login-foot" data-i18n="login_foot">CRM — 100% Real Estate Consultants</div>
   </div>
 </div>
+
+<!-- LOADING -->
+<div class="loading-screen" id="loadingScreen" style="display:none">
+  <div class="spinner"></div>
+  <div id="loadingFallback" style="display:none; text-align:center; max-width:280px; padding:0 20px;">
+    <div style="color:var(--slate); font-size:13px; margin-bottom:14px;" id="loadingFallbackText"></div>
+    <button onclick="window.location.reload()" class="btn-gold" style="width:100%;" id="retryBtnText"></button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app-shell" id="appShell" style="display:none">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <span class="ring-mark"></span>
+      <div class="sidebar-brand-text">100%<small data-i18n="brandSub">REAL ESTATE</small></div>
+    </div>
+    <nav>
+      <a href="#dashboard" class="nav-item" data-view="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/><rect x="3" y="14" width="8" height="7" rx="1.5"/></svg>
+        <span data-i18n="nav_dashboard">Dashboard</span>
+      </a>
+      <a href="#leads" class="nav-item" data-view="leads">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17.5" cy="8.5" r="2.5"/><path d="M15.5 14.2c2.6.4 4.5 2.6 4.5 5.3"/></svg>
+        <span data-i18n="nav_leads">Leads</span>
+      </a>
+      <a href="#pipeline" class="nav-item" data-view="pipeline">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h18M3 12h18M3 19h18"/><circle cx="7" cy="5" r="1.6" fill="currentColor" stroke="none"/><circle cx="14" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="10" cy="19" r="1.6" fill="currentColor" stroke="none"/></svg>
+        <span data-i18n="nav_pipeline">Pipeline</span>
+      </a>
+      <a href="#tasks" class="nav-item" data-view="tasks">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/><path d="M7.5 14l2 2 3.5-3.5"/></svg>
+        <span data-i18n="nav_tasks">Tasks</span>
+      </a>
+      <a href="#reports" class="nav-item" data-view="reports">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+        <span data-i18n="nav_reports">Reports</span>
+      </a>
+      <a href="#team" class="nav-item" data-view="team">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span data-i18n="nav_team">Team</span>
+      </a>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="user-chip">
+        <div class="user-avatar" id="userAvatar">--</div>
+        <div class="user-meta">
+          <div class="name" id="userName">—</div>
+          <div class="role" id="userEmail">—</div>
+        </div>
+      </div>
+      <div style="display:flex; gap:6px; margin-top:10px;">
+        <div class="lang-toggle" style="flex:1; justify-content:center;">
+          <button data-lang="ar">AR</button>
+          <button data-lang="en">EN</button>
+        </div>
+      </div>
+      <button class="logout-btn" id="logoutBtn" data-i18n="logout">Logout</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <button class="menu-btn" id="menuBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div>
+          <h1 id="pageTitle" data-i18n="dash_title">Dashboard</h1>
+          <div class="topbar-sub" id="pageSub" data-i18n="dash_sub">Today's performance overview</div>
+        </div>
+      </div>
+      <div class="topbar-actions" id="topbarActions"></div>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<!-- Modal: Lead -->
+<div class="modal-backdrop" id="leadModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="leadModalTitle" data-i18n="modal_add_lead">Add Lead</h3>
+      <button class="modal-close" data-close-modal="leadModal">✕</button>
+    </div>
+    <form id="leadForm">
+      <input type="hidden" id="leadId">
+      <div class="form-grid">
+        <div class="field full"><label data-i18n="f_name">Full Name</label><input type="text" id="leadName" required></div>
+        <div class="field"><label data-i18n="f_phone">Phone</label><input type="tel" id="leadPhone" required></div>
+        <div class="field"><label data-i18n="f_email">Email</label><input type="email" id="leadEmail"></div>
+        <div class="field"><label data-i18n="f_interest">Interest</label><input type="text" id="leadInterest"></div>
+        <div class="field"><label data-i18n="f_budget">Budget</label><input type="text" id="leadBudget"></div>
+        <div class="field">
+          <label data-i18n="f_source">Source</label>
+          <select id="leadSource">
+            <option value="facebook" data-i18n="source_facebook">Facebook</option>
+            <option value="website" data-i18n="source_website">Website</option>
+            <option value="referral" data-i18n="source_referral">Referral</option>
+            <option value="walkin" data-i18n="source_walkin">Walk-in</option>
+            <option value="call" data-i18n="source_call">Call</option>
+            <option value="other" data-i18n="source_other">Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label data-i18n="f_status">Status</label>
+          <select id="leadStatus">
+            <option value="new" data-i18n="status_new">New</option>
+            <option value="contacted" data-i18n="status_contacted">Contacted</option>
+            <option value="qualified" data-i18n="status_qualified">Qualified</option>
+            <option value="negotiation" data-i18n="status_negotiation">Negotiation</option>
+            <option value="won" data-i18n="status_won">Won</option>
+            <option value="lost" data-i18n="status_lost">Lost</option>
+          </select>
+        </div>
+        <div class="field">
+          <label data-i18n="f_rating">Rating</label>
+          <select id="leadRating">
+            <option value="hot" data-i18n="rating_hot">Hot</option>
+            <option value="warm" data-i18n="rating_warm">Warm</option>
+            <option value="cold" data-i18n="rating_cold">Cold</option>
+          </select>
+        </div>
+        <div class="field full"><label data-i18n="f_notes">Notes</label><textarea id="leadNotes"></textarea></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-outline" data-close-modal="leadModal" data-i18n="cancel">Cancel</button>
+        <button type="submit" class="btn-gold" data-i18n="save">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Task -->
+<div class="modal-backdrop" id="taskModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 data-i18n="modal_add_task">Add Task</h3>
+      <button class="modal-close" data-close-modal="taskModal">✕</button>
+    </div>
+    <form id="taskForm">
+      <div class="field"><label data-i18n="f_task_title">Task Title</label><input type="text" id="taskTitle" required></div>
+      <div class="form-grid" style="margin-top:14px;">
+        <div class="field"><label data-i18n="f_task_lead">Related Lead</label><select id="taskLead"></select></div>
+        <div class="field">
+          <label data-i18n="f_task_type">Type</label>
+          <select id="taskType">
+            <option value="call" data-i18n="type_call">Call</option>
+            <option value="visit" data-i18n="type_visit">Visit</option>
+            <option value="email" data-i18n="type_email">Email</option>
+            <option value="meeting" data-i18n="type_meeting">Meeting</option>
+          </select>
+        </div>
+        <div class="field full"><label data-i18n="f_task_due">Due Date</label><input type="date" id="taskDue" required></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-outline" data-close-modal="taskModal" data-i18n="cancel">Cancel</button>
+        <button type="submit" class="btn-gold" data-i18n="save">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Employee -->
+<div class="modal-backdrop" id="employeeModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 data-i18n="modal_add_employee">Add New Employee</h3>
+      <button class="modal-close" data-close-modal="employeeModal">✕</button>
+    </div>
+    <form id="employeeForm">
+      <div class="field"><label data-i18n="f_employee_name">Employee Name</label><input type="text" id="employeeName" required></div>
+      <div class="field"><label data-i18n="f_employee_email">Email</label><input type="email" id="employeeEmail" required></div>
+      <div class="field">
+        <label data-i18n="f_employee_password">Password</label>
+        <input type="password" id="employeePassword" required minlength="6">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-outline" data-close-modal="employeeModal" data-i18n="cancel">Cancel</button>
+        <button type="submit" class="btn-gold" data-i18n="save">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-<script src="js/i18n.js"></script>
-<script src="js/firebase-config.js"></script>
 <script>
-  // If already signed in, go straight to the app
-  auth.onAuthStateChanged(user => {
-    if (user) window.location.href = "app.html";
-  });
+/* =========================================================
+   Firebase configuration
+   ========================================================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyBvKB7VeUxGu9XEGSqb-2m7xh1P6OO1BVw",
+  authDomain: "real-estate-crm-65b58.firebaseapp.com",
+  projectId: "real-estate-crm-65b58",
+  storageBucket: "real-estate-crm-65b58.firebasestorage.app",
+  messagingSenderId: "487150093988",
+  appId: "1:487150093988:web:021b0134b784641e6e8831"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-  const form = document.getElementById("loginForm");
-  const errorBox = document.getElementById("loginError");
-  const btn = document.getElementById("loginBtn");
+/* =========================================================
+   i18n
+   ========================================================= */
+const I18N = {
+  ar: {
+    dir: "rtl", brandSub: "ريل استيت",
+    login_email: "البريد الإلكتروني", login_password: "كلمة المرور", login_btn: "دخول",
+    login_error: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+    login_foot: "نظام إدارة علاقات العملاء — 100% ريل إستيت",
+    loading_fallback: "الاتصال بطيء أو انقطع. تأكد من الإنترنت وحاول تاني.",
+    retry: "إعادة المحاولة",
+    nav_dashboard: "الرئيسية", nav_leads: "العملاء المحتملين", nav_pipeline: "مسار الصفقات",
+    nav_tasks: "المهام والمتابعات", nav_reports: "التقارير", nav_team: "الفريق", logout: "تسجيل الخروج",
+    dash_title: "الرئيسية", dash_sub: "نظرة عامة على أداء اليوم",
+    stat_total_leads: "إجمالي العملاء المحتملين", stat_open_deals: "صفقات مفتوحة",
+    stat_won_month: "صفقات مغلقة هذا الشهر", stat_followups_today: "متابعات اليوم",
+    recent_leads: "أحدث العملاء المحتملين", today_tasks: "مهام اليوم", view_all: "عرض الكل",
+    leads_title: "العملاء المحتملين", leads_sub: "إدارة جهات الاتصال والعملاء المحتملين",
+    add_lead: "إضافة عميل محتمل", search_placeholder: "ابحث بالاسم أو رقم الهاتف...", filter_all: "الكل",
+    col_name: "الاسم", col_phone: "الهاتف", col_interest: "الاهتمام", col_status: "الحالة",
+    col_rating: "التقييم", col_actions: "إجراءات",
+    empty_leads_title: "لا يوجد عملاء محتملين بعد", empty_leads_sub: "ابدأ بإضافة أول عميل محتمل لمتابعته",
+    status_new: "جديد", status_contacted: "تم التواصل", status_qualified: "مؤهل",
+    status_negotiation: "تفاوض", status_won: "تم الإغلاق", status_lost: "خسارة",
+    rating_hot: "ساخن", rating_warm: "دافئ", rating_cold: "بارد",
+    modal_add_lead: "إضافة عميل محتمل", modal_edit_lead: "تعديل بيانات العميل",
+    f_name: "الاسم الكامل", f_phone: "رقم الهاتف", f_email: "البريد الإلكتروني",
+    f_interest: "نوع العقار / الاهتمام", f_budget: "الميزانية", f_source: "مصدر العميل",
+    f_status: "الحالة", f_rating: "التقييم", f_notes: "ملاحظات", save: "حفظ", cancel: "إلغاء", delete: "حذف",
+    source_facebook: "فيسبوك", source_website: "الموقع الإلكتروني", source_referral: "توصية",
+    source_walkin: "زيارة مباشرة", source_call: "مكالمة", source_other: "أخرى",
+    pipeline_title: "مسار الصفقات", pipeline_sub: "اسحب البطاقات بين المراحل لتحديث حالة الصفقة",
+    tasks_title: "المهام والمتابعات", tasks_sub: "لا تفوت متابعة أي عميل", add_task: "إضافة مهمة",
+    modal_add_task: "إضافة مهمة متابعة", f_task_title: "عنوان المهمة", f_task_lead: "متعلقة بالعميل",
+    f_task_due: "تاريخ الاستحقاق", f_task_type: "نوع المهمة",
+    type_call: "مكالمة", type_visit: "زيارة", type_email: "بريد إلكتروني", type_meeting: "اجتماع",
+    empty_tasks_title: "لا توجد مهام", empty_tasks_sub: "أضف مهمة متابعة جديدة", overdue: "متأخرة",
+    reports_title: "التقارير", reports_sub: "أداء المبيعات والفريق",
+    by_status: "توزيع العملاء حسب الحالة", by_source: "توزيع العملاء حسب المصدر", by_agent: "أداء الموظفين",
+    confirm_delete: "هل أنت متأكد من الحذف؟", toast_saved: "تم الحفظ بنجاح", toast_deleted: "تم الحذف", toast_updated: "تم التحديث",
+    team_title: "الفريق", team_sub: "إدارة حسابات الموظفين", add_employee: "إضافة موظف",
+    modal_add_employee: "إضافة موظف جديد", f_employee_name: "اسم الموظف",
+    f_employee_email: "البريد الإلكتروني", f_employee_password: "كلمة المرور",
+    empty_team_title: "لا يوجد موظفين بعد", empty_team_sub: "أضف أول موظف في الفريق",
+    toast_employee_added: "تم إنشاء حساب الموظف بنجاح",
+  },
+  en: {
+    dir: "ltr", brandSub: "REAL ESTATE",
+    login_email: "Email", login_password: "Password", login_btn: "Sign In",
+    login_error: "Invalid email or password",
+    login_foot: "Customer Relationship System — 100% Real Estate",
+    loading_fallback: "Connection is slow or lost. Check your internet and try again.",
+    retry: "Retry",
+    nav_dashboard: "Dashboard", nav_leads: "Leads", nav_pipeline: "Pipeline",
+    nav_tasks: "Tasks & Follow-ups", nav_reports: "Reports", nav_team: "Team", logout: "Logout",
+    dash_title: "Dashboard", dash_sub: "Today's performance overview",
+    stat_total_leads: "Total Leads", stat_open_deals: "Open Deals",
+    stat_won_month: "Closed This Month", stat_followups_today: "Follow-ups Today",
+    recent_leads: "Recent Leads", today_tasks: "Today's Tasks", view_all: "View all",
+    leads_title: "Leads", leads_sub: "Manage contacts and leads",
+    add_lead: "Add Lead", search_placeholder: "Search by name or phone...", filter_all: "All",
+    col_name: "Name", col_phone: "Phone", col_interest: "Interest", col_status: "Status",
+    col_rating: "Rating", col_actions: "Actions",
+    empty_leads_title: "No leads yet", empty_leads_sub: "Start by adding your first lead to follow up on",
+    status_new: "New", status_contacted: "Contacted", status_qualified: "Qualified",
+    status_negotiation: "Negotiation", status_won: "Won", status_lost: "Lost",
+    rating_hot: "Hot", rating_warm: "Warm", rating_cold: "Cold",
+    modal_add_lead: "Add Lead", modal_edit_lead: "Edit Lead",
+    f_name: "Full Name", f_phone: "Phone Number", f_email: "Email",
+    f_interest: "Property Type / Interest", f_budget: "Budget", f_source: "Lead Source",
+    f_status: "Status", f_rating: "Rating", f_notes: "Notes", save: "Save", cancel: "Cancel", delete: "Delete",
+    source_facebook: "Facebook", source_website: "Website", source_referral: "Referral",
+    source_walkin: "Walk-in", source_call: "Phone Call", source_other: "Other",
+    pipeline_title: "Pipeline", pipeline_sub: "Drag cards between stages to update deal status",
+    tasks_title: "Tasks & Follow-ups", tasks_sub: "Never miss a follow-up", add_task: "Add Task",
+    modal_add_task: "Add Follow-up Task", f_task_title: "Task Title", f_task_lead: "Related Lead",
+    f_task_due: "Due Date", f_task_type: "Task Type",
+    type_call: "Call", type_visit: "Visit", type_email: "Email", type_meeting: "Meeting",
+    empty_tasks_title: "No tasks", empty_tasks_sub: "Add a new follow-up task", overdue: "Overdue",
+    reports_title: "Reports", reports_sub: "Sales & team performance",
+    by_status: "Leads by Status", by_source: "Leads by Source", by_agent: "Agent Performance",
+    confirm_delete: "Are you sure you want to delete this?", toast_saved: "Saved successfully", toast_deleted: "Deleted", toast_updated: "Updated",
+    team_title: "Team", team_sub: "Manage employee accounts", add_employee: "Add Employee",
+    modal_add_employee: "Add New Employee", f_employee_name: "Employee Name",
+    f_employee_email: "Email", f_employee_password: "Password",
+    empty_team_title: "No employees yet", empty_team_sub: "Add your first team member",
+    toast_employee_added: "Employee account created successfully",
+  }
+};
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    errorBox.classList.remove("show");
-    btn.disabled = true;
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value;
+function getLang(){ return localStorage.getItem("crm_lang") || "ar"; }
+function setLang(lang){ localStorage.setItem("crm_lang", lang); applyLang(lang); }
+function t(key){ const lang = getLang(); return (I18N[lang] && I18N[lang][key]) || key; }
+function applyLang(lang){
+  const dict = I18N[lang] || I18N.ar;
+  document.documentElement.lang = lang;
+  document.documentElement.dir = dict.dir;
+  document.querySelectorAll("[data-i18n]").forEach(el => { const k = el.getAttribute("data-i18n"); if (dict[k]) el.textContent = dict[k]; });
+  document.querySelectorAll(".lang-toggle button").forEach(btn => btn.classList.toggle("active", btn.dataset.lang === lang));
+  document.getElementById("loadingFallbackText").textContent = dict.loading_fallback;
+  document.getElementById("retryBtnText").textContent = dict.retry;
+  document.dispatchEvent(new CustomEvent("langchange", { detail: { lang } }));
+}
+document.addEventListener("DOMContentLoaded", () => {
+  applyLang(getLang());
+  document.querySelectorAll(".lang-toggle button").forEach(btn => btn.addEventListener("click", () => setLang(btn.dataset.lang)));
+});
 
-    try {
-      await auth.signInWithEmailAndPassword(email, password);
-      window.location.href = "app.html";
-    } catch (err) {
-      errorBox.classList.add("show");
-      btn.disabled = false;
+/* =========================================================
+   App state & auth
+   ========================================================= */
+let CURRENT_USER = null;
+let LEADS = [], TASKS = [], AGENTS = [];
+let currentView = "dashboard";
+
+const STATUSES = ["new","contacted","qualified","negotiation","won","lost"];
+const PIPELINE_STATUSES = ["new","contacted","qualified","negotiation","won"];
+
+const authTimeout = setTimeout(() => {
+  const fb = document.getElementById("loadingFallback");
+  if (fb) fb.style.display = "block";
+}, 10000);
+
+auth.onAuthStateChanged(user => {
+  clearTimeout(authTimeout);
+  if (!user) {
+    document.getElementById("loginScreen").style.display = "flex";
+    document.getElementById("loadingScreen").style.display = "none";
+    document.getElementById("appShell").style.display = "none";
+    return;
+  }
+  CURRENT_USER = user;
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("loadingScreen").style.display = "none";
+  document.getElementById("appShell").style.display = "flex";
+
+  document.getElementById("userName").textContent = user.email.split("@")[0];
+  document.getElementById("userEmail").textContent = user.email;
+  document.getElementById("userAvatar").textContent = user.email.charAt(0).toUpperCase();
+
+  subscribeData();
+  initRouter();
+});
+
+const loginForm = document.getElementById("loginForm");
+const loginError = document.getElementById("loginError");
+const loginBtn = document.getElementById("loginBtn");
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  loginError.classList.remove("show");
+  loginBtn.disabled = true;
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("loadingScreen").style.display = "flex";
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+  } catch (err) {
+    document.getElementById("loadingScreen").style.display = "none";
+    document.getElementById("loginScreen").style.display = "flex";
+    loginError.textContent = t("login_error");
+    loginError.classList.add("show");
+    loginBtn.disabled = false;
+  }
+});
+
+document.getElementById("logoutBtn").addEventListener("click", () => { auth.signOut(); });
+
+document.getElementById("menuBtn").addEventListener("click", () => {
+  document.getElementById("sidebar").classList.toggle("open");
+});
+document.addEventListener("click", (e) => {
+  const sidebar = document.getElementById("sidebar");
+  const menuBtn = document.getElementById("menuBtn");
+  if (sidebar.classList.contains("open") && !sidebar.contains(e.target) && e.target !== menuBtn && !menuBtn.contains(e.target)) {
+    sidebar.classList.remove("open");
+  }
+});
+
+/* ---------- Firestore subscriptions ---------- */
+function subscribeData(){
+  db.collection("leads").orderBy("createdAt","desc").onSnapshot(snap => {
+    LEADS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    renderView();
+  }, err => console.error("leads error", err));
+
+  db.collection("tasks").orderBy("due","asc").onSnapshot(snap => {
+    TASKS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    renderView();
+  }, err => console.error("tasks error", err));
+
+  db.collection("agents").orderBy("createdAt","desc").onSnapshot(snap => {
+    AGENTS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    renderView();
+  }, err => console.error("agents error", err));
+}
+
+/* ---------- Router ---------- */
+function initRouter(){
+  window.addEventListener("hashchange", handleRoute);
+  handleRoute();
+  document.querySelectorAll(".nav-item").forEach(el => el.addEventListener("click", () => document.getElementById("sidebar").classList.remove("open")));
+}
+function handleRoute(){
+  const hash = window.location.hash.replace("#","") || "dashboard";
+  currentView = ["dashboard","leads","pipeline","tasks","reports","team"].includes(hash) ? hash : "dashboard";
+  document.querySelectorAll(".nav-item").forEach(el => el.classList.toggle("active", el.dataset.view === currentView));
+  renderView();
+}
+document.addEventListener("langchange", () => { if (CURRENT_USER) renderView(); });
+
+function renderView(){
+  const title = document.getElementById("pageTitle");
+  const sub = document.getElementById("pageSub");
+  const actions = document.getElementById("topbarActions");
+  actions.innerHTML = "";
+
+  if (currentView === "dashboard") { title.textContent=t("dash_title"); sub.textContent=t("dash_sub"); renderDashboard(); }
+  else if (currentView === "leads") {
+    title.textContent=t("leads_title"); sub.textContent=t("leads_sub");
+    actions.innerHTML = `<button class="btn-gold" id="btnAddLead">+ <span>${t("add_lead")}</span></button>`;
+    document.getElementById("btnAddLead").addEventListener("click", () => openLeadModal());
+    renderLeads();
+  }
+  else if (currentView === "pipeline") { title.textContent=t("pipeline_title"); sub.textContent=t("pipeline_sub"); renderPipeline(); }
+  else if (currentView === "tasks") {
+    title.textContent=t("tasks_title"); sub.textContent=t("tasks_sub");
+    actions.innerHTML = `<button class="btn-gold" id="btnAddTask">+ <span>${t("add_task")}</span></button>`;
+    document.getElementById("btnAddTask").addEventListener("click", () => openTaskModal());
+    renderTasks();
+  }
+  else if (currentView === "reports") { title.textContent=t("reports_title"); sub.textContent=t("reports_sub"); renderReports(); }
+  else if (currentView === "team") {
+    title.textContent=t("team_title"); sub.textContent=t("team_sub");
+    actions.innerHTML = `<button class="btn-gold" id="btnAddEmployee">+ <span>${t("add_employee")}</span></button>`;
+    document.getElementById("btnAddEmployee").addEventListener("click", () => openEmployeeModal());
+    renderTeam();
+  }
+}
+
+/* ---------- Helpers ---------- */
+function toast(msg){
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 2400);
+}
+function fmtDate(v){
+  if (!v) return "—";
+  const d = v.seconds ? new Date(v.seconds*1000) : new Date(v);
+  return d.toLocaleDateString(getLang()==="ar"?"ar-EG":"en-GB", { day:"2-digit", month:"short", year:"numeric" });
+}
+function isOverdue(dueStr){ if (!dueStr) return false; const today=new Date(); today.setHours(0,0,0,0); return new Date(dueStr)<today; }
+function isToday(dueStr){ if (!dueStr) return false; return dueStr === new Date().toISOString().slice(0,10); }
+function escapeHtml(str){ const div=document.createElement("div"); div.textContent=str; return div.innerHTML; }
+
+/* ---------- Dashboard ---------- */
+function renderDashboard(){
+  const totalLeads = LEADS.length;
+  const openDeals = LEADS.filter(l => ["contacted","qualified","negotiation"].includes(l.status)).length;
+  const now = new Date();
+  const wonMonth = LEADS.filter(l => {
+    if (l.status !== "won" || !l.createdAt) return false;
+    const d = l.createdAt.seconds ? new Date(l.createdAt.seconds*1000) : new Date(l.createdAt);
+    return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
+  }).length;
+  const followupsToday = TASKS.filter(tk => isToday(tk.due) && !tk.done).length;
+  const recent = LEADS.slice(0,5);
+  const todaysTasks = TASKS.filter(tk => !tk.done).slice(0,5);
+
+  document.getElementById("content").innerHTML = `
+    <div class="stat-grid">
+      ${statCard(t("stat_total_leads"), totalLeads)}
+      ${statCard(t("stat_open_deals"), openDeals)}
+      ${statCard(t("stat_won_month"), wonMonth)}
+      ${statCard(t("stat_followups_today"), followupsToday)}
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h2>${t("recent_leads")}</h2><a href="#leads" style="font-size:12px;color:var(--gold-bright);">${t("view_all")}</a></div>
+      ${recent.length ? leadsTable(recent, true) : emptyState(t("empty_leads_title"), t("empty_leads_sub"))}
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h2>${t("today_tasks")}</h2><a href="#tasks" style="font-size:12px;color:var(--gold-bright);">${t("view_all")}</a></div>
+      ${todaysTasks.length ? todaysTasks.map(taskItem).join("") : emptyState(t("empty_tasks_title"), t("empty_tasks_sub"))}
+    </div>`;
+}
+function statCard(label,value){ return `<div class="stat-card"><div class="stat-label">${label}</div><div class="stat-value">${value}</div></div>`; }
+function emptyState(title,sub){ return `<div class="empty-state"><span class="ring-mark" style="display:inline-block;"></span><div style="font-weight:700;color:var(--ivory);">${title}</div><p>${sub}</p></div>`; }
+
+/* ---------- Leads ---------- */
+function renderLeads(){
+  document.getElementById("content").innerHTML = `
+    <div class="panel">
+      <div class="panel-head">
+        <input type="text" id="leadSearch" placeholder="${t('search_placeholder')}" style="flex:1; min-width:200px; background:var(--navy); border:1px solid var(--navy-line); color:var(--ivory); padding:10px 14px; border-radius:8px; font-size:13px; outline:none;">
+        <select id="leadFilter" style="background:var(--navy); border:1px solid var(--navy-line); color:var(--ivory); padding:10px 14px; border-radius:8px; font-size:13px;">
+          <option value="all">${t("filter_all")}</option>
+          ${STATUSES.map(s => `<option value="${s}">${t('status_'+s)}</option>`).join("")}
+        </select>
+      </div>
+      <div id="leadsTableWrap" style="margin-top:16px;">${LEADS.length ? leadsTable(LEADS) : emptyState(t("empty_leads_title"), t("empty_leads_sub"))}</div>
+    </div>`;
+  document.getElementById("leadSearch").addEventListener("input", filterLeadsView);
+  document.getElementById("leadFilter").addEventListener("change", filterLeadsView);
+  bindLeadRowEvents();
+}
+function filterLeadsView(){
+  const q = document.getElementById("leadSearch").value.trim().toLowerCase();
+  const status = document.getElementById("leadFilter").value;
+  const filtered = LEADS.filter(l => (!q || (l.name||"").toLowerCase().includes(q) || (l.phone||"").includes(q)) && (status==="all"||l.status===status));
+  document.getElementById("leadsTableWrap").innerHTML = filtered.length ? leadsTable(filtered) : emptyState(t("empty_leads_title"), t("empty_leads_sub"));
+  bindLeadRowEvents();
+}
+function leadsTable(list, compact){
+  return `<table><thead><tr>
+    <th>${t("col_name")}</th><th>${t("col_phone")}</th>
+    ${compact?"":`<th>${t("col_interest")}</th>`}
+    <th>${t("col_status")}</th><th>${t("col_rating")}</th>
+    ${compact?"":`<th>${t("col_actions")}</th>`}
+    </tr></thead><tbody>
+    ${list.map(l => `<tr>
+      <td>${escapeHtml(l.name||"")}</td><td>${escapeHtml(l.phone||"")}</td>
+      ${compact?"":`<td>${escapeHtml(l.interest||"—")}</td>`}
+      <td><span class="badge ${l.status}">${t('status_'+l.status)}</span></td>
+      <td><span class="badge ${l.rating}">${t('rating_'+l.rating)}</span></td>
+      ${compact?"":`<td class="row-actions">
+        <button class="icon-btn" data-edit="${l.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+        <button class="icon-btn" data-delete="${l.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>
+      </td>`}
+    </tr>`).join("")}
+    </tbody></table>`;
+}
+function bindLeadRowEvents(){
+  document.querySelectorAll("[data-edit]").forEach(btn => btn.addEventListener("click", () => openLeadModal(btn.dataset.edit)));
+  document.querySelectorAll("[data-delete]").forEach(btn => btn.addEventListener("click", () => deleteLead(btn.dataset.delete)));
+}
+function openLeadModal(id){
+  const form = document.getElementById("leadForm");
+  form.reset();
+  document.getElementById("leadId").value = id || "";
+  document.getElementById("leadModalTitle").textContent = id ? t("modal_edit_lead") : t("modal_add_lead");
+  if (id) {
+    const lead = LEADS.find(l => l.id===id);
+    if (lead) {
+      document.getElementById("leadName").value = lead.name||"";
+      document.getElementById("leadPhone").value = lead.phone||"";
+      document.getElementById("leadEmail").value = lead.email||"";
+      document.getElementById("leadInterest").value = lead.interest||"";
+      document.getElementById("leadBudget").value = lead.budget||"";
+      document.getElementById("leadSource").value = lead.source||"facebook";
+      document.getElementById("leadStatus").value = lead.status||"new";
+      document.getElementById("leadRating").value = lead.rating||"warm";
+      document.getElementById("leadNotes").value = lead.notes||"";
     }
+  }
+  document.getElementById("leadModal").classList.add("show");
+}
+document.getElementById("leadForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const id = document.getElementById("leadId").value;
+  const data = {
+    name: document.getElementById("leadName").value.trim(),
+    phone: document.getElementById("leadPhone").value.trim(),
+    email: document.getElementById("leadEmail").value.trim(),
+    interest: document.getElementById("leadInterest").value.trim(),
+    budget: document.getElementById("leadBudget").value.trim(),
+    source: document.getElementById("leadSource").value,
+    status: document.getElementById("leadStatus").value,
+    rating: document.getElementById("leadRating").value,
+    notes: document.getElementById("leadNotes").value.trim(),
+    agentId: CURRENT_USER.uid, agentEmail: CURRENT_USER.email,
+  };
+  try {
+    if (id) { await db.collection("leads").doc(id).update(data); toast(t("toast_updated")); }
+    else { data.createdAt = firebase.firestore.FieldValue.serverTimestamp(); await db.collection("leads").add(data); toast(t("toast_saved")); }
+    closeModal("leadModal");
+  } catch (err) { console.error(err); alert(err.message); }
+});
+async function deleteLead(id){ if (!confirm(t("confirm_delete"))) return; await db.collection("leads").doc(id).delete(); toast(t("toast_deleted")); }
+
+/* ---------- Pipeline ---------- */
+function renderPipeline(){
+  const cols = PIPELINE_STATUSES.map(status => {
+    const items = LEADS.filter(l => l.status===status);
+    return `<div class="pipe-col" data-status="${status}">
+      <div class="pipe-col-head"><span>${t('status_'+status)}</span><span class="count">${items.length}</span></div>
+      <div>${items.map(l => `<div class="pipe-card" draggable="true" data-id="${l.id}">
+        <div class="pipe-card-name">${escapeHtml(l.name||"")}</div>
+        <div class="pipe-card-meta">${escapeHtml(l.interest||"—")} · ${escapeHtml(l.phone||"")}</div>
+        <div class="pipe-card-value">${escapeHtml(l.budget||"—")}</div>
+      </div>`).join("")}</div></div>`;
+  }).join("");
+  document.getElementById("content").innerHTML = `<div class="pipeline-board">${cols}</div>`;
+  bindPipelineDrag();
+}
+function bindPipelineDrag(){
+  let draggedId = null;
+  document.querySelectorAll(".pipe-card").forEach(card => {
+    card.addEventListener("dragstart", () => { draggedId=card.dataset.id; card.classList.add("dragging"); });
+    card.addEventListener("dragend", () => card.classList.remove("dragging"));
   });
+  document.querySelectorAll(".pipe-col").forEach(col => {
+    col.addEventListener("dragover", e => { e.preventDefault(); col.classList.add("drag-over"); });
+    col.addEventListener("dragleave", () => col.classList.remove("drag-over"));
+    col.addEventListener("drop", async e => {
+      e.preventDefault(); col.classList.remove("drag-over");
+      const newStatus = col.dataset.status;
+      if (draggedId && newStatus) { await db.collection("leads").doc(draggedId).update({status:newStatus}); toast(t("toast_updated")); }
+    });
+  });
+}
+
+/* ---------- Tasks ---------- */
+function renderTasks(){
+  const sorted = [...TASKS].sort((a,b) => (a.done-b.done) || (new Date(a.due)-new Date(b.due)));
+  document.getElementById("content").innerHTML = `<div class="panel">${sorted.length ? sorted.map(taskItem).join("") : emptyState(t("empty_tasks_title"), t("empty_tasks_sub"))}</div>`;
+  bindTaskEvents();
+}
+function taskItem(tk){
+  const lead = LEADS.find(l => l.id===tk.leadId);
+  const overdue = !tk.done && isOverdue(tk.due);
+  return `<div class="task-item">
+    <div class="task-check ${tk.done?'done':''}" data-toggle="${tk.id}" data-done="${tk.done}">
+      ${tk.done?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>':''}
+    </div>
+    <div class="task-body">
+      <div class="task-title ${tk.done?'done':''}">${escapeHtml(tk.title||"")}</div>
+      <div class="task-meta ${overdue?'overdue':''}">${lead?escapeHtml(lead.name)+" · ":""}${t('type_'+(tk.type||'call'))} · ${overdue?t('overdue')+" · ":""}${fmtDate(tk.due)}</div>
+    </div>
+    <button class="icon-btn" data-delete-task="${tk.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>
+  </div>`;
+}
+function bindTaskEvents(){
+  document.querySelectorAll("[data-toggle]").forEach(el => el.addEventListener("click", async () => {
+    const done = el.dataset.done==="true"; await db.collection("tasks").doc(el.dataset.toggle).update({done:!done});
+  }));
+  document.querySelectorAll("[data-delete-task]").forEach(el => el.addEventListener("click", async () => {
+    if (!confirm(t("confirm_delete"))) return;
+    await db.collection("tasks").doc(el.dataset.deleteTask).delete(); toast(t("toast_deleted"));
+  }));
+}
+function openTaskModal(){
+  const select = document.getElementById("taskLead");
+  select.innerHTML = LEADS.map(l => `<option value="${l.id}">${escapeHtml(l.name)}</option>`).join("");
+  document.getElementById("taskForm").reset();
+  document.getElementById("taskDue").value = new Date().toISOString().slice(0,10);
+  document.getElementById("taskModal").classList.add("show");
+}
+document.getElementById("taskForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const data = {
+    title: document.getElementById("taskTitle").value.trim(),
+    leadId: document.getElementById("taskLead").value || null,
+    type: document.getElementById("taskType").value,
+    due: document.getElementById("taskDue").value,
+    done: false, agentId: CURRENT_USER.uid,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+  };
+  await db.collection("tasks").add(data);
+  toast(t("toast_saved"));
+  closeModal("taskModal");
+});
+
+/* ---------- Reports ---------- */
+function renderReports(){
+  const byStatus = {}; STATUSES.forEach(s => byStatus[s]=0);
+  LEADS.forEach(l => { if (byStatus[l.status]!==undefined) byStatus[l.status]++; });
+  const bySource = {}; LEADS.forEach(l => { const s=l.source||"other"; bySource[s]=(bySource[s]||0)+1; });
+  const byAgent = {}; LEADS.forEach(l => { const a=l.agentEmail||"—"; byAgent[a]=(byAgent[a]||0)+1; });
+
+  document.getElementById("content").innerHTML = `
+    <div class="panel"><div class="panel-head"><h2>${t("by_status")}</h2></div>${barList(Object.entries(byStatus).map(([k,v])=>[t('status_'+k),v]))}</div>
+    <div class="panel"><div class="panel-head"><h2>${t("by_source")}</h2></div>${barList(Object.entries(bySource).map(([k,v])=>[t('source_'+k)||k,v]))}</div>
+    <div class="panel"><div class="panel-head"><h2>${t("by_agent")}</h2></div>${barList(Object.entries(byAgent))}</div>`;
+}
+function barList(pairs){
+  const max = Math.max(1, ...pairs.map(p=>p[1]));
+  if (!pairs.length || pairs.every(p=>p[1]===0)) return emptyState(t("empty_leads_title"), t("empty_leads_sub"));
+  return pairs.map(([label,val]) => `
+    <div style="margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:6px;">
+        <span style="color:var(--ivory); font-weight:600;">${escapeHtml(label)}</span>
+        <span style="color:var(--gold-bright); font-weight:800;">${val}</span>
+      </div>
+      <div style="height:8px; background:rgba(91,107,140,.12); border-radius:6px; overflow:hidden;">
+        <div style="height:100%; width:${(val/max*100)}%; background:linear-gradient(90deg, var(--gold), var(--gold-bright)); border-radius:6px;"></div>
+      </div>
+    </div>`).join("");
+}
+
+/* ---------- Team ---------- */
+function renderTeam(){
+  document.getElementById("content").innerHTML = `<div class="panel">${AGENTS.length ? AGENTS.map(teamRow).join("") : emptyState(t("empty_team_title"), t("empty_team_sub"))}</div>`;
+}
+function teamRow(a){
+  return `<div class="team-row">
+    <div class="team-avatar">${(a.name||a.email||"?").charAt(0).toUpperCase()}</div>
+    <div class="team-info">
+      <div class="name">${escapeHtml(a.name||"—")}</div>
+      <div class="email">${escapeHtml(a.email||"")}</div>
+    </div>
+  </div>`;
+}
+function openEmployeeModal(){
+  document.getElementById("employeeForm").reset();
+  document.getElementById("employeeModal").classList.add("show");
+}
+document.getElementById("employeeForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = document.getElementById("employeeName").value.trim();
+  const email = document.getElementById("employeeEmail").value.trim();
+  const password = document.getElementById("employeePassword").value;
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+
+  // Use a secondary Firebase app instance so creating the new account
+  // does not sign the current admin out of their own session.
+  const secondaryApp = firebase.initializeApp(firebaseConfig, "Secondary-" + Date.now());
+  try {
+    const cred = await secondaryApp.auth().createUserWithEmailAndPassword(email, password);
+    await db.collection("agents").doc(cred.user.uid).set({
+      name, email,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      addedBy: CURRENT_USER.uid,
+    });
+    await secondaryApp.auth().signOut();
+    toast(t("toast_employee_added"));
+    closeModal("employeeModal");
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  } finally {
+    submitBtn.disabled = false;
+    secondaryApp.delete();
+  }
+});
+
+/* ---------- Modals ---------- */
+function closeModal(id){ document.getElementById(id).classList.remove("show"); }
+document.querySelectorAll("[data-close-modal]").forEach(btn => btn.addEventListener("click", () => closeModal(btn.dataset.closeModal)));
+document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.addEventListener("click", e => { if (e.target===backdrop) backdrop.classList.remove("show"); }));
 </script>
 </body>
 </html>
