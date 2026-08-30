@@ -10,6 +10,10 @@
 
 <div class="loading-screen" id="loadingScreen">
   <div class="spinner"></div>
+  <div id="loadingFallback" style="display:none; text-align:center; max-width:280px; padding:0 20px;">
+    <div style="color:var(--slate); font-size:13px; margin-bottom:14px;">الاتصال بطيء أو انقطع. تأكد من الإنترنت وحاول تاني.</div>
+    <button onclick="window.location.reload()" class="btn-gold" style="width:100%;">إعادة المحاولة</button>
+  </div>
 </div>
 
 <div class="app-shell" id="appShell" style="display:none">
