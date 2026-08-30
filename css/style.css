@@ -52,7 +52,6 @@ a{ color:inherit; text-decoration:none; }
 button{ font-family:var(--font); cursor:pointer; border:none; }
 input,select,textarea{ font-family:var(--font); }
 
-/* ---------- Signature ring motif ---------- */
 .ring-mark{
   width:14px; height:14px; border-radius:50%;
   border:2px solid var(--gold);
@@ -66,14 +65,10 @@ input,select,textarea{ font-family:var(--font); }
   border-radius:50%;
 }
 
-/* ---------- Scrollbar ---------- */
 ::-webkit-scrollbar{ width:8px; height:8px; }
 ::-webkit-scrollbar-thumb{ background:var(--navy-line); border-radius:8px; }
 ::-webkit-scrollbar-track{ background:transparent; }
 
-/* =========================================================
-   LOGIN PAGE
-   ========================================================= */
 .login-shell{
   min-height:100vh;
   display:flex;
@@ -219,15 +214,11 @@ input,select,textarea{ font-family:var(--font); }
   letter-spacing:.5px;
 }
 
-/* =========================================================
-   APP SHELL
-   ========================================================= */
 .app-shell{
   display:flex;
   min-height:100vh;
 }
 
-/* ---- Sidebar ---- */
 .sidebar{
   width:230px;
   flex-shrink:0;
@@ -317,7 +308,6 @@ input,select,textarea{ font-family:var(--font); }
 }
 .logout-btn:hover{ border-color:var(--danger); color:#F1B3AB; }
 
-/* ---- Main area ---- */
 .main{
   flex:1;
   min-width:0;
@@ -373,7 +363,6 @@ input,select,textarea{ font-family:var(--font); }
   overflow-y:auto;
 }
 
-/* ---- Stat cards ---- */
 .stat-grid{
   display:grid;
   grid-template-columns:repeat(4,1fr);
@@ -403,7 +392,6 @@ input,select,textarea{ font-family:var(--font); }
 .stat-delta{ font-size:11px; margin-top:6px; color:var(--success); font-weight:700; }
 .stat-delta.down{ color:var(--danger); }
 
-/* ---- Panel / table ---- */
 .panel{
   background:linear-gradient(180deg, var(--navy-panel), var(--navy));
   border:1px solid var(--navy-line);
@@ -475,7 +463,6 @@ tbody tr:last-child td{ border-bottom:none; }
 .empty-state .ring-mark{ width:30px; height:30px; margin-bottom:14px; }
 .empty-state p{ font-size:13px; margin-top:6px; }
 
-/* ---- Pipeline board ---- */
 .pipeline-board{
   display:grid;
   grid-auto-flow:column;
@@ -497,7 +484,8 @@ tbody tr:last-child td{ border-bottom:none; }
   text-transform:uppercase; letter-spacing:.4px;
   margin-bottom:10px;
   padding:0 4px;
-   .pipe-col-head .count{
+}
+.pipe-col-head .count{
   background:rgba(201,162,75,.15); color:var(--gold-bright);
   border-radius:10px; padding:1px 8px; font-size:11px;
 }
@@ -517,7 +505,6 @@ tbody tr:last-child td{ border-bottom:none; }
 .pipe-card-value{ font-size:13px; font-weight:800; color:var(--gold-bright); margin-top:8px; }
 .pipe-col.drag-over{ border-color:var(--gold); background:rgba(201,162,75,.05); }
 
-/* ---- Modal ---- */
 .modal-backdrop{
   position:fixed; inset:0;
   background:rgba(2,6,16,.85);
@@ -572,7 +559,6 @@ tbody tr:last-child td{ border-bottom:none; }
 .modal-actions{ display:flex; gap:10px; margin-top:22px; }
 .modal-actions button{ flex:1; }
 
-/* ---- Task list ---- */
 .task-item{
   display:flex; align-items:flex-start; gap:12px;
   padding:14px 6px;
@@ -594,7 +580,6 @@ tbody tr:last-child td{ border-bottom:none; }
 .task-meta{ font-size:11.5px; color:var(--slate); margin-top:3px; }
 .task-meta.overdue{ color:var(--danger); font-weight:700; }
 
-/* ---- Toast ---- */
 .toast{
   position:fixed; bottom:24px; inset-inline-end:24px;
   background:var(--navy-panel-2);
@@ -612,7 +597,6 @@ tbody tr:last-child td{ border-bottom:none; }
 }
 .toast.show{ transform:translateY(0); opacity:1; }
 
-/* ---- Responsive ---- */
 @media (max-width:900px){
   .sidebar{ position:fixed; z-index:50; height:100vh; transform:translateX(-110%); transition:.2s; }
   html[dir="rtl"] .sidebar{ transform:translateX(110%); }
@@ -633,7 +617,6 @@ tbody tr:last-child td{ border-bottom:none; }
   color:var(--ivory);
 }
 
-/* ---- Loading ---- */
 .loading-screen{
   position:fixed; inset:0;
   background:var(--navy-deep);
@@ -650,5 +633,3 @@ tbody tr:last-child td{ border-bottom:none; }
   animation:spin .8s linear infinite;
 }
 @keyframes spin{ to{ transform:rotate(360deg); } }
-   
-}
