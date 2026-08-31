@@ -264,6 +264,27 @@ tbody tr:last-child td{ border-bottom:none; }
 .lead-overview .ov-item{ min-width:0; }
 .lead-overview .ov-label{ font-size:10px; color:var(--slate); font-weight:600; margin-bottom:3px; }
 .lead-overview .ov-value{ font-size:12.5px; color:var(--ivory); font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.resale-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:16px; }
+.resale-card{ background:linear-gradient(180deg, var(--navy-panel), var(--navy)); border:1px solid var(--navy-line); border-radius:var(--radius-lg); overflow:hidden; cursor:pointer; transition:border-color .12s, transform .12s; }
+.resale-card:active{ transform:scale(.98); }
+.resale-card:hover{ border-color:var(--gold-dim); }
+.resale-card-img{ width:100%; height:150px; object-fit:cover; background:var(--navy-panel-2); display:block; }
+.resale-card-noimg{ width:100%; height:150px; background:var(--navy-panel-2); display:flex; align-items:center; justify-content:center; color:var(--slate); font-size:12px; }
+.resale-card-body{ padding:12px 14px; }
+.resale-card-code{ font-size:11px; color:var(--gold-bright); font-weight:800; letter-spacing:.4px; }
+.resale-card-title{ font-size:14px; font-weight:800; color:var(--ivory); margin-top:3px; }
+.resale-card-meta{ font-size:11.5px; color:var(--slate); margin-top:4px; }
+.resale-card-price{ font-size:14px; font-weight:800; color:var(--gold-bright); margin-top:8px; }
+.badge.available{ background:rgba(39,107,78,.15); color:var(--success); }
+.badge.reserved{ background:rgba(201,162,75,.18); color:var(--gold-bright); }
+.badge.sold{ background:rgba(166,57,44,.12); color:var(--danger); }
+.resale-photo-preview{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+.resale-photo-preview img{ width:56px; height:56px; object-fit:cover; border-radius:8px; border:1px solid var(--navy-line); }
+.resale-detail-gallery{ display:flex; gap:8px; overflow-x:auto; margin-bottom:14px; }
+.resale-detail-gallery img{ width:120px; height:120px; object-fit:cover; border-radius:10px; border:1px solid var(--navy-line); flex-shrink:0; }
+.resale-detail-row{ display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(36,64,111,.1); font-size:13px; }
+.resale-detail-row span:first-child{ color:var(--slate); }
+.resale-detail-row span:last-child{ color:var(--ivory); font-weight:700; }
 .row-name-link{ cursor:pointer; color:var(--gold-bright); font-weight:700; text-decoration:underline; text-decoration-style:dotted; text-underline-offset:2px; }
 .row-name-link:hover{ color:var(--gold); text-decoration-style:solid; }
 .mini-contact{ display:flex; gap:6px; }
@@ -362,6 +383,10 @@ tbody tr:last-child td{ border-bottom:none; }
       <a href="#tasks" class="nav-item" data-view="tasks">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/><path d="M7.5 14l2 2 3.5-3.5"/></svg>
         <span data-i18n="nav_tasks">Tasks</span>
+      </a>
+      <a href="#resale" class="nav-item" data-view="resale">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/><path d="M9 21v-4h6v4"/></svg>
+        <span data-i18n="nav_resale">Resale</span>
       </a>
       <a href="#reports" class="nav-item" data-view="reports">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
@@ -768,6 +793,77 @@ tbody tr:last-child td{ border-bottom:none; }
   </div>
 </div>
 
+<!-- Modal: Resale Unit -->
+<div class="modal-backdrop" id="resaleModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="resaleModalTitle" data-i18n="modal_add_resale">Add Resale Unit</h3>
+      <button class="modal-close" data-close-modal="resaleModal">✕</button>
+    </div>
+    <form id="resaleForm">
+      <input type="hidden" id="resaleId">
+      <div class="field">
+        <label data-i18n="f_unit_code">Unit Code</label>
+        <input type="text" id="resaleUnitCode" disabled style="font-weight:800; color:var(--gold-bright);">
+      </div>
+      <div class="form-grid">
+        <div class="field"><label data-i18n="f_owner_name">Owner Name</label><input type="text" id="resaleOwnerName" required></div>
+        <div class="field"><label data-i18n="f_owner_phone">Owner Phone</label><input type="tel" id="resaleOwnerPhone" required></div>
+        <div class="field"><label data-i18n="f_project">Project</label><input type="text" id="resaleProject"></div>
+        <div class="field"><label data-i18n="f_area">Area</label><input type="text" id="resaleArea"></div>
+        <div class="field">
+          <label data-i18n="f_unit_type">Unit Type</label>
+          <select id="resaleUnitType">
+            <option value="apartment" data-i18n="unit_apartment">Apartment</option>
+            <option value="villa" data-i18n="unit_villa">Villa</option>
+            <option value="townhouse" data-i18n="unit_townhouse">Townhouse</option>
+            <option value="twin" data-i18n="unit_twin">Twin House</option>
+            <option value="chalet" data-i18n="unit_chalet">Chalet</option>
+            <option value="commercial" data-i18n="unit_commercial">Commercial</option>
+            <option value="land" data-i18n="unit_land">Land</option>
+          </select>
+        </div>
+        <div class="field"><label data-i18n="f_unit_floor">Floor</label><input type="text" id="resaleFloor"></div>
+        <div class="field"><label data-i18n="f_unit_area_sqm">Area (sqm)</label><input type="text" id="resaleAreaSqm"></div>
+        <div class="field"><label data-i18n="f_unit_price">Price</label><input type="text" id="resalePrice"></div>
+        <div class="field">
+          <label data-i18n="f_resale_status">Status</label>
+          <select id="resaleStatus">
+            <option value="available" data-i18n="resale_status_available">Available</option>
+            <option value="reserved" data-i18n="resale_status_reserved">Reserved</option>
+            <option value="sold" data-i18n="resale_status_sold">Sold</option>
+          </select>
+        </div>
+        <div class="field full"><label data-i18n="f_notes">Notes</label><textarea id="resaleNotes"></textarea></div>
+        <div class="field full">
+          <label data-i18n="f_resale_photos">Unit Photos (up to 6)</label>
+          <input type="file" id="resalePhotosInput" accept="image/*" multiple>
+          <div class="resale-photo-preview" id="resalePhotoPreview"></div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-outline" data-close-modal="resaleModal" data-i18n="cancel">Cancel</button>
+        <button type="submit" class="btn-gold" data-i18n="save">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Resale Detail -->
+<div class="modal-backdrop" id="resaleDetailModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="resaleDetailCode">—</h3>
+      <button class="modal-close" data-close-modal="resaleDetailModal">✕</button>
+    </div>
+    <div id="resaleDetailBody"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn-outline" id="resaleDetailEditBtn" data-i18n="edit_agent">Edit</button>
+      <button type="button" class="btn-outline" id="resaleDetailDeleteBtn" style="color:var(--danger); border-color:var(--danger);" data-i18n="delete">Delete</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: Account -->
 <div class="modal-backdrop" id="accountModal">
   <div class="modal">
@@ -898,6 +994,7 @@ tbody tr:last-child td{ border-bottom:none; }
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <script>
@@ -915,6 +1012,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+const storage = firebase.storage();
 
 /* =========================================================
    i18n
@@ -983,6 +1081,25 @@ const I18N = {
     col_agent_name: "الموظف", col_leads_count: "العملاء", col_won_count: "صفقات فايزة",
     col_conversion: "نسبة التحويل", col_total_value: "إجمالي القيمة",
     col_due_date: "الموعد", col_lead_name: "العميل", no_overdue: "لا توجد متابعات متأخرة 🎉",
+
+    nav_resale: "الريسيل", resale_title: "الريسيل", resale_sub: "الوحدات المعروضة لإعادة البيع",
+    resale_spotlight: "وحدات ريسيل مميزة",
+    add_resale_unit: "إضافة وحدة", modal_add_resale: "إضافة وحدة ريسيل", modal_edit_resale: "تعديل الوحدة",
+    f_unit_code: "كود الوحدة", f_owner_name: "اسم مالك الوحدة", f_owner_phone: "هاتف المالك",
+    f_unit_floor: "الدور", f_unit_area_sqm: "المساحة (م²)", f_unit_price: "السعر",
+    f_resale_status: "الحالة", f_resale_photos: "صور الوحدة (حتى 6 صور)",
+    resale_status_available: "متاحة", resale_status_reserved: "محجوزة", resale_status_sold: "مُباعة",
+    empty_resale_title: "لا توجد وحدات ريسيل بعد", empty_resale_sub: "أضف أول وحدة لإعادة البيع",
+    resale_search_placeholder: "ابحث بكود الوحدة أو المشروع...",
+    toast_resale_saved: "تم حفظ الوحدة بنجاح", resale_max_photos: "أقصى عدد صور مسموح 6",
+
+    selected_count: "محدد", assign_to_agent: "تعيين لموظف...", apply_assign: "تطبيق",
+    clear_selection: "إلغاء التحديد", toast_bulk_assigned: "تم نقل العملاء المحددين بنجاح",
+    permissions_management: "إدارة الصلاحيات",
+    feature_bulk_reassign_desc: "حدد الوظائف المسموح لها بتحديد عدة عملاء ونقلهم لموظف آخر دفعة واحدة:",
+    feature_export_delete: "تصدير وحذف بيانات العملاء",
+    locked_gm_only: "هذه الصلاحية محصورة على المدير العام فقط، ولا يمكن تعديلها حتى من الأدمن.",
+    toast_permissions_saved: "تم حفظ إعدادات الصلاحيات",
     top_seller_today: "أعلى سيلز اليوم", top_seller_month: "أعلى سيلز الشهر",
     actions: "إجراء", no_activity_yet: "لا يوجد نشاط بعد",
     f_quick_summary: "ملخص التعامل", quick_summary_placeholder: "إيه اللي حصل في المكالمة/الزيارة؟",
@@ -1109,6 +1226,25 @@ const I18N = {
     col_agent_name: "Agent", col_leads_count: "Leads", col_won_count: "Won Deals",
     col_conversion: "Conversion", col_total_value: "Total Value",
     col_due_date: "Due", col_lead_name: "Lead", no_overdue: "No overdue follow-ups 🎉",
+
+    nav_resale: "Resale", resale_title: "Resale", resale_sub: "Units listed for resale",
+    resale_spotlight: "Featured Resale Units",
+    add_resale_unit: "Add Unit", modal_add_resale: "Add Resale Unit", modal_edit_resale: "Edit Unit",
+    f_unit_code: "Unit Code", f_owner_name: "Owner Name", f_owner_phone: "Owner Phone",
+    f_unit_floor: "Floor", f_unit_area_sqm: "Area (sqm)", f_unit_price: "Price",
+    f_resale_status: "Status", f_resale_photos: "Unit Photos (up to 6)",
+    resale_status_available: "Available", resale_status_reserved: "Reserved", resale_status_sold: "Sold",
+    empty_resale_title: "No resale units yet", empty_resale_sub: "Add your first resale unit",
+    resale_search_placeholder: "Search by unit code or project...",
+    toast_resale_saved: "Unit saved successfully", resale_max_photos: "Maximum 6 photos allowed",
+
+    selected_count: "selected", assign_to_agent: "Assign to agent...", apply_assign: "Apply",
+    clear_selection: "Clear selection", toast_bulk_assigned: "Selected leads reassigned successfully",
+    permissions_management: "Permissions Management",
+    feature_bulk_reassign_desc: "Choose which roles are allowed to select multiple leads and reassign them to another agent at once:",
+    feature_export_delete: "Export & Delete Lead Data",
+    locked_gm_only: "This permission is locked to the General Manager only and cannot be changed, even by Admin.",
+    toast_permissions_saved: "Permissions saved",
     top_seller_today: "Top Seller Today", top_seller_month: "Top Seller This Month",
     actions: "actions", no_activity_yet: "No activity yet",
     f_quick_summary: "Interaction Summary", quick_summary_placeholder: "What happened in this call/visit?",
@@ -1196,7 +1332,17 @@ document.addEventListener("DOMContentLoaded", () => {
    App state & auth
    ========================================================= */
 let CURRENT_USER = null;
-let LEADS = [], TASKS = [], AGENTS = [], ACCOUNTS = [], ALL_ACTIVITIES = [];
+let LEADS = [], TASKS = [], AGENTS = [], ACCOUNTS = [], ALL_ACTIVITIES = [], RESALE_UNITS = [];
+let RESALE_PENDING_IMAGES = [];
+let RESALE_CAROUSEL_TIMERS = [];
+let DASHBOARD_RESALE_TIMER = null;
+let SELECTED_LEAD_IDS = new Set();
+const DEFAULT_BULK_ROLES = ["general_manager","company_admin","sales_manager","marketing_manager"];
+let PERMISSIONS_CONFIG = { bulk_reassign: DEFAULT_BULK_ROLES };
+
+function canBulkReassign(){
+  return PERMISSIONS_CONFIG.bulk_reassign.includes(myRole());
+}
 let COMPANY_SETTINGS = {};
 let currentView = "dashboard";
 
@@ -1224,6 +1370,36 @@ function resizeImageFile(file, maxSize){
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+}
+
+function resizeImageToBlob(file, maxSize, quality){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height) { if (width > maxSize) { height *= maxSize/width; width = maxSize; } }
+        else { if (height > maxSize) { width *= maxSize/height; height = maxSize; } }
+        const canvas = document.createElement("canvas");
+        canvas.width = width; canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        canvas.toBlob(blob => resolve(blob), "image/jpeg", quality || 0.82);
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadResaleImage(file, unitCode){
+  const blob = await resizeImageToBlob(file, 900, 0.8);
+  const path = `resale/${unitCode}/${Date.now()}_${Math.random().toString(36).slice(2,8)}.jpg`;
+  const ref = storage.ref().child(path);
+  await ref.put(blob);
+  return ref.getDownloadURL();
 }
 
 /* ---------- Company branding (public read, works pre-login) ---------- */
@@ -1340,6 +1516,19 @@ function subscribeData(){
     ALL_ACTIVITIES = snap.docs.map(d => d.data());
     if (currentView === "dashboard") renderView();
   }, err => console.error("activities collection group error", err));
+
+  db.collection("resale_units").orderBy("createdAt","desc").onSnapshot(snap => {
+    RESALE_UNITS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    renderView();
+  }, err => console.error("resale units error", err));
+
+  db.collection("settings").doc("permissions").onSnapshot(doc => {
+    if (doc.exists) {
+      const d = doc.data();
+      PERMISSIONS_CONFIG.bulk_reassign = Array.isArray(d.bulk_reassign) ? d.bulk_reassign : DEFAULT_BULK_ROLES;
+    }
+    renderView();
+  }, err => console.error("permissions settings error", err));
 }
 
 /* ---------- Router ---------- */
@@ -1350,7 +1539,7 @@ function initRouter(){
 }
 function handleRoute(){
   const hash = window.location.hash.replace("#","") || "dashboard";
-  currentView = ["dashboard","leads","pipeline","tasks","reports","team","accounts"].includes(hash) ? hash : "dashboard";
+  currentView = ["dashboard","leads","pipeline","tasks","reports","team","accounts","resale"].includes(hash) ? hash : "dashboard";
   const restricted = { team:3, accounts:2, reports:2 };
   if (restricted[currentView] && permLevel() < restricted[currentView]) {
     currentView = "dashboard";
@@ -1366,15 +1555,16 @@ function renderView(){
   const sub = document.getElementById("pageSub");
   const actions = document.getElementById("topbarActions");
   actions.innerHTML = "";
+  if (currentView !== "dashboard" && DASHBOARD_RESALE_TIMER) { clearInterval(DASHBOARD_RESALE_TIMER); DASHBOARD_RESALE_TIMER = null; }
 
   if (currentView === "dashboard") { title.textContent=t("dash_title"); sub.textContent=t("dash_sub"); renderDashboard(); }
   else if (currentView === "leads") {
     title.textContent=t("leads_title"); sub.textContent=t("leads_sub");
-    const exportBtn = permLevel() >= 3 ? `<button class="btn-outline" id="btnExportLeads">${t("export_leads")}</button>` : "";
-    actions.innerHTML = `${exportBtn}<button class="btn-outline" id="btnImportLeads">${t("import_leads")}</button><button class="btn-outline" id="btnAddLead">+ ${t("add_lead")}</button>`;
+    const exportBtn = myRole() === "general_manager" ? `<button class="btn-gold" id="btnExportLeads">${t("export_leads")}</button>` : "";
+    actions.innerHTML = `${exportBtn}<button class="btn-gold" id="btnImportLeads">${t("import_leads")}</button><button class="btn-gold" id="btnAddLead">+ ${t("add_lead")}</button>`;
     document.getElementById("btnAddLead").addEventListener("click", () => openLeadModal());
     document.getElementById("btnImportLeads").addEventListener("click", () => openImportModal());
-    if (permLevel() >= 3) document.getElementById("btnExportLeads").addEventListener("click", () => exportAllLeads());
+    if (myRole() === "general_manager") document.getElementById("btnExportLeads").addEventListener("click", () => exportAllLeads());
     renderLeads();
   }
   else if (currentView === "pipeline") { title.textContent=t("pipeline_title"); sub.textContent=t("pipeline_sub"); renderPipeline(); }
@@ -1396,6 +1586,12 @@ function renderView(){
     actions.innerHTML = `<button class="btn-gold" id="btnAddAccount">+ <span>${t("add_account")}</span></button>`;
     document.getElementById("btnAddAccount").addEventListener("click", () => openAccountModal());
     renderAccounts();
+  }
+  else if (currentView === "resale") {
+    title.textContent=t("resale_title"); sub.textContent=t("resale_sub");
+    actions.innerHTML = `<button class="btn-gold" id="btnAddResale">+ <span>${t("add_resale_unit")}</span></button>`;
+    document.getElementById("btnAddResale").addEventListener("click", () => openResaleModal());
+    renderResale();
   }
 }
 
@@ -1473,6 +1669,10 @@ function renderDashboard(){
       ${STATUSES.map(s => `<div class="stage-card" data-stage="${s}" style="cursor:pointer;"><div class="lbl">${t('status_'+s)}</div><div class="val">${stageCounts[s]}</div></div>`).join("")}
     </div>
     <div class="panel">
+      <div class="panel-head"><h2>${t("resale_spotlight")}</h2><a href="#resale" style="font-size:12px;color:var(--gold-bright);">${t("view_all")}</a></div>
+      <div id="dashResaleSpotlight">${RESALE_UNITS.length ? "" : emptyState(t("empty_resale_title"), t("empty_resale_sub"))}</div>
+    </div>
+    <div class="panel">
       <div class="panel-head"><h2>${t("recent_leads")}</h2><a href="#leads" style="font-size:12px;color:var(--gold-bright);">${t("view_all")}</a></div>
       ${recent.length ? leadsTable(recent, true) : emptyState(t("empty_leads_title"), t("empty_leads_sub"))}
     </div>
@@ -1481,6 +1681,7 @@ function renderDashboard(){
       ${todaysTasks.length ? todaysTasks.map(taskItem).join("") : emptyState(t("empty_tasks_title"), t("empty_tasks_sub"))}
     </div>`;
   bindLeadRowEvents();
+  startDashboardResaleSpotlight();
   document.querySelectorAll(".task-item [data-open]").forEach(el => el.addEventListener("click", () => openLeadDetail(el.dataset.open)));
   document.querySelectorAll("[data-stage]").forEach(el => el.addEventListener("click", () => goToLeadsFiltered(el.dataset.stage)));
   document.querySelectorAll("[data-stat-kind]").forEach(el => el.addEventListener("click", () => {
@@ -1536,6 +1737,7 @@ function renderLeads(){
           ${STATUSES.map(s => `<option value="${s}">${t('status_'+s)}</option>`).join("")}
         </select>
       </div>
+      <div id="bulkBar" style="display:none;"></div>
       <div id="leadsTableWrap" style="margin-top:16px;">${LEADS.length ? leadsTable(LEADS) : emptyState(t("empty_leads_title"), t("empty_leads_sub"))}</div>
     </div>`;
   document.getElementById("leadSearch").addEventListener("input", filterLeadsView);
@@ -1556,13 +1758,17 @@ function filterLeadsView(){
   bindLeadRowEvents();
 }
 function leadsTable(list, compact){
+  const canBulk = !compact && canBulkReassign();
+  const canDelete = !compact && myRole() === "general_manager";
   return `<div class="table-scroll"><table><thead><tr>
+    ${canBulk?`<th><input type="checkbox" id="selectAllLeads"></th>`:""}
     <th>${t("col_name")}</th><th>${t("col_phone")}</th>
     ${compact?"":`<th>${t("col_interest")}</th>`}
     <th>${t("col_status")}</th><th>${t("col_rating")}</th>
     ${compact?"":`<th>${t("col_actions")}</th>`}
     </tr></thead><tbody>
     ${list.map(l => `<tr>
+      ${canBulk?`<td><input type="checkbox" class="lead-select-cb" value="${l.id}" ${SELECTED_LEAD_IDS.has(l.id)?"checked":""}></td>`:""}
       <td><span class="row-name-link" data-open="${l.id}">${escapeHtml(l.name||"")}</span></td><td>${escapeHtml(l.phone||"")}</td>
       ${compact?"":`<td>${escapeHtml(l.interest||"—")}</td>`}
       <td><span class="badge ${l.status}">${t('status_'+l.status)}</span></td>
@@ -1573,7 +1779,7 @@ function leadsTable(list, compact){
           <button class="icon-btn whatsapp" data-whatsapp="${escapeHtml(l.phone||"")}" data-whatsapp-id="${l.id}" title="${t('whatsapp')}"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.6-.8-1.9-.9-.2-.1-.4-.1-.6.1-.2.3-.7.9-.8 1-.2.2-.3.2-.5.1-.3-.1-1.2-.4-2.2-1.4-.8-.7-1.4-1.6-1.6-1.9-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.1.2-.3.2-.4.1-.2 0-.3 0-.5-.1-.1-.6-1.5-.8-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s1 2.5 1.1 2.7c.1.2 2 3 4.8 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.6-.7 1.9-1.3.2-.6.2-1.1.2-1.3-.1-.1-.3-.2-.6-.3z"/><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.5A10 10 0 1 0 12 2z"/></svg></button>
         </div>
         <button class="icon-btn" data-edit="${l.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
-        <button class="icon-btn" data-delete="${l.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>
+        ${canDelete?`<button class="icon-btn" data-delete="${l.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>`:""}
       </td>`}
     </tr>`).join("")}
     </tbody></table></div>`;
@@ -1584,6 +1790,20 @@ function bindLeadRowEvents(){
   document.querySelectorAll("[data-open]").forEach(el => el.addEventListener("click", () => openLeadDetail(el.dataset.open)));
   document.querySelectorAll("[data-call]").forEach(btn => btn.addEventListener("click", (e) => { e.stopPropagation(); doCall(btn.dataset.call, btn.dataset.callId); }));
   document.querySelectorAll("[data-whatsapp]").forEach(btn => btn.addEventListener("click", (e) => { e.stopPropagation(); doWhatsapp(btn.dataset.whatsapp, btn.dataset.whatsappId); }));
+  document.querySelectorAll(".lead-select-cb").forEach(cb => cb.addEventListener("click", (e) => e.stopPropagation()));
+  document.querySelectorAll(".lead-select-cb").forEach(cb => cb.addEventListener("change", (e) => {
+    if (e.target.checked) SELECTED_LEAD_IDS.add(e.target.value); else SELECTED_LEAD_IDS.delete(e.target.value);
+    renderBulkBar();
+  }));
+  const selectAll = document.getElementById("selectAllLeads");
+  if (selectAll) selectAll.addEventListener("change", (e) => {
+    document.querySelectorAll(".lead-select-cb").forEach(cb => {
+      cb.checked = e.target.checked;
+      if (e.target.checked) SELECTED_LEAD_IDS.add(cb.value); else SELECTED_LEAD_IDS.delete(cb.value);
+    });
+    renderBulkBar();
+  });
+  renderBulkBar();
 }
 function openLeadModal(id){
   const form = document.getElementById("leadForm");
@@ -1655,7 +1875,48 @@ document.getElementById("leadForm").addEventListener("submit", async (e) => {
     closeModal("leadModal");
   } catch (err) { console.error(err); alert(err.message); }
 });
-async function deleteLead(id){ if (!confirm(t("confirm_delete"))) return; await db.collection("leads").doc(id).delete(); toast(t("toast_deleted")); }
+async function deleteLead(id){
+  if (myRole() !== "general_manager") return;
+  if (!confirm(t("confirm_delete"))) return;
+  await db.collection("leads").doc(id).delete();
+  toast(t("toast_deleted"));
+}
+
+function renderBulkBar(){
+  const bar = document.getElementById("bulkBar");
+  if (!bar) return;
+  if (!canBulkReassign() || SELECTED_LEAD_IDS.size === 0) { bar.style.display = "none"; bar.innerHTML = ""; return; }
+  bar.style.display = "block";
+  bar.innerHTML = `
+    <div class="panel" style="border-color:var(--gold-dim); padding:12px 16px; margin-bottom:14px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <span style="font-size:13px; font-weight:700; color:var(--gold-bright);">${SELECTED_LEAD_IDS.size} ${t("selected_count")}</span>
+      <select id="bulkAssignSelect" style="flex:1; min-width:160px; background:var(--navy); border:1px solid var(--navy-line); color:var(--ivory); padding:8px 12px; border-radius:8px; font-size:13px;">
+        <option value="">${t("assign_to_agent")}</option>
+        ${AGENTS.map(a => `<option value="${a.id}">${escapeHtml(a.name||a.email)}</option>`).join("")}
+      </select>
+      <button type="button" class="btn-gold" id="bulkApplyBtn">${t("apply_assign")}</button>
+      <button type="button" class="btn-outline" id="bulkClearBtn">${t("clear_selection")}</button>
+    </div>`;
+  document.getElementById("bulkClearBtn").addEventListener("click", () => {
+    SELECTED_LEAD_IDS.clear();
+    filterLeadsView();
+  });
+  document.getElementById("bulkApplyBtn").addEventListener("click", async () => {
+    const agentId = document.getElementById("bulkAssignSelect").value;
+    if (!agentId) return;
+    const btn = document.getElementById("bulkApplyBtn");
+    btn.disabled = true;
+    try {
+      const batch = db.batch();
+      SELECTED_LEAD_IDS.forEach(id => batch.update(db.collection("leads").doc(id), { assignedTo: agentId }));
+      await batch.commit();
+      toast(t("toast_bulk_assigned"));
+      SELECTED_LEAD_IDS.clear();
+      filterLeadsView();
+    } catch (err) { console.error(err); alert(err.message); }
+    finally { btn.disabled = false; }
+  });
+}
 
 /* =========================================================
    BULK IMPORT (Excel / CSV)
@@ -1697,7 +1958,7 @@ function normalizeSource(val){
 }
 
 function exportAllLeads(){
-  if (permLevel() < 3) return;
+  if (myRole() !== "general_manager") return;
   const rows = LEADS.map(l => ({
     [t("f_name")]: l.name || "",
     [t("f_phone")]: l.phone || "",
@@ -2086,6 +2347,18 @@ function renderTeam(){
       </div>
       <div class="field"><label data-i18n="f_company_name">Company Name</label><input type="text" id="companyNameInput" value="${escapeHtml(c.name||"")}"></div>
       <div class="modal-actions" style="margin-top:16px;"><button type="button" class="btn-gold" id="saveCompanyBtn" data-i18n="save">Save</button></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>${t("permissions_management")}</h2></div>
+      <div style="font-size:12px; color:var(--slate); margin-bottom:12px; line-height:1.6;">${t("feature_bulk_reassign_desc")}</div>
+      <div style="display:flex; flex-wrap:wrap; gap:8px;" id="permBulkRoles">
+        ${ROLE_KEYS.map(r => `<button type="button" class="perm-role-btn" data-role="${r}" style="border:1px solid ${PERMISSIONS_CONFIG.bulk_reassign.includes(r)?'var(--gold)':'var(--navy-line)'}; background:${PERMISSIONS_CONFIG.bulk_reassign.includes(r)?'var(--gold)':'transparent'}; color:${PERMISSIONS_CONFIG.bulk_reassign.includes(r)?'#fff':'var(--slate)'}; border-radius:16px; padding:7px 14px; font-size:11.5px; font-weight:700;">${t('role_'+r)}</button>`).join("")}
+      </div>
+      <div class="modal-actions" style="margin-top:16px;"><button type="button" class="btn-gold" id="savePermissionsBtn" data-i18n="save">Save</button></div>
+      <div style="margin-top:18px; padding-top:14px; border-top:1px solid var(--navy-line); font-size:12px; color:var(--slate); line-height:1.6;">
+        <strong style="color:var(--ivory);">${t("feature_export_delete")}</strong><br>${t("locked_gm_only")}
+      </div>
     </div>`;
   }
   html += `<div class="panel">${AGENTS.length ? AGENTS.map(a => teamRow(a, level)).join("") : emptyState(t("empty_team_title"), t("empty_team_sub"))}</div>`;
@@ -2108,6 +2381,20 @@ function renderTeam(){
       toast(t("toast_company_saved"));
     });
     document.querySelectorAll("[data-edit-agent]").forEach(btn => btn.addEventListener("click", () => openEditAgentModal(btn.dataset.editAgent)));
+
+    let pendingBulkRoles = new Set(PERMISSIONS_CONFIG.bulk_reassign);
+    document.querySelectorAll(".perm-role-btn").forEach(btn => btn.addEventListener("click", () => {
+      const r = btn.dataset.role;
+      const nowOn = !pendingBulkRoles.has(r);
+      if (nowOn) pendingBulkRoles.add(r); else pendingBulkRoles.delete(r);
+      btn.style.borderColor = nowOn ? "var(--gold)" : "var(--navy-line)";
+      btn.style.background = nowOn ? "var(--gold)" : "transparent";
+      btn.style.color = nowOn ? "#fff" : "var(--slate)";
+    }));
+    document.getElementById("savePermissionsBtn").addEventListener("click", async () => {
+      await db.collection("settings").doc("permissions").set({ bulk_reassign: Array.from(pendingBulkRoles) }, { merge: true });
+      toast(t("toast_permissions_saved"));
+    });
   }
 }
 function teamRow(a, level){
@@ -2173,6 +2460,7 @@ document.getElementById("profileForm").addEventListener("submit", async (e) => {
 /* ---------- Permissions ---------- */
 const ADMIN_ROLES = ["general_manager","company_admin"];
 const MID_ROLES = ["sales_manager","marketing_manager","sales_team_leader","marketing_team_leader","sales_supervisor","marketing_supervisor"];
+const ROLE_KEYS = ["general_manager","company_admin","sales_manager","marketing_manager","sales_team_leader","marketing_team_leader","sales_supervisor","marketing_supervisor","sales_agent","marketing_agent"];
 function myAgentDoc(){ return AGENTS.find(a => a.id === (CURRENT_USER && CURRENT_USER.uid)); }
 function myRole(){ const a = myAgentDoc(); return a && a.role ? a.role : "general_manager"; }
 function permLevel(){ const r = myRole(); if (ADMIN_ROLES.includes(r)) return 3; if (MID_ROLES.includes(r)) return 2; return 1; }
@@ -2271,6 +2559,220 @@ document.getElementById("accountForm").addEventListener("submit", async (e) => {
     closeModal("accountModal");
   } catch (err) { console.error(err); alert(err.message); }
 });
+
+/* =========================================================
+   RESALE UNITS
+   ========================================================= */
+function generateUnitCode(){
+  const n = RESALE_UNITS.length + 1;
+  return "RS-" + String(n).padStart(4,"0");
+}
+
+function renderResale(){
+  document.getElementById("content").innerHTML = `
+    <div class="panel">
+      <input type="text" id="resaleSearch" placeholder="${t('resale_search_placeholder')}" style="width:100%; background:var(--navy); border:1px solid var(--navy-line); color:var(--ivory); padding:10px 14px; border-radius:8px; font-size:13px; outline:none;">
+    </div>
+    <div id="resaleGridWrap">${resaleGrid(RESALE_UNITS)}</div>
+  `;
+  document.getElementById("resaleSearch").addEventListener("input", (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    const filtered = RESALE_UNITS.filter(u =>
+      (u.unitCode||"").toLowerCase().includes(q) ||
+      (u.project||"").toLowerCase().includes(q) ||
+      (u.ownerName||"").toLowerCase().includes(q)
+    );
+    document.getElementById("resaleGridWrap").innerHTML = resaleGrid(filtered);
+    bindResaleCardEvents();
+    startResaleCarousels();
+  });
+  bindResaleCardEvents();
+  startResaleCarousels();
+}
+
+function resaleGrid(list){
+  if (!list.length) return emptyState(t("empty_resale_title"), t("empty_resale_sub"));
+  return `<div class="resale-grid">${list.map(u => `
+    <div class="resale-card" data-open-resale="${u.id}">
+      ${u.images && u.images.length ? `<img class="resale-card-img" id="resaleImg-${u.id}" src="${u.images[0]}">` : `<div class="resale-card-noimg">🏠</div>`}
+      <div class="resale-card-body">
+        <div class="resale-card-code">${escapeHtml(u.unitCode||"")}</div>
+        <div class="resale-card-title">${escapeHtml(u.project||"—")} · ${t('unit_'+(u.unitType||'apartment'))}</div>
+        <div class="resale-card-meta">${escapeHtml(u.area||"—")} · ${escapeHtml(u.ownerName||"")}</div>
+        <div class="resale-card-price">${u.price ? escapeHtml(u.price) : "—"}</div>
+        <span class="badge ${u.status||'available'}" style="margin-top:8px; display:inline-block;">${t('resale_status_'+(u.status||'available'))}</span>
+      </div>
+    </div>`).join("")}</div>`;
+}
+
+function bindResaleCardEvents(){
+  document.querySelectorAll("[data-open-resale]").forEach(el => el.addEventListener("click", () => openResaleDetail(el.dataset.openResale)));
+}
+
+function startDashboardResaleSpotlight(){
+  if (DASHBOARD_RESALE_TIMER) clearInterval(DASHBOARD_RESALE_TIMER);
+  if (!RESALE_UNITS.length) return;
+  let idx = 0;
+  const render = () => {
+    const el = document.getElementById("dashResaleSpotlight");
+    if (!el) { clearInterval(DASHBOARD_RESALE_TIMER); return; }
+    const u = RESALE_UNITS[idx];
+    el.innerHTML = `
+      <div class="resale-card" data-open-resale="${u.id}" style="max-width:280px;">
+        ${u.images && u.images.length ? `<img class="resale-card-img" src="${u.images[0]}">` : `<div class="resale-card-noimg">🏠</div>`}
+        <div class="resale-card-body">
+          <div class="resale-card-code">${escapeHtml(u.unitCode||"")}</div>
+          <div class="resale-card-title">${escapeHtml(u.project||"—")} · ${t('unit_'+(u.unitType||'apartment'))}</div>
+          <div class="resale-card-meta">${escapeHtml(u.area||"—")}</div>
+          <div class="resale-card-price">${u.price ? escapeHtml(u.price) : "—"}</div>
+          <span class="badge ${u.status||'available'}" style="margin-top:8px; display:inline-block;">${t('resale_status_'+(u.status||'available'))}</span>
+        </div>
+      </div>`;
+    el.querySelectorAll("[data-open-resale]").forEach(x => x.addEventListener("click", () => openResaleDetail(x.dataset.openResale)));
+  };
+  render();
+  DASHBOARD_RESALE_TIMER = setInterval(() => { idx = (idx+1) % RESALE_UNITS.length; render(); }, 4000);
+}
+
+function startResaleCarousels(){
+  RESALE_CAROUSEL_TIMERS.forEach(id => clearInterval(id));
+  RESALE_CAROUSEL_TIMERS = [];
+  RESALE_UNITS.forEach(u => {
+    if (!u.images || u.images.length < 2) return;
+    const img = document.getElementById("resaleImg-" + u.id);
+    if (!img) return;
+    let idx = 0;
+    const timer = setInterval(() => {
+      idx = (idx + 1) % u.images.length;
+      img.src = u.images[idx];
+    }, 2800);
+    RESALE_CAROUSEL_TIMERS.push(timer);
+  });
+}
+
+function openResaleModal(id){
+  const form = document.getElementById("resaleForm");
+  form.reset();
+  RESALE_PENDING_IMAGES = [];
+  document.getElementById("resaleId").value = id || "";
+  document.getElementById("resaleModalTitle").textContent = id ? t("modal_edit_resale") : t("modal_add_resale");
+  document.getElementById("resalePhotoPreview").innerHTML = "";
+
+  if (id) {
+    const u = RESALE_UNITS.find(x => x.id===id);
+    if (u) {
+      document.getElementById("resaleUnitCode").value = u.unitCode || "";
+      document.getElementById("resaleOwnerName").value = u.ownerName || "";
+      document.getElementById("resaleOwnerPhone").value = u.ownerPhone || "";
+      document.getElementById("resaleProject").value = u.project || "";
+      document.getElementById("resaleArea").value = u.area || "";
+      document.getElementById("resaleUnitType").value = u.unitType || "apartment";
+      document.getElementById("resaleFloor").value = u.floor || "";
+      document.getElementById("resaleAreaSqm").value = u.areaSqm || "";
+      document.getElementById("resalePrice").value = u.price || "";
+      document.getElementById("resaleStatus").value = u.status || "available";
+      document.getElementById("resaleNotes").value = u.notes || "";
+      RESALE_PENDING_IMAGES = Array.isArray(u.images) ? [...u.images] : [];
+      renderResalePhotoPreview();
+    }
+  } else {
+    document.getElementById("resaleUnitCode").value = generateUnitCode();
+  }
+  document.getElementById("resaleModal").classList.add("show");
+}
+
+function renderResalePhotoPreview(){
+  document.getElementById("resalePhotoPreview").innerHTML = RESALE_PENDING_IMAGES.map((src,i) => `
+    <div style="position:relative;">
+      <img src="${src}">
+      <button type="button" data-remove-photo="${i}" style="position:absolute; top:-6px; inset-inline-end:-6px; width:18px; height:18px; border-radius:50%; background:var(--danger); color:#fff; font-size:10px; line-height:1;">✕</button>
+    </div>
+  `).join("");
+  document.querySelectorAll("[data-remove-photo]").forEach(btn => btn.addEventListener("click", () => {
+    RESALE_PENDING_IMAGES.splice(parseInt(btn.dataset.removePhoto),1);
+    renderResalePhotoPreview();
+  }));
+}
+
+document.getElementById("resalePhotosInput").addEventListener("change", async (e) => {
+  const files = Array.from(e.target.files || []);
+  const unitCode = document.getElementById("resaleUnitCode").value || generateUnitCode();
+  const btn = e.target;
+  btn.disabled = true;
+  try {
+    for (const file of files) {
+      if (RESALE_PENDING_IMAGES.length >= 6) { toast(t("resale_max_photos")); break; }
+      const url = await uploadResaleImage(file, unitCode);
+      RESALE_PENDING_IMAGES.push(url);
+      renderResalePhotoPreview();
+    }
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  } finally {
+    btn.disabled = false;
+    e.target.value = "";
+  }
+});
+
+document.getElementById("resaleForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const id = document.getElementById("resaleId").value;
+  const data = {
+    unitCode: document.getElementById("resaleUnitCode").value,
+    ownerName: document.getElementById("resaleOwnerName").value.trim(),
+    ownerPhone: document.getElementById("resaleOwnerPhone").value.trim(),
+    project: document.getElementById("resaleProject").value.trim(),
+    area: document.getElementById("resaleArea").value.trim(),
+    unitType: document.getElementById("resaleUnitType").value,
+    floor: document.getElementById("resaleFloor").value.trim(),
+    areaSqm: document.getElementById("resaleAreaSqm").value.trim(),
+    price: document.getElementById("resalePrice").value.trim(),
+    status: document.getElementById("resaleStatus").value,
+    notes: document.getElementById("resaleNotes").value.trim(),
+    images: RESALE_PENDING_IMAGES,
+  };
+  try {
+    if (id) { await db.collection("resale_units").doc(id).update(data); }
+    else {
+      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      data.agentId = CURRENT_USER.uid; data.agentEmail = CURRENT_USER.email;
+      await db.collection("resale_units").add(data);
+    }
+    toast(t("toast_resale_saved"));
+    closeModal("resaleModal");
+  } catch (err) { console.error(err); alert(err.message); }
+});
+
+function openResaleDetail(id){
+  const u = RESALE_UNITS.find(x => x.id===id);
+  if (!u) return;
+  document.getElementById("resaleDetailCode").textContent = u.unitCode || "—";
+  const gallery = (u.images && u.images.length) ? `<div class="resale-detail-gallery">${u.images.map(src=>`<img src="${src}">`).join("")}</div>` : "";
+  const rows = [
+    [t("f_owner_name"), u.ownerName||"—"],
+    [t("f_owner_phone"), u.ownerPhone||"—"],
+    [t("f_project"), u.project||"—"],
+    [t("f_area"), u.area||"—"],
+    [t("f_unit_type"), t('unit_'+(u.unitType||'apartment'))],
+    [t("f_unit_floor"), u.floor||"—"],
+    [t("f_unit_area_sqm"), u.areaSqm||"—"],
+    [t("f_unit_price"), u.price||"—"],
+    [t("f_resale_status"), t('resale_status_'+(u.status||'available'))],
+    [t("f_notes"), u.notes||"—"],
+  ];
+  document.getElementById("resaleDetailBody").innerHTML = gallery + rows.map(([l,v]) => `
+    <div class="resale-detail-row"><span>${l}</span><span>${escapeHtml(String(v))}</span></div>
+  `).join("");
+  document.getElementById("resaleDetailEditBtn").onclick = () => { closeModal("resaleDetailModal"); openResaleModal(id); };
+  document.getElementById("resaleDetailDeleteBtn").onclick = async () => {
+    if (!confirm(t("confirm_delete"))) return;
+    await db.collection("resale_units").doc(id).delete();
+    toast(t("toast_deleted"));
+    closeModal("resaleDetailModal");
+  };
+  document.getElementById("resaleDetailModal").classList.add("show");
+}
 
 function openEmployeeModal(){
   document.getElementById("employeeForm").reset();
