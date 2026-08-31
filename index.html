@@ -285,6 +285,15 @@ tbody tr:last-child td{ border-bottom:none; }
 .resale-detail-row{ display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(36,64,111,.1); font-size:13px; }
 .resale-detail-row span:first-child{ color:var(--slate); }
 .resale-detail-row span:last-child{ color:var(--ivory); font-weight:700; }
+.perm-list-item{ display:flex; align-items:center; gap:12px; padding:14px 6px; border-bottom:1px solid rgba(36,64,111,.1); cursor:pointer; transition:background .12s; }
+.perm-list-item:last-child{ border-bottom:none; }
+.perm-list-item:hover{ background:rgba(233,204,126,.05); }
+.perm-num{ width:26px; height:26px; border-radius:50%; border:1.5px solid var(--gold-dim); color:var(--gold-bright); font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.perm-list-title{ flex:1; font-size:13.5px; font-weight:700; color:var(--ivory); }
+.perm-arrow{ width:16px; height:16px; color:var(--slate); flex-shrink:0; }
+.perm-list-item.locked{ cursor:default; opacity:.7; }
+.perm-list-item.locked:hover{ background:transparent; }
+.perm-list-item.locked .perm-num{ border-color:var(--navy-line); color:var(--slate); }
 .row-name-link{ cursor:pointer; color:var(--gold-bright); font-weight:700; text-decoration:underline; text-decoration-style:dotted; text-underline-offset:2px; }
 .row-name-link:hover{ color:var(--gold); text-decoration-style:solid; }
 .mini-contact{ display:flex; gap:6px; }
@@ -894,6 +903,22 @@ tbody tr:last-child td{ border-bottom:none; }
   </div>
 </div>
 
+<!-- Modal: Permission Detail -->
+<div class="modal-backdrop" id="permissionDetailModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="permDetailTitle">—</h3>
+      <button class="modal-close" data-close-modal="permissionDetailModal">✕</button>
+    </div>
+    <div style="font-size:12px; color:var(--slate); margin-bottom:14px; line-height:1.6;" id="permDetailDesc"></div>
+    <div style="display:flex; flex-wrap:wrap; gap:8px;" id="permDetailRoles"></div>
+    <div class="modal-actions" style="margin-top:20px;">
+      <button type="button" class="btn-outline" data-close-modal="permissionDetailModal" data-i18n="cancel">Cancel</button>
+      <button type="button" class="btn-gold" id="permDetailSaveBtn" data-i18n="save">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: Employee -->
 <div class="modal-backdrop" id="employeeModal">
   <div class="modal">
@@ -1099,6 +1124,8 @@ const I18N = {
     permissions_management: "إدارة الصلاحيات",
     feature_bulk_reassign_desc: "حدد الوظائف المسموح لها بتحديد عدة عملاء ونقلهم لموظف آخر دفعة واحدة:",
     feature_resale_edit_desc: "حدد الوظائف المسموح لها بتعديل أو حذف وحدة ريسيل بعد إنشائها:",
+    perm_item_bulk_reassign: "نقل العملاء بين الموظفين (تحديد متعدد)",
+    perm_item_resale_edit: "تعديل وحذف وحدات الريسيل",
     feature_export_delete: "تصدير وحذف بيانات العملاء",
     locked_gm_only: "هذه الصلاحية محصورة على المدير العام فقط، ولا يمكن تعديلها حتى من الأدمن.",
     toast_permissions_saved: "تم حفظ إعدادات الصلاحيات",
@@ -1246,6 +1273,8 @@ const I18N = {
     permissions_management: "Permissions Management",
     feature_bulk_reassign_desc: "Choose which roles are allowed to select multiple leads and reassign them to another agent at once:",
     feature_resale_edit_desc: "Choose which roles are allowed to edit or delete a resale unit after it's created:",
+    perm_item_bulk_reassign: "Reassign Leads Between Agents (Multi-select)",
+    perm_item_resale_edit: "Edit & Delete Resale Units",
     feature_export_delete: "Export & Delete Lead Data",
     locked_gm_only: "This permission is locked to the General Manager only and cannot be changed, even by Admin.",
     toast_permissions_saved: "Permissions saved",
@@ -2345,13 +2374,14 @@ function renderTeam(){
   let html = "";
   if (level >= 3) {
     const c = COMPANY_SETTINGS || {};
+    const isGM = myRole() === "general_manager";
     html += `<div class="panel">
       <div class="panel-head"><h2>${t("company_settings")}</h2></div>
       <div style="display:flex; align-items:center; gap:14px; margin-bottom:16px;">
         <div class="team-avatar" id="companyLogoPreview" style="width:56px; height:56px; font-size:20px; overflow:hidden;">${c.logoBase64 ? `<img src="${c.logoBase64}" style="width:100%;height:100%;object-fit:cover;">` : "🏢"}</div>
         <div class="field" style="margin-top:0; flex:1;">
           <label data-i18n="f_company_logo">Company Logo</label>
-          <input type="file" id="companyLogoInput" accept="image/*">
+          ${isGM ? `<input type="file" id="companyLogoInput" accept="image/*">` : `<div style="font-size:11px; color:var(--slate);">${t("locked_gm_only")}</div>`}
         </div>
       </div>
       <div class="field"><label data-i18n="f_company_name">Company Name</label><input type="text" id="companyNameInput" value="${escapeHtml(c.name||"")}"></div>
@@ -2360,19 +2390,18 @@ function renderTeam(){
 
     <div class="panel">
       <div class="panel-head"><h2>${t("permissions_management")}</h2></div>
-      <div style="font-size:12px; color:var(--slate); margin-bottom:12px; line-height:1.6;">${t("feature_bulk_reassign_desc")}</div>
-      <div style="display:flex; flex-wrap:wrap; gap:8px;" id="permBulkRoles">
-        ${ROLE_KEYS.map(r => `<button type="button" class="perm-role-btn" data-perm="bulk_reassign" data-role="${r}" style="border:1px solid ${PERMISSIONS_CONFIG.bulk_reassign.includes(r)?'var(--gold)':'var(--navy-line)'}; background:${PERMISSIONS_CONFIG.bulk_reassign.includes(r)?'var(--gold)':'transparent'}; color:${PERMISSIONS_CONFIG.bulk_reassign.includes(r)?'#fff':'var(--slate)'}; border-radius:16px; padding:7px 14px; font-size:11.5px; font-weight:700;">${t('role_'+r)}</button>`).join("")}
-      </div>
-
-      <div style="font-size:12px; color:var(--slate); margin:20px 0 12px; line-height:1.6;">${t("feature_resale_edit_desc")}</div>
-      <div style="display:flex; flex-wrap:wrap; gap:8px;" id="permResaleRoles">
-        ${ROLE_KEYS.map(r => `<button type="button" class="perm-role-btn" data-perm="resale_edit_delete" data-role="${r}" style="border:1px solid ${PERMISSIONS_CONFIG.resale_edit_delete.includes(r)?'var(--gold)':'var(--navy-line)'}; background:${PERMISSIONS_CONFIG.resale_edit_delete.includes(r)?'var(--gold)':'transparent'}; color:${PERMISSIONS_CONFIG.resale_edit_delete.includes(r)?'#fff':'var(--slate)'}; border-radius:16px; padding:7px 14px; font-size:11.5px; font-weight:700;">${t('role_'+r)}</button>`).join("")}
-      </div>
-
-      <div class="modal-actions" style="margin-top:16px;"><button type="button" class="btn-gold" id="savePermissionsBtn" data-i18n="save">Save</button></div>
-      <div style="margin-top:18px; padding-top:14px; border-top:1px solid var(--navy-line); font-size:12px; color:var(--slate); line-height:1.6;">
-        <strong style="color:var(--ivory);">${t("feature_export_delete")}</strong><br>${t("locked_gm_only")}
+      <div class="perm-list">
+        ${PERMISSION_FEATURES.map((f,i) => `
+          <div class="perm-list-item" data-perm-key="${f.key}">
+            <div class="perm-num">${i+1}</div>
+            <div class="perm-list-title">${t(f.titleKey)}</div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="perm-arrow"><path d="M9 18l6-6-6-6"/></svg>
+          </div>`).join("")}
+        <div class="perm-list-item locked">
+          <div class="perm-num">${PERMISSION_FEATURES.length+1}</div>
+          <div class="perm-list-title">${t("feature_export_delete")}</div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="perm-arrow"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        </div>
       </div>
     </div>`;
   }
@@ -2380,7 +2409,8 @@ function renderTeam(){
   document.getElementById("content").innerHTML = html;
 
   if (level >= 3) {
-    document.getElementById("companyLogoInput").addEventListener("change", async (e) => {
+    const logoInput = document.getElementById("companyLogoInput");
+    if (logoInput) logoInput.addEventListener("change", async (e) => {
       const file = e.target.files[0];
       if (!file) return;
       const base64 = await resizeImageFile(file, 200);
@@ -2396,29 +2426,37 @@ function renderTeam(){
       toast(t("toast_company_saved"));
     });
     document.querySelectorAll("[data-edit-agent]").forEach(btn => btn.addEventListener("click", () => openEditAgentModal(btn.dataset.editAgent)));
-
-    const pendingPerms = {
-      bulk_reassign: new Set(PERMISSIONS_CONFIG.bulk_reassign),
-      resale_edit_delete: new Set(PERMISSIONS_CONFIG.resale_edit_delete),
-    };
-    document.querySelectorAll(".perm-role-btn").forEach(btn => btn.addEventListener("click", () => {
-      const key = btn.dataset.perm;
-      const r = btn.dataset.role;
-      const set = pendingPerms[key];
-      const nowOn = !set.has(r);
-      if (nowOn) set.add(r); else set.delete(r);
-      btn.style.borderColor = nowOn ? "var(--gold)" : "var(--navy-line)";
-      btn.style.background = nowOn ? "var(--gold)" : "transparent";
-      btn.style.color = nowOn ? "#fff" : "var(--slate)";
-    }));
-    document.getElementById("savePermissionsBtn").addEventListener("click", async () => {
-      await db.collection("settings").doc("permissions").set({
-        bulk_reassign: Array.from(pendingPerms.bulk_reassign),
-        resale_edit_delete: Array.from(pendingPerms.resale_edit_delete),
-      }, { merge: true });
-      toast(t("toast_permissions_saved"));
-    });
+    document.querySelectorAll("[data-perm-key]").forEach(el => el.addEventListener("click", () => openPermissionModal(el.dataset.permKey)));
   }
+}
+
+const PERMISSION_FEATURES = [
+  { key: "bulk_reassign", titleKey: "perm_item_bulk_reassign", descKey: "feature_bulk_reassign_desc" },
+  { key: "resale_edit_delete", titleKey: "perm_item_resale_edit", descKey: "feature_resale_edit_desc" },
+];
+
+function openPermissionModal(key){
+  const feature = PERMISSION_FEATURES.find(f => f.key === key);
+  if (!feature) return;
+  document.getElementById("permDetailTitle").textContent = t(feature.titleKey);
+  document.getElementById("permDetailDesc").textContent = t(feature.descKey);
+  const current = new Set(PERMISSIONS_CONFIG[key] || []);
+  const rolesWrap = document.getElementById("permDetailRoles");
+  rolesWrap.innerHTML = ROLE_KEYS.map(r => `<button type="button" class="perm-role-btn" data-role="${r}" style="border:1px solid ${current.has(r)?'var(--gold)':'var(--navy-line)'}; background:${current.has(r)?'var(--gold)':'transparent'}; color:${current.has(r)?'#fff':'var(--slate)'}; border-radius:16px; padding:7px 14px; font-size:11.5px; font-weight:700;">${t('role_'+r)}</button>`).join("");
+  rolesWrap.querySelectorAll(".perm-role-btn").forEach(btn => btn.addEventListener("click", () => {
+    const r = btn.dataset.role;
+    const nowOn = !current.has(r);
+    if (nowOn) current.add(r); else current.delete(r);
+    btn.style.borderColor = nowOn ? "var(--gold)" : "var(--navy-line)";
+    btn.style.background = nowOn ? "var(--gold)" : "transparent";
+    btn.style.color = nowOn ? "#fff" : "var(--slate)";
+  }));
+  document.getElementById("permDetailSaveBtn").onclick = async () => {
+    await db.collection("settings").doc("permissions").set({ [key]: Array.from(current) }, { merge: true });
+    toast(t("toast_permissions_saved"));
+    closeModal("permissionDetailModal");
+  };
+  document.getElementById("permissionDetailModal").classList.add("show");
 }
 function teamRow(a, level){
   const avatar = a.avatarBase64 ? `<img src="${a.avatarBase64}" style="width:100%;height:100%;object-fit:cover;">` : (a.name||a.email||"?").charAt(0).toUpperCase();
