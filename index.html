@@ -275,15 +275,16 @@ tbody tr:last-child td{ border-bottom:none; }
       <button data-lang="ar">AR</button>
       <button data-lang="en">EN</button>
     </div>
-    <div class="brand-emblem">
+    <div class="brand-emblem" id="loginEmblem">
       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M6 30 L24 16 L42 30" stroke="#A5793A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M12 28 V40 H36 V28" stroke="#A5793A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
         <rect x="21" y="8" width="8" height="20" stroke="#A5793A" stroke-width="2.2"/>
       </svg>
+      <img id="loginLogoImg" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:50%;">
     </div>
-    <div class="brand-title">100%</div>
-    <div class="brand-sub" data-i18n="brandSub">REAL ESTATE</div>
+    <div class="brand-title" id="loginBrandTitle">100%</div>
+    <div class="brand-sub" data-i18n="brandSub" id="loginBrandSub">REAL ESTATE</div>
 
     <form id="loginForm">
       <div class="field">
@@ -314,8 +315,9 @@ tbody tr:last-child td{ border-bottom:none; }
 <div class="app-shell" id="appShell" style="display:none">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
-      <span class="ring-mark"></span>
-      <div class="sidebar-brand-text">100%<small data-i18n="brandSub">REAL ESTATE</small></div>
+      <span class="ring-mark" id="sidebarRingMark"></span>
+      <img id="sidebarLogoImg" style="display:none; width:30px; height:30px; border-radius:50%; object-fit:cover;">
+      <div class="sidebar-brand-text" id="sidebarBrandName">100%<small data-i18n="brandSub" id="sidebarBrandSub">REAL ESTATE</small></div>
     </div>
     <nav>
       <a href="#dashboard" class="nav-item" data-view="dashboard">
@@ -348,8 +350,8 @@ tbody tr:last-child td{ border-bottom:none; }
       </a>
     </nav>
     <div class="sidebar-foot">
-      <div class="user-chip">
-        <div class="user-avatar" id="userAvatar">--</div>
+      <div class="user-chip" id="userChipBtn" style="cursor:pointer;">
+        <div class="user-avatar" id="userAvatar" style="overflow:hidden;">--</div>
         <div class="user-meta">
           <div class="name" id="userName">—</div>
           <div class="role" id="userEmail">—</div>
@@ -747,8 +749,80 @@ tbody tr:last-child td{ border-bottom:none; }
         <label data-i18n="f_employee_password">Password</label>
         <input type="password" id="employeePassword" required minlength="6">
       </div>
+      <div class="field">
+        <label data-i18n="f_role">Role</label>
+        <select id="employeeRole">
+          <option value="general_manager" data-i18n="role_general_manager">General Manager</option>
+          <option value="company_admin" data-i18n="role_company_admin">Company Admin</option>
+          <option value="sales_manager" data-i18n="role_sales_manager">Sales Manager</option>
+          <option value="marketing_manager" data-i18n="role_marketing_manager">Marketing Manager</option>
+          <option value="sales_team_leader" data-i18n="role_sales_team_leader">Sales Team Leader</option>
+          <option value="marketing_team_leader" data-i18n="role_marketing_team_leader">Marketing Team Leader</option>
+          <option value="sales_supervisor" data-i18n="role_sales_supervisor">Sales Supervisor</option>
+          <option value="marketing_supervisor" data-i18n="role_marketing_supervisor">Marketing Supervisor</option>
+          <option value="sales_agent" selected data-i18n="role_sales_agent">Sales Agent</option>
+          <option value="marketing_agent" data-i18n="role_marketing_agent">Marketing Agent</option>
+        </select>
+      </div>
       <div class="modal-actions">
         <button type="button" class="btn-outline" data-close-modal="employeeModal" data-i18n="cancel">Cancel</button>
+        <button type="submit" class="btn-gold" data-i18n="save">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Edit Agent (role/name) -->
+<div class="modal-backdrop" id="editAgentModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 data-i18n="edit_agent">Edit Employee</h3>
+      <button class="modal-close" data-close-modal="editAgentModal">✕</button>
+    </div>
+    <form id="editAgentForm">
+      <input type="hidden" id="editAgentId">
+      <div class="field"><label data-i18n="f_employee_name">Employee Name</label><input type="text" id="editAgentName" required></div>
+      <div class="field">
+        <label data-i18n="f_role">Role</label>
+        <select id="editAgentRole">
+          <option value="general_manager" data-i18n="role_general_manager">General Manager</option>
+          <option value="company_admin" data-i18n="role_company_admin">Company Admin</option>
+          <option value="sales_manager" data-i18n="role_sales_manager">Sales Manager</option>
+          <option value="marketing_manager" data-i18n="role_marketing_manager">Marketing Manager</option>
+          <option value="sales_team_leader" data-i18n="role_sales_team_leader">Sales Team Leader</option>
+          <option value="marketing_team_leader" data-i18n="role_marketing_team_leader">Marketing Team Leader</option>
+          <option value="sales_supervisor" data-i18n="role_sales_supervisor">Sales Supervisor</option>
+          <option value="marketing_supervisor" data-i18n="role_marketing_supervisor">Marketing Supervisor</option>
+          <option value="sales_agent" data-i18n="role_sales_agent">Sales Agent</option>
+          <option value="marketing_agent" data-i18n="role_marketing_agent">Marketing Agent</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-outline" data-close-modal="editAgentModal" data-i18n="cancel">Cancel</button>
+        <button type="submit" class="btn-gold" data-i18n="save">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: My Profile -->
+<div class="modal-backdrop" id="profileModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 data-i18n="my_profile">My Profile</h3>
+      <button class="modal-close" data-close-modal="profileModal">✕</button>
+    </div>
+    <form id="profileForm">
+      <div style="display:flex; align-items:center; gap:14px; margin-bottom:16px;">
+        <div class="user-avatar" id="profileAvatarPreview" style="width:56px; height:56px; font-size:20px; overflow:hidden;">--</div>
+        <div class="field" style="margin-top:0; flex:1;">
+          <label data-i18n="f_avatar">Profile Picture</label>
+          <input type="file" id="profileAvatarInput" accept="image/*">
+        </div>
+      </div>
+      <div class="field"><label data-i18n="f_employee_name">Employee Name</label><input type="text" id="profileName" required></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-outline" data-close-modal="profileModal" data-i18n="cancel">Cancel</button>
         <button type="submit" class="btn-gold" data-i18n="save">Save</button>
       </div>
     </form>
@@ -864,6 +938,23 @@ const I18N = {
     empty_accounts_title: "لا يوجد حسابات بعد", empty_accounts_sub: "أضف أول شركة أو وسيط تتعامل معه",
     f_linked_account: "الحساب المرتبط (الشركة/الوسيط)", unlinked: "غير مرتبط",
     col_account_name: "الاسم", col_account_type: "النوع", col_account_contact: "مسؤول التواصل",
+
+    f_role: "الوظيفة",
+    role_general_manager: "مدير عام الشركة",
+    role_sales_manager: "مدير المبيعات",
+    role_marketing_manager: "مدير الماركتنج",
+    role_company_admin: "أدمن الشركة",
+    role_sales_team_leader: "سيلز تيم ليدر",
+    role_marketing_team_leader: "ماركتنج تيم ليدر",
+    role_sales_supervisor: "سيلز سوبر فايزور",
+    role_marketing_supervisor: "ماركتنج سوبر فايزور",
+    role_sales_agent: "سيلز اجنت",
+    role_marketing_agent: "ماركتنج اجنت",
+
+    company_settings: "بيانات الشركة", f_company_name: "اسم الشركة", f_company_logo: "شعار الشركة",
+    my_profile: "ملفي الشخصي", f_avatar: "الصورة الشخصية",
+    edit_agent: "تعديل بيانات الموظف", change_photo: "تغيير الصورة",
+    toast_profile_saved: "تم حفظ الملف الشخصي", toast_company_saved: "تم حفظ بيانات الشركة",
     tab_profile: "الملف الشخصي", tab_timeline: "السجل الزمني",
     f_assigned: "مسؤول عن العميل", f_tags: "الوسوم",
     f_tag_add_placeholder: "أضف وسم...", f_add_note_placeholder: "اكتب ملاحظة...",
@@ -954,6 +1045,23 @@ const I18N = {
     empty_accounts_title: "No accounts yet", empty_accounts_sub: "Add your first company or broker",
     f_linked_account: "Linked Account (Company/Broker)", unlinked: "Unlinked",
     col_account_name: "Name", col_account_type: "Type", col_account_contact: "Contact Person",
+
+    f_role: "Role",
+    role_general_manager: "General Manager",
+    role_sales_manager: "Sales Manager",
+    role_marketing_manager: "Marketing Manager",
+    role_company_admin: "Company Admin",
+    role_sales_team_leader: "Sales Team Leader",
+    role_marketing_team_leader: "Marketing Team Leader",
+    role_sales_supervisor: "Sales Supervisor",
+    role_marketing_supervisor: "Marketing Supervisor",
+    role_sales_agent: "Sales Agent",
+    role_marketing_agent: "Marketing Agent",
+
+    company_settings: "Company Settings", f_company_name: "Company Name", f_company_logo: "Company Logo",
+    my_profile: "My Profile", f_avatar: "Profile Picture",
+    edit_agent: "Edit Employee", change_photo: "Change Photo",
+    toast_profile_saved: "Profile saved", toast_company_saved: "Company info saved",
     tab_profile: "Profile", tab_timeline: "Timeline",
     f_assigned: "Assigned To", f_tags: "Tags",
     f_tag_add_placeholder: "Add a tag...", f_add_note_placeholder: "Add a note...",
@@ -988,10 +1096,51 @@ document.addEventListener("DOMContentLoaded", () => {
    ========================================================= */
 let CURRENT_USER = null;
 let LEADS = [], TASKS = [], AGENTS = [], ACCOUNTS = [];
+let COMPANY_SETTINGS = {};
 let currentView = "dashboard";
 
 const STATUSES = ["new","qualified","matched","meeting","offer","negotiation","booking","contract","won","lost"];
 const PIPELINE_STATUSES = ["new","qualified","matched","meeting","offer","negotiation","booking","contract","won"];
+
+/* ---------- Image helper: resize & compress to base64 ---------- */
+function resizeImageFile(file, maxSize){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height) { if (width > maxSize) { height *= maxSize/width; width = maxSize; } }
+        else { if (height > maxSize) { width *= maxSize/height; height = maxSize; } }
+        const canvas = document.createElement("canvas");
+        canvas.width = width; canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ---------- Company branding (public read, works pre-login) ---------- */
+db.collection("settings").doc("company").onSnapshot(doc => {
+  const d = doc.exists ? doc.data() : {};
+  COMPANY_SETTINGS = d;
+  const name = d.name || "100%";
+  const sub = d.name ? "" : null;
+  document.getElementById("loginBrandTitle").textContent = name;
+  document.getElementById("sidebarBrandName").childNodes[0].textContent = name;
+  if (d.logoBase64) {
+    document.getElementById("loginLogoImg").src = d.logoBase64;
+    document.getElementById("loginLogoImg").style.display = "block";
+    document.getElementById("sidebarLogoImg").src = d.logoBase64;
+    document.getElementById("sidebarLogoImg").style.display = "block";
+    document.getElementById("sidebarRingMark").style.display = "none";
+  }
+}, err => console.error("company settings error", err));
 
 const authTimeout = setTimeout(() => {
   const fb = document.getElementById("loadingFallback");
@@ -1014,6 +1163,7 @@ auth.onAuthStateChanged(user => {
   document.getElementById("userName").textContent = user.email.split("@")[0];
   document.getElementById("userEmail").textContent = user.email;
   document.getElementById("userAvatar").textContent = user.email.charAt(0).toUpperCase();
+  document.getElementById("userAvatar").style.backgroundImage = "";
 
   subscribeData();
   initRouter();
@@ -1042,6 +1192,7 @@ loginForm.addEventListener("submit", async (e) => {
 });
 
 document.getElementById("logoutBtn").addEventListener("click", () => { auth.signOut(); });
+document.getElementById("userChipBtn").addEventListener("click", () => openProfileModal());
 
 document.getElementById("menuBtn").addEventListener("click", () => {
   document.getElementById("sidebar").classList.toggle("open");
@@ -1068,6 +1219,7 @@ function subscribeData(){
 
   db.collection("agents").orderBy("createdAt","desc").onSnapshot(snap => {
     AGENTS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    applyPermissions();
     renderView();
   }, err => console.error("agents error", err));
 
@@ -1086,6 +1238,11 @@ function initRouter(){
 function handleRoute(){
   const hash = window.location.hash.replace("#","") || "dashboard";
   currentView = ["dashboard","leads","pipeline","tasks","reports","team","accounts"].includes(hash) ? hash : "dashboard";
+  const restricted = { team:3, accounts:2, reports:2 };
+  if (restricted[currentView] && permLevel() < restricted[currentView]) {
+    currentView = "dashboard";
+    if (hash !== "dashboard") { window.location.hash = "#dashboard"; return; }
+  }
   document.querySelectorAll(".nav-item").forEach(el => el.classList.toggle("active", el.dataset.view === currentView));
   renderView();
 }
@@ -1593,16 +1750,131 @@ function barList(pairs){
 
 /* ---------- Team ---------- */
 function renderTeam(){
-  document.getElementById("content").innerHTML = `<div class="panel">${AGENTS.length ? AGENTS.map(teamRow).join("") : emptyState(t("empty_team_title"), t("empty_team_sub"))}</div>`;
+  const level = permLevel();
+  let html = "";
+  if (level >= 3) {
+    const c = COMPANY_SETTINGS || {};
+    html += `<div class="panel">
+      <div class="panel-head"><h2>${t("company_settings")}</h2></div>
+      <div style="display:flex; align-items:center; gap:14px; margin-bottom:16px;">
+        <div class="team-avatar" id="companyLogoPreview" style="width:56px; height:56px; font-size:20px; overflow:hidden;">${c.logoBase64 ? `<img src="${c.logoBase64}" style="width:100%;height:100%;object-fit:cover;">` : "🏢"}</div>
+        <div class="field" style="margin-top:0; flex:1;">
+          <label data-i18n="f_company_logo">Company Logo</label>
+          <input type="file" id="companyLogoInput" accept="image/*">
+        </div>
+      </div>
+      <div class="field"><label data-i18n="f_company_name">Company Name</label><input type="text" id="companyNameInput" value="${escapeHtml(c.name||"")}"></div>
+      <div class="modal-actions" style="margin-top:16px;"><button type="button" class="btn-gold" id="saveCompanyBtn" data-i18n="save">Save</button></div>
+    </div>`;
+  }
+  html += `<div class="panel">${AGENTS.length ? AGENTS.map(a => teamRow(a, level)).join("") : emptyState(t("empty_team_title"), t("empty_team_sub"))}</div>`;
+  document.getElementById("content").innerHTML = html;
+
+  if (level >= 3) {
+    document.getElementById("companyLogoInput").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const base64 = await resizeImageFile(file, 200);
+      document.getElementById("companyLogoPreview").innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;">`;
+      document.getElementById("companyLogoPreview").dataset.pending = base64;
+    });
+    document.getElementById("saveCompanyBtn").addEventListener("click", async () => {
+      const name = document.getElementById("companyNameInput").value.trim();
+      const pending = document.getElementById("companyLogoPreview").dataset.pending;
+      const data = { name };
+      if (pending) data.logoBase64 = pending;
+      await db.collection("settings").doc("company").set(data, { merge: true });
+      toast(t("toast_company_saved"));
+    });
+    document.querySelectorAll("[data-edit-agent]").forEach(btn => btn.addEventListener("click", () => openEditAgentModal(btn.dataset.editAgent)));
+  }
 }
-function teamRow(a){
+function teamRow(a, level){
+  const avatar = a.avatarBase64 ? `<img src="${a.avatarBase64}" style="width:100%;height:100%;object-fit:cover;">` : (a.name||a.email||"?").charAt(0).toUpperCase();
+  const editBtn = level >= 3 ? `<button class="icon-btn" data-edit-agent="${a.id}" style="margin-inline-start:auto;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>` : "";
   return `<div class="team-row">
-    <div class="team-avatar">${(a.name||a.email||"?").charAt(0).toUpperCase()}</div>
+    <div class="team-avatar" style="overflow:hidden;">${avatar}</div>
     <div class="team-info">
       <div class="name">${escapeHtml(a.name||"—")}</div>
-      <div class="email">${escapeHtml(a.email||"")}</div>
+      <div class="email">${escapeHtml(a.email||"")}${a.role ? " · " + t("role_"+a.role) : ""}</div>
     </div>
+    ${editBtn}
   </div>`;
+}
+function openEditAgentModal(id){
+  const a = AGENTS.find(x => x.id===id);
+  if (!a) return;
+  document.getElementById("editAgentId").value = id;
+  document.getElementById("editAgentName").value = a.name || "";
+  document.getElementById("editAgentRole").value = a.role || "sales_agent";
+  document.getElementById("editAgentModal").classList.add("show");
+}
+document.getElementById("editAgentForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const id = document.getElementById("editAgentId").value;
+  await db.collection("agents").doc(id).update({
+    name: document.getElementById("editAgentName").value.trim(),
+    role: document.getElementById("editAgentRole").value,
+  });
+  toast(t("toast_updated"));
+  closeModal("editAgentModal");
+});
+
+/* ---------- My Profile ---------- */
+function openProfileModal(){
+  const mine = myAgentDoc();
+  document.getElementById("profileName").value = (mine && mine.name) || (CURRENT_USER.email.split("@")[0]);
+  const preview = document.getElementById("profileAvatarPreview");
+  preview.innerHTML = (mine && mine.avatarBase64) ? `<img src="${mine.avatarBase64}" style="width:100%;height:100%;object-fit:cover;">` : CURRENT_USER.email.charAt(0).toUpperCase();
+  preview.dataset.pending = "";
+  document.getElementById("profileAvatarInput").value = "";
+  document.getElementById("profileModal").classList.add("show");
+}
+document.getElementById("profileAvatarInput").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const base64 = await resizeImageFile(file, 200);
+  document.getElementById("profileAvatarPreview").innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;">`;
+  document.getElementById("profileAvatarPreview").dataset.pending = base64;
+});
+document.getElementById("profileForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const mine = myAgentDoc();
+  const pending = document.getElementById("profileAvatarPreview").dataset.pending;
+  const data = { name: document.getElementById("profileName").value.trim(), email: CURRENT_USER.email };
+  if (!mine) { data.role = "general_manager"; data.createdAt = firebase.firestore.FieldValue.serverTimestamp(); }
+  if (pending) data.avatarBase64 = pending;
+  await db.collection("agents").doc(CURRENT_USER.uid).set(data, { merge: true });
+  toast(t("toast_profile_saved"));
+  closeModal("profileModal");
+});
+
+/* ---------- Permissions ---------- */
+const ADMIN_ROLES = ["general_manager","company_admin"];
+const MID_ROLES = ["sales_manager","marketing_manager","sales_team_leader","marketing_team_leader","sales_supervisor","marketing_supervisor"];
+function myAgentDoc(){ return AGENTS.find(a => a.id === (CURRENT_USER && CURRENT_USER.uid)); }
+function myRole(){ const a = myAgentDoc(); return a && a.role ? a.role : "general_manager"; }
+function permLevel(){ const r = myRole(); if (ADMIN_ROLES.includes(r)) return 3; if (MID_ROLES.includes(r)) return 2; return 1; }
+
+function applyPermissions(){
+  const level = permLevel();
+  const teamNav = document.querySelector('.nav-item[data-view="team"]');
+  const accountsNav = document.querySelector('.nav-item[data-view="accounts"]');
+  const reportsNav = document.querySelector('.nav-item[data-view="reports"]');
+  if (teamNav) teamNav.style.display = level >= 3 ? "flex" : "none";
+  if (accountsNav) accountsNav.style.display = level >= 2 ? "flex" : "none";
+  if (reportsNav) reportsNav.style.display = level >= 2 ? "flex" : "none";
+
+  const mine = myAgentDoc();
+  if (mine) {
+    document.getElementById("userName").textContent = mine.name || CURRENT_USER.email.split("@")[0];
+    document.getElementById("userAvatar").innerHTML = mine.avatarBase64 ? `<img src="${mine.avatarBase64}" style="width:100%;height:100%;object-fit:cover;">` : CURRENT_USER.email.charAt(0).toUpperCase();
+  }
+
+  const restricted = { team:3, accounts:2, reports:2 };
+  if (restricted[currentView] && level < restricted[currentView]) {
+    window.location.hash = "#dashboard";
+  }
 }
 
 /* =========================================================
@@ -1686,6 +1958,7 @@ document.getElementById("employeeForm").addEventListener("submit", async (e) => 
   const name = document.getElementById("employeeName").value.trim();
   const email = document.getElementById("employeeEmail").value.trim();
   const password = document.getElementById("employeePassword").value;
+  const role = document.getElementById("employeeRole").value;
   const submitBtn = e.target.querySelector('button[type="submit"]');
   submitBtn.disabled = true;
 
@@ -1695,7 +1968,7 @@ document.getElementById("employeeForm").addEventListener("submit", async (e) => 
   try {
     const cred = await secondaryApp.auth().createUserWithEmailAndPassword(email, password);
     await db.collection("agents").doc(cred.user.uid).set({
-      name, email,
+      name, email, role,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       addedBy: CURRENT_USER.uid,
     });
