@@ -415,6 +415,7 @@ tbody tr:last-child td{ border-bottom:none; }
           </select>
         </div>
         <div class="field"><label data-i18n="f_project">Project</label><input type="text" id="leadProject"></div>
+        <div class="field"><label data-i18n="f_campaign">Campaign</label><input type="text" id="leadCampaign"></div>
         <div class="field">
           <label data-i18n="f_unit_type">Unit Type</label>
           <select id="leadUnitType">
@@ -588,6 +589,7 @@ tbody tr:last-child td{ border-bottom:none; }
             </select>
           </div>
           <div class="field"><label data-i18n="f_project">Project</label><input type="text" id="detailProject"></div>
+          <div class="field"><label data-i18n="f_campaign">Campaign</label><input type="text" id="detailCampaign"></div>
           <div class="field">
             <label data-i18n="f_unit_type">Unit Type</label>
             <select id="detailUnitType">
@@ -800,6 +802,10 @@ const I18N = {
     lost_budget: "الميزانية", lost_project: "المشروع", lost_timing: "التوقيت",
     lost_competitor: "منافس", lost_noresponse: "عدم رد", lost_other: "أخرى",
     by_lost_reason: "توزيع أسباب الخسارة",
+    f_campaign: "اسم الحملة / الإعلان", by_campaign: "توزيع العملاء حسب الحملة",
+    source_roi: "عائد كل مصدر (Source ROI)",
+    roi_source: "المصدر", roi_leads: "العملاء", roi_won: "صفقات فايزة",
+    roi_rate: "نسبة التحويل", roi_value: "إجمالي القيمة",
     pipeline_title: "مسار الصفقات", pipeline_sub: "اسحب البطاقات بين المراحل لتحديث حالة الصفقة",
     tasks_title: "المهام والمتابعات", tasks_sub: "لا تفوت متابعة أي عميل", add_task: "إضافة مهمة",
     modal_add_task: "إضافة مهمة متابعة", f_task_title: "عنوان المهمة", f_task_lead: "متعلقة بالعميل",
@@ -877,6 +883,10 @@ const I18N = {
     lost_budget: "Budget", lost_project: "Project", lost_timing: "Timing",
     lost_competitor: "Competitor", lost_noresponse: "No Response", lost_other: "Other",
     by_lost_reason: "Lost Reason Breakdown",
+    f_campaign: "Campaign / Ad Name", by_campaign: "Leads by Campaign",
+    source_roi: "Source ROI",
+    roi_source: "Source", roi_leads: "Leads", roi_won: "Won Deals",
+    roi_rate: "Conversion Rate", roi_value: "Total Value",
     pipeline_title: "Pipeline", pipeline_sub: "Drag cards between stages to update deal status",
     tasks_title: "Tasks & Follow-ups", tasks_sub: "Never miss a follow-up", add_task: "Add Task",
     modal_add_task: "Add Follow-up Task", f_task_title: "Task Title", f_task_lead: "Related Lead",
@@ -1172,6 +1182,7 @@ function openLeadModal(id){
       document.getElementById("leadSource").value = lead.source||"facebook";
       document.getElementById("leadRequirement").value = lead.requirement||"buy";
       document.getElementById("leadProject").value = lead.project||"";
+      document.getElementById("leadCampaign").value = lead.campaign||"";
       document.getElementById("leadUnitType").value = lead.unitType||"apartment";
       document.getElementById("leadArea").value = lead.area||"";
       document.getElementById("leadBudgetFrom").value = lead.budgetFrom||"";
@@ -1199,6 +1210,7 @@ document.getElementById("leadForm").addEventListener("submit", async (e) => {
     source: document.getElementById("leadSource").value,
     requirement: document.getElementById("leadRequirement").value,
     project: document.getElementById("leadProject").value.trim(),
+    campaign: document.getElementById("leadCampaign").value.trim(),
     unitType: document.getElementById("leadUnitType").value,
     area: document.getElementById("leadArea").value.trim(),
     budgetFrom: document.getElementById("leadBudgetFrom").value.trim(),
@@ -1240,6 +1252,7 @@ const HEADER_MAP = {
   budget: ["budget","الميزانية","الميزانيه"],
   source: ["source","المصدر"],
   project: ["project","المشروع"],
+  campaign: ["campaign","الحملة","اسم الحملة"],
   area: ["area","المنطقة"],
   notes: ["notes","ملاحظات","note"],
 };
@@ -1295,6 +1308,7 @@ document.getElementById("importFileInput").addEventListener("change", (e) => {
         budget: findHeaderKey(headers, HEADER_MAP.budget),
         source: findHeaderKey(headers, HEADER_MAP.source),
         project: findHeaderKey(headers, HEADER_MAP.project),
+        campaign: findHeaderKey(headers, HEADER_MAP.campaign),
         area: findHeaderKey(headers, HEADER_MAP.area),
         notes: findHeaderKey(headers, HEADER_MAP.notes),
       };
@@ -1311,6 +1325,7 @@ document.getElementById("importFileInput").addEventListener("change", (e) => {
           budgetFrom: map.budget ? String(r[map.budget]||"").trim() : "",
           budgetTo: "",
           project: map.project ? String(r[map.project]||"").trim() : "",
+          campaign: map.campaign ? String(r[map.campaign]||"").trim() : "",
           area: map.area ? String(r[map.area]||"").trim() : "",
           source: normalizeSource(map.source ? r[map.source] : ""),
           notes: map.notes ? String(r[map.notes]||"").trim() : "",
@@ -1463,12 +1478,39 @@ function renderReports(){
   const byAgent = {}; LEADS.forEach(l => { const a=l.agentEmail||"—"; byAgent[a]=(byAgent[a]||0)+1; });
   const byLostReason = {};
   LEADS.filter(l => l.status==="lost" && l.lostReason).forEach(l => { byLostReason[l.lostReason]=(byLostReason[l.lostReason]||0)+1; });
+  const byCampaign = {};
+  LEADS.filter(l => l.campaign).forEach(l => { byCampaign[l.campaign]=(byCampaign[l.campaign]||0)+1; });
+
+  const roiBySource = {};
+  LEADS.forEach(l => {
+    const s = l.source||"other";
+    if (!roiBySource[s]) roiBySource[s] = { leads:0, won:0, value:0 };
+    roiBySource[s].leads++;
+    if (l.status==="won") { roiBySource[s].won++; roiBySource[s].value += parseFloat(l.dealValue)||0; }
+  });
 
   document.getElementById("content").innerHTML = `
+    <div class="panel"><div class="panel-head"><h2>${t("source_roi")}</h2></div>${roiTable(roiBySource)}</div>
     <div class="panel"><div class="panel-head"><h2>${t("by_status")}</h2></div>${barList(Object.entries(byStatus).map(([k,v])=>[t('status_'+k),v]))}</div>
     <div class="panel"><div class="panel-head"><h2>${t("by_source")}</h2></div>${barList(Object.entries(bySource).map(([k,v])=>[t('source_'+k)||k,v]))}</div>
+    <div class="panel"><div class="panel-head"><h2>${t("by_campaign")}</h2></div>${barList(Object.entries(byCampaign))}</div>
     <div class="panel"><div class="panel-head"><h2>${t("by_agent")}</h2></div>${barList(Object.entries(byAgent))}</div>
     <div class="panel"><div class="panel-head"><h2>${t("by_lost_reason")}</h2></div>${barList(Object.entries(byLostReason).map(([k,v])=>[t('lost_'+k)||k,v]))}</div>`;
+}
+function roiTable(data){
+  const entries = Object.entries(data);
+  if (!entries.length) return emptyState(t("empty_leads_title"), t("empty_leads_sub"));
+  return `<table><thead><tr>
+    <th>${t("roi_source")}</th><th>${t("roi_leads")}</th><th>${t("roi_won")}</th><th>${t("roi_rate")}</th><th>${t("roi_value")}</th>
+    </tr></thead><tbody>
+    ${entries.map(([src,d]) => `<tr>
+      <td>${t('source_'+src)||src}</td>
+      <td>${d.leads}</td>
+      <td>${d.won}</td>
+      <td>${d.leads ? Math.round((d.won/d.leads)*100) : 0}%</td>
+      <td>${d.value ? d.value.toLocaleString() : "—"}</td>
+    </tr>`).join("")}
+    </tbody></table>`;
 }
 function barList(pairs){
   const max = Math.max(1, ...pairs.map(p=>p[1]));
@@ -1595,6 +1637,7 @@ function openLeadDetail(id){
   document.getElementById("detailSource").value = lead.source || "facebook";
   document.getElementById("detailRequirement").value = lead.requirement || "buy";
   document.getElementById("detailProject").value = lead.project || "";
+  document.getElementById("detailCampaign").value = lead.campaign || "";
   document.getElementById("detailUnitType").value = lead.unitType || "apartment";
   document.getElementById("detailArea").value = lead.area || "";
   document.getElementById("detailBudgetFrom").value = lead.budgetFrom || "";
@@ -1701,6 +1744,7 @@ document.getElementById("detailForm").addEventListener("submit", async (e) => {
     source: document.getElementById("detailSource").value,
     requirement: document.getElementById("detailRequirement").value,
     project: document.getElementById("detailProject").value.trim(),
+    campaign: document.getElementById("detailCampaign").value.trim(),
     unitType: document.getElementById("detailUnitType").value,
     area: document.getElementById("detailArea").value.trim(),
     budgetFrom: document.getElementById("detailBudgetFrom").value.trim(),
