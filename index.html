@@ -80,6 +80,7 @@ input,select,textarea{ font-family:var(--font); }
 .field label{ display:block; font-size:12px; color:var(--slate); margin-bottom:6px; letter-spacing:.3px; }
 .field input, .field select, .field textarea{ width:100%; background:var(--navy); border:1px solid var(--navy-line); color:var(--ivory); padding:12px 14px; border-radius:var(--radius-sm); font-size:14px; outline:none; transition:border-color .15s; }
 .field input:focus, .field select:focus, .field textarea:focus{ border-color:var(--gold); }
+.field input:disabled, .field select:disabled, .field textarea:disabled{ opacity:.6; cursor:not-allowed; background:rgba(91,107,140,.06); }
 .field textarea{ resize:vertical; min-height:70px; }
 .btn-primary{ width:100%; margin-top:24px; background:linear-gradient(180deg, var(--gold-dim), var(--gold)); color:var(--ivory); font-weight:800; padding:13px; border-radius:var(--radius-sm); font-size:15px; letter-spacing:.3px; transition:transform .12s, box-shadow .12s; }
 .btn-primary:hover{ transform:translateY(-1px); box-shadow:0 8px 20px rgba(201,162,75,.25); }
@@ -259,8 +260,8 @@ tbody tr:last-child td{ border-bottom:none; }
 .timeline-text{ font-size:13px; color:var(--ivory); font-weight:600; }
 .timeline-meta{ font-size:11px; color:var(--slate); margin-top:2px; }
 
-.row-name-link{ cursor:pointer; }
-.row-name-link:hover{ color:var(--gold-bright); text-decoration:underline; }
+.row-name-link{ cursor:pointer; color:var(--gold-bright); font-weight:700; text-decoration:underline; text-decoration-style:dotted; text-underline-offset:2px; }
+.row-name-link:hover{ color:var(--gold); text-decoration-style:solid; }
 .mini-contact{ display:flex; gap:6px; }
 .mini-contact .icon-btn.call{ color:#2E9E5B; border-color:rgba(46,158,91,.3); }
 .mini-contact .icon-btn.whatsapp{ color:#25D366; border-color:rgba(37,211,102,.3); }
@@ -273,6 +274,7 @@ tbody tr:last-child td{ border-bottom:none; }
 .stage-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(88px,1fr)); gap:8px; margin-bottom:22px; }
 .stage-card{ background:linear-gradient(180deg, var(--navy-panel), var(--navy)); border:1px solid var(--navy-line); border-radius:12px; padding:10px 8px; text-align:center; transition:border-color .12s, transform .12s; }
 .stage-card:active{ transform:scale(.96); border-color:var(--gold); }
+.stat-card[data-stat-kind]:active{ transform:scale(.97); border-color:var(--gold); }
 .stage-card .lbl{ font-size:10px; color:var(--slate); font-weight:600; margin-bottom:4px; line-height:1.3; }
 .stage-card .val{ font-size:18px; font-weight:800; color:var(--gold-bright); }
 
@@ -281,7 +283,7 @@ tbody tr:last-child td{ border-bottom:none; }
 .leader-card .leader-label{ font-size:11px; color:var(--slate); font-weight:700; text-transform:uppercase; letter-spacing:.4px; margin-bottom:8px; }
 .leader-card .leader-name{ font-size:16px; font-weight:800; color:var(--ivory); }
 .leader-card .leader-count{ font-size:12px; color:var(--gold-bright); font-weight:700; margin-top:4px; }
-@media (max-width:900px){ .leader-grid{ grid-template-columns:1fr; } .top-header{ padding:10px 16px; } }
+@media (max-width:900px){ .leader-grid{ grid-template-columns:1fr; } .top-header{ padding:10px 16px; } .pipeline-board{ display:flex; flex-direction:column; grid-auto-flow:unset; overflow-x:visible; } .pipe-col{ width:100%; } }
 
 </style>
 </head>
@@ -578,6 +580,13 @@ tbody tr:last-child td{ border-bottom:none; }
         <select id="quickMoveTo" style="flex:1; min-width:150px;"></select>
         <button type="button" class="btn-gold" id="quickUpdateBtn" data-i18n="quick_update_btn">Update & Move</button>
       </div>
+      <div class="field">
+        <label data-i18n="f_next_followup_at">Next Follow-up Date & Time</label>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <input type="datetime-local" id="quickFollowupAt" style="flex:1; min-width:170px;">
+          <button type="button" class="btn-outline" id="quickScheduleBtn" data-i18n="schedule_followup">Schedule</button>
+        </div>
+      </div>
     </div>
 
     <div class="tabs-row">
@@ -586,6 +595,7 @@ tbody tr:last-child td{ border-bottom:none; }
     </div>
 
     <div class="tab-panel active" id="tabProfile">
+      <div id="profileReadonlyNotice" style="display:none; background:rgba(165,121,58,.08); border:1px solid var(--gold-dim); border-radius:10px; padding:10px 12px; font-size:12px; color:var(--slate); margin-bottom:14px;" data-i18n="readonly_notice"></div>
       <form id="detailForm">
         <input type="hidden" id="detailLeadId">
         <div class="form-grid">
@@ -698,7 +708,7 @@ tbody tr:last-child td{ border-bottom:none; }
         </div>
         <div class="modal-actions">
           <button type="button" class="btn-outline" data-close-modal="leadDetailModal" data-i18n="cancel">Cancel</button>
-          <button type="submit" class="btn-gold" data-i18n="save">Save</button>
+          <button type="submit" class="btn-gold" id="detailSaveBtn" data-i18n="save">Save</button>
         </div>
       </form>
     </div>
@@ -736,7 +746,7 @@ tbody tr:last-child td{ border-bottom:none; }
             <option value="meeting" data-i18n="type_meeting">Meeting</option>
           </select>
         </div>
-        <div class="field full"><label data-i18n="f_task_due">Due Date</label><input type="date" id="taskDue" required></div>
+        <div class="field full"><label data-i18n="f_task_due">Due Date</label><input type="datetime-local" id="taskDue" required></div>
       </div>
       <div class="modal-actions">
         <button type="button" class="btn-outline" data-close-modal="taskModal" data-i18n="cancel">Cancel</button>
@@ -908,7 +918,7 @@ const I18N = {
     nav_dashboard: "الرئيسية", nav_leads: "العملاء المحتملين", nav_pipeline: "مسار الصفقات",
     nav_tasks: "المهام والمتابعات", nav_reports: "التقارير", nav_team: "الفريق", logout: "تسجيل الخروج",
     dash_title: "الرئيسية", dash_sub: "نظرة عامة على أداء اليوم",
-    stat_total_leads: "إجمالي العملاء المحتملين", stat_open_deals: "صفقات مفتوحة",
+    stat_total_leads: "إجمالي العملاء", stat_open_deals: "صفقات مفتوحة",
     stat_won_month: "صفقات مغلقة هذا الشهر", stat_followups_today: "متابعات اليوم",
     recent_leads: "أحدث العملاء المحتملين", today_tasks: "مهام اليوم", view_all: "عرض الكل",
     leads_title: "العملاء المحتملين", leads_sub: "إدارة جهات الاتصال والعملاء المحتملين",
@@ -929,6 +939,7 @@ const I18N = {
     source_walkin: "زيارة مباشرة", source_call: "مكالمة", source_other: "أخرى",
     source_tiktok: "تيك توك", source_whatsapp: "واتساب",
     import_leads: "استيراد شيت", modal_import: "استيراد عملاء من ملف Excel",
+    export_leads: "تصدير كل العملاء",
     import_instructions: "الملف لازم يكون Excel (.xlsx) أو CSV، وفيه عمود اسمه \"الاسم\" أو \"Name\" على الأقل. الأعمدة المدعومة: الاسم، الهاتف، البريد الإلكتروني، الاهتمام، الميزانية، المصدر، ملاحظات.",
     import_file_label: "اختر الملف",
     import_start: "ابدأ الاستيراد",
@@ -956,6 +967,10 @@ const I18N = {
     actions: "إجراء", no_activity_yet: "لا يوجد نشاط بعد",
     f_quick_summary: "ملخص التعامل", quick_summary_placeholder: "إيه اللي حصل في المكالمة/الزيارة؟",
     quick_update_btn: "تحديث ونقل", toast_quick_updated: "تم تحديث حالة العميل",
+    f_next_followup_at: "موعد المتابعة القادم (تاريخ ووقت)", schedule_followup: "حدد الموعد",
+    toast_followup_scheduled: "تم تحديد موعد المتابعة", act_followup_scheduled: "تم تحديد موعد متابعة بتاريخ",
+    followup_task_title: "متابعة",
+    readonly_notice: "هذه البيانات للعرض فقط. للتعديل عليها، تواصل مع مدير النظام.",
     f_campaign: "اسم الحملة / الإعلان", by_campaign: "توزيع العملاء حسب الحملة",
     source_roi: "عائد كل مصدر (Source ROI)",
     roi_source: "المصدر", roi_leads: "العملاء", roi_won: "صفقات فايزة",
@@ -964,7 +979,7 @@ const I18N = {
     tasks_title: "المهام والمتابعات", tasks_sub: "لا تفوت متابعة أي عميل", add_task: "إضافة مهمة",
     modal_add_task: "إضافة مهمة متابعة", f_task_title: "عنوان المهمة", f_task_lead: "متعلقة بالعميل",
     f_task_due: "تاريخ الاستحقاق", f_task_type: "نوع المهمة",
-    type_call: "مكالمة", type_visit: "زيارة", type_email: "بريد إلكتروني", type_meeting: "اجتماع",
+    type_call: "مكالمة", type_visit: "زيارة", type_email: "بريد إلكتروني", type_meeting: "اجتماع", type_followup: "متابعة",
     empty_tasks_title: "لا توجد مهام", empty_tasks_sub: "أضف مهمة متابعة جديدة", overdue: "متأخرة",
     reports_title: "التقارير", reports_sub: "أداء المبيعات والفريق",
     by_status: "توزيع العملاء حسب الحالة", by_source: "توزيع العملاء حسب المصدر", by_agent: "أداء الموظفين",
@@ -1019,7 +1034,7 @@ const I18N = {
     nav_dashboard: "Dashboard", nav_leads: "Leads", nav_pipeline: "Pipeline",
     nav_tasks: "Tasks & Follow-ups", nav_reports: "Reports", nav_team: "Team", logout: "Logout",
     dash_title: "Dashboard", dash_sub: "Today's performance overview",
-    stat_total_leads: "Total Leads", stat_open_deals: "Open Deals",
+    stat_total_leads: "Total Customers", stat_open_deals: "Open Deals",
     stat_won_month: "Closed This Month", stat_followups_today: "Follow-ups Today",
     recent_leads: "Recent Leads", today_tasks: "Today's Tasks", view_all: "View all",
     leads_title: "Leads", leads_sub: "Manage contacts and leads",
@@ -1040,6 +1055,7 @@ const I18N = {
     source_walkin: "Walk-in", source_call: "Phone Call", source_other: "Other",
     source_tiktok: "TikTok", source_whatsapp: "WhatsApp",
     import_leads: "Import Sheet", modal_import: "Import Leads from Excel",
+    export_leads: "Export All Leads",
     import_instructions: "The file must be Excel (.xlsx) or CSV, with at least a \"Name\" column. Supported columns: Name, Phone, Email, Interest, Budget, Source, Notes.",
     import_file_label: "Choose file",
     import_start: "Start Import",
@@ -1067,6 +1083,10 @@ const I18N = {
     actions: "actions", no_activity_yet: "No activity yet",
     f_quick_summary: "Interaction Summary", quick_summary_placeholder: "What happened in this call/visit?",
     quick_update_btn: "Update & Move", toast_quick_updated: "Lead status updated",
+    f_next_followup_at: "Next Follow-up Date & Time", schedule_followup: "Schedule",
+    toast_followup_scheduled: "Follow-up scheduled", act_followup_scheduled: "Follow-up scheduled for",
+    followup_task_title: "Follow-up",
+    readonly_notice: "This data is view-only. Contact your system admin to make changes.",
     f_campaign: "Campaign / Ad Name", by_campaign: "Leads by Campaign",
     source_roi: "Source ROI",
     roi_source: "Source", roi_leads: "Leads", roi_won: "Won Deals",
@@ -1075,7 +1095,7 @@ const I18N = {
     tasks_title: "Tasks & Follow-ups", tasks_sub: "Never miss a follow-up", add_task: "Add Task",
     modal_add_task: "Add Follow-up Task", f_task_title: "Task Title", f_task_lead: "Related Lead",
     f_task_due: "Due Date", f_task_type: "Task Type",
-    type_call: "Call", type_visit: "Visit", type_email: "Email", type_meeting: "Meeting",
+    type_call: "Call", type_visit: "Visit", type_email: "Email", type_meeting: "Meeting", type_followup: "Follow-up",
     empty_tasks_title: "No tasks", empty_tasks_sub: "Add a new follow-up task", overdue: "Overdue",
     reports_title: "Reports", reports_sub: "Sales & team performance",
     by_status: "Leads by Status", by_source: "Leads by Source", by_agent: "Agent Performance",
@@ -1318,9 +1338,11 @@ function renderView(){
   if (currentView === "dashboard") { title.textContent=t("dash_title"); sub.textContent=t("dash_sub"); renderDashboard(); }
   else if (currentView === "leads") {
     title.textContent=t("leads_title"); sub.textContent=t("leads_sub");
-    actions.innerHTML = `<button class="btn-outline" id="btnImportLeads">${t("import_leads")}</button><button class="btn-gold" id="btnAddLead">+ <span>${t("add_lead")}</span></button>`;
+    const exportBtn = permLevel() >= 3 ? `<button class="btn-outline" id="btnExportLeads">${t("export_leads")}</button>` : "";
+    actions.innerHTML = `${exportBtn}<button class="btn-outline" id="btnImportLeads">${t("import_leads")}</button><button class="btn-gold" id="btnAddLead">+ <span>${t("add_lead")}</span></button>`;
     document.getElementById("btnAddLead").addEventListener("click", () => openLeadModal());
     document.getElementById("btnImportLeads").addEventListener("click", () => openImportModal());
+    if (permLevel() >= 3) document.getElementById("btnExportLeads").addEventListener("click", () => exportAllLeads());
     renderLeads();
   }
   else if (currentView === "pipeline") { title.textContent=t("pipeline_title"); sub.textContent=t("pipeline_sub"); renderPipeline(); }
@@ -1357,8 +1379,22 @@ function fmtDate(v){
   const d = v.seconds ? new Date(v.seconds*1000) : new Date(v);
   return d.toLocaleDateString(getLang()==="ar"?"ar-EG":"en-GB", { day:"2-digit", month:"short", year:"numeric" });
 }
-function isOverdue(dueStr){ if (!dueStr) return false; const today=new Date(); today.setHours(0,0,0,0); return new Date(dueStr)<today; }
-function isToday(dueStr){ if (!dueStr) return false; return dueStr === new Date().toISOString().slice(0,10); }
+function fmtTaskDue(dueStr){
+  if (!dueStr) return "—";
+  const d = new Date(dueStr);
+  if (isNaN(d.getTime())) return dueStr;
+  const hasTime = dueStr.includes("T");
+  const opts = { day:"2-digit", month:"short", year:"numeric" };
+  if (hasTime) { opts.hour = "2-digit"; opts.minute = "2-digit"; }
+  return d.toLocaleString(getLang()==="ar"?"ar-EG":"en-GB", opts);
+}
+function localDatetimeNow(){
+  const d = new Date();
+  const off = d.getTimezoneOffset();
+  return new Date(d.getTime() - off*60000).toISOString().slice(0,16);
+}
+function isOverdue(dueStr){ if (!dueStr) return false; return new Date(dueStr) < new Date(); }
+function isToday(dueStr){ if (!dueStr) return false; return dueStr.slice(0,10) === new Date().toISOString().slice(0,10); }
 function escapeHtml(str){ const div=document.createElement("div"); div.textContent=str; return div.innerHTML; }
 
 /* ---------- Dashboard ---------- */
@@ -1371,7 +1407,9 @@ function renderDashboard(){
     const d = l.createdAt.seconds ? new Date(l.createdAt.seconds*1000) : new Date(l.createdAt);
     return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
   }).length;
-  const followupsToday = TASKS.filter(tk => isToday(tk.due) && !tk.done).length;
+  const todaysFollowupTasks = TASKS.filter(tk => isToday(tk.due) && !tk.done);
+  const followupLeadIds = new Set(todaysFollowupTasks.map(tk => tk.leadId).filter(Boolean));
+  const followupsToday = followupLeadIds.size;
   const recent = LEADS.slice(0,5);
   const todaysTasks = TASKS.filter(tk => !tk.done).slice(0,5);
 
@@ -1382,10 +1420,10 @@ function renderDashboard(){
 
   document.getElementById("content").innerHTML = `
     <div class="stat-grid">
-      ${statCard(t("stat_total_leads"), totalLeads)}
-      ${statCard(t("stat_open_deals"), openDeals)}
-      ${statCard(t("stat_won_month"), wonMonth)}
-      ${statCard(t("stat_followups_today"), followupsToday)}
+      ${statCard(t("stat_total_leads"), totalLeads, "all")}
+      ${statCard(t("stat_open_deals"), openDeals, "open")}
+      ${statCard(t("stat_won_month"), wonMonth, "won")}
+      ${statCard(t("stat_followups_today"), followupsToday, "tasks")}
     </div>
     <div class="leader-grid">
       <div class="leader-card">
@@ -1412,6 +1450,13 @@ function renderDashboard(){
     </div>`;
   bindLeadRowEvents();
   document.querySelectorAll("[data-stage]").forEach(el => el.addEventListener("click", () => goToLeadsFiltered(el.dataset.stage)));
+  document.querySelectorAll("[data-stat-kind]").forEach(el => el.addEventListener("click", () => {
+    const kind = el.dataset.statKind;
+    if (kind === "all") goToLeadsFiltered("all");
+    else if (kind === "won") goToLeadsFiltered("won");
+    else if (kind === "open") window.location.hash = "#pipeline";
+    else if (kind === "tasks") window.location.hash = "#tasks";
+  }));
 }
 let PENDING_LEAD_FILTER = null;
 function goToLeadsFiltered(status){
@@ -1441,7 +1486,10 @@ function computeLeaderboard(){
   };
   return { today: topOf(todayCounts), month: topOf(monthCounts) };
 }
-function statCard(label,value){ return `<div class="stat-card"><div class="stat-label">${label}</div><div class="stat-value">${value}</div></div>`; }
+function statCard(label,value,kind){
+  const clickable = kind ? ` data-stat-kind="${kind}" style="cursor:pointer;"` : "";
+  return `<div class="stat-card"${clickable}><div class="stat-label">${label}</div><div class="stat-value">${value}</div></div>`;
+}
 function emptyState(title,sub){ return `<div class="empty-state"><span class="ring-mark" style="display:inline-block;"></span><div style="font-weight:700;color:var(--ivory);">${title}</div><p>${sub}</p></div>`; }
 
 /* ---------- Leads ---------- */
@@ -1615,6 +1663,33 @@ function normalizeSource(val){
   return "other";
 }
 
+function exportAllLeads(){
+  if (permLevel() < 3) return;
+  const rows = LEADS.map(l => ({
+    [t("f_name")]: l.name || "",
+    [t("f_phone")]: l.phone || "",
+    [t("f_email")]: l.email || "",
+    [t("f_interest")]: l.interest || "",
+    [t("f_source")]: t('source_'+(l.source||"other")) || l.source || "",
+    [t("f_campaign")]: l.campaign || "",
+    [t("f_project")]: l.project || "",
+    [t("f_unit_type")]: l.unitType ? t('unit_'+l.unitType) : "",
+    [t("f_area")]: l.area || "",
+    [t("f_budget_from")]: l.budgetFrom || "",
+    [t("f_budget_to")]: l.budgetTo || "",
+    [t("f_status")]: t('status_'+(l.status||"new")),
+    [t("f_rating")]: t('rating_'+(l.rating||"warm")),
+    [t("f_deal_value")]: l.dealValue || "",
+    [t("f_lost_reason")]: l.lostReason ? t('lost_'+l.lostReason) : "",
+    [t("f_notes")]: l.notes || "",
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Leads");
+  const dateStr = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `leads-export-${dateStr}.xlsx`);
+}
+
 function openImportModal(){
   IMPORT_ROWS = [];
   document.getElementById("importFileInput").value = "";
@@ -1771,7 +1846,7 @@ function taskItem(tk){
     </div>
     <div class="task-body">
       <div class="task-title ${tk.done?'done':''}">${escapeHtml(tk.title||"")}</div>
-      <div class="task-meta ${overdue?'overdue':''}">${lead?escapeHtml(lead.name)+" · ":""}${t('type_'+(tk.type||'call'))} · ${overdue?t('overdue')+" · ":""}${fmtDate(tk.due)}</div>
+      <div class="task-meta ${overdue?'overdue':''}">${lead?escapeHtml(lead.name)+" · ":""}${t('type_'+(tk.type||'call'))} · ${overdue?t('overdue')+" · ":""}${fmtTaskDue(tk.due)}</div>
     </div>
     <button class="icon-btn" data-delete-task="${tk.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>
   </div>`;
@@ -1789,7 +1864,7 @@ function openTaskModal(){
   const select = document.getElementById("taskLead");
   select.innerHTML = LEADS.map(l => `<option value="${l.id}">${escapeHtml(l.name)}</option>`).join("");
   document.getElementById("taskForm").reset();
-  document.getElementById("taskDue").value = new Date().toISOString().slice(0,10);
+  document.getElementById("taskDue").value = localDatetimeNow();
   document.getElementById("taskModal").classList.add("show");
 }
 document.getElementById("taskForm").addEventListener("submit", async (e) => {
@@ -2189,13 +2264,29 @@ function openLeadDetail(id){
   quickMoveSelect.innerHTML = STATUSES.map(s => `<option value="${s}">${t('status_'+s)}</option>`).join("");
   quickMoveSelect.value = lead.status || "new";
   document.getElementById("quickSummaryInput").value = "";
+  document.getElementById("quickFollowupAt").value = "";
 
   renderDetailQuickContact(lead);
   renderDetailTags();
   switchDetailTab("profile");
   subscribeTimeline(id);
+  applyProfileTabPermissions();
 
   document.getElementById("leadDetailModal").classList.add("show");
+}
+
+function applyProfileTabPermissions(){
+  const editable = permLevel() >= 3;
+  const form = document.getElementById("detailForm");
+  form.querySelectorAll("input, select, textarea").forEach(el => {
+    if (el.id === "detailLeadId") return;
+    el.disabled = !editable;
+  });
+  document.getElementById("detailTagInput").disabled = !editable;
+  document.getElementById("detailTagAddBtn").disabled = !editable;
+  document.querySelectorAll("#detailTagList [data-remove-tag]").forEach(btn => btn.disabled = !editable);
+  document.getElementById("detailSaveBtn").style.display = editable ? "inline-flex" : "none";
+  document.getElementById("profileReadonlyNotice").style.display = editable ? "none" : "block";
 }
 
 function renderDetailQuickContact(lead){
@@ -2285,6 +2376,34 @@ document.getElementById("quickUpdateBtn").addEventListener("click", async () => 
     document.getElementById("quickSummaryInput").value = "";
     switchDetailTab("timeline");
     toast(t("toast_quick_updated"));
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+document.getElementById("quickScheduleBtn").addEventListener("click", async () => {
+  if (!DETAIL_LEAD_ID) return;
+  const dt = document.getElementById("quickFollowupAt").value;
+  if (!dt) return;
+  const btn = document.getElementById("quickScheduleBtn");
+  btn.disabled = true;
+  try {
+    const lead = LEADS.find(l => l.id===DETAIL_LEAD_ID) || {};
+    await db.collection("tasks").add({
+      title: (lead.name || "") + " — " + t("followup_task_title"),
+      leadId: DETAIL_LEAD_ID,
+      type: "followup",
+      due: dt,
+      done: false,
+      agentId: CURRENT_USER.uid,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    await logActivity(DETAIL_LEAD_ID, "task", t("act_followup_scheduled") + " " + fmtTaskDue(dt));
+    document.getElementById("quickFollowupAt").value = "";
+    toast(t("toast_followup_scheduled"));
   } catch (err) {
     console.error(err);
     alert(err.message);
