@@ -1092,11 +1092,13 @@ const I18N = {
     empty_resale_title: "لا توجد وحدات ريسيل بعد", empty_resale_sub: "أضف أول وحدة لإعادة البيع",
     resale_search_placeholder: "ابحث بكود الوحدة أو المشروع...",
     toast_resale_saved: "تم حفظ الوحدة بنجاح", resale_max_photos: "أقصى عدد صور مسموح 6",
+    resale_upload_error: "فشل رفع الصورة. تأكد إنك فعّلت Firebase Storage وضبطت قواعد الأمان بتاعته:",
 
     selected_count: "محدد", assign_to_agent: "تعيين لموظف...", apply_assign: "تطبيق",
     clear_selection: "إلغاء التحديد", toast_bulk_assigned: "تم نقل العملاء المحددين بنجاح",
     permissions_management: "إدارة الصلاحيات",
     feature_bulk_reassign_desc: "حدد الوظائف المسموح لها بتحديد عدة عملاء ونقلهم لموظف آخر دفعة واحدة:",
+    feature_resale_edit_desc: "حدد الوظائف المسموح لها بتعديل أو حذف وحدة ريسيل بعد إنشائها:",
     feature_export_delete: "تصدير وحذف بيانات العملاء",
     locked_gm_only: "هذه الصلاحية محصورة على المدير العام فقط، ولا يمكن تعديلها حتى من الأدمن.",
     toast_permissions_saved: "تم حفظ إعدادات الصلاحيات",
@@ -1237,11 +1239,13 @@ const I18N = {
     empty_resale_title: "No resale units yet", empty_resale_sub: "Add your first resale unit",
     resale_search_placeholder: "Search by unit code or project...",
     toast_resale_saved: "Unit saved successfully", resale_max_photos: "Maximum 6 photos allowed",
+    resale_upload_error: "Image upload failed. Make sure Firebase Storage is enabled and its security rules are set:",
 
     selected_count: "selected", assign_to_agent: "Assign to agent...", apply_assign: "Apply",
     clear_selection: "Clear selection", toast_bulk_assigned: "Selected leads reassigned successfully",
     permissions_management: "Permissions Management",
     feature_bulk_reassign_desc: "Choose which roles are allowed to select multiple leads and reassign them to another agent at once:",
+    feature_resale_edit_desc: "Choose which roles are allowed to edit or delete a resale unit after it's created:",
     feature_export_delete: "Export & Delete Lead Data",
     locked_gm_only: "This permission is locked to the General Manager only and cannot be changed, even by Admin.",
     toast_permissions_saved: "Permissions saved",
@@ -1338,10 +1342,14 @@ let RESALE_CAROUSEL_TIMERS = [];
 let DASHBOARD_RESALE_TIMER = null;
 let SELECTED_LEAD_IDS = new Set();
 const DEFAULT_BULK_ROLES = ["general_manager","company_admin","sales_manager","marketing_manager"];
-let PERMISSIONS_CONFIG = { bulk_reassign: DEFAULT_BULK_ROLES };
+const DEFAULT_RESALE_EDIT_ROLES = ["general_manager","company_admin"];
+let PERMISSIONS_CONFIG = { bulk_reassign: DEFAULT_BULK_ROLES, resale_edit_delete: DEFAULT_RESALE_EDIT_ROLES };
 
 function canBulkReassign(){
   return PERMISSIONS_CONFIG.bulk_reassign.includes(myRole());
+}
+function canEditDeleteResale(){
+  return PERMISSIONS_CONFIG.resale_edit_delete.includes(myRole());
 }
 let COMPANY_SETTINGS = {};
 let currentView = "dashboard";
@@ -1526,6 +1534,7 @@ function subscribeData(){
     if (doc.exists) {
       const d = doc.data();
       PERMISSIONS_CONFIG.bulk_reassign = Array.isArray(d.bulk_reassign) ? d.bulk_reassign : DEFAULT_BULK_ROLES;
+      PERMISSIONS_CONFIG.resale_edit_delete = Array.isArray(d.resale_edit_delete) ? d.resale_edit_delete : DEFAULT_RESALE_EDIT_ROLES;
     }
     renderView();
   }, err => console.error("permissions settings error", err));
@@ -2353,8 +2362,14 @@ function renderTeam(){
       <div class="panel-head"><h2>${t("permissions_management")}</h2></div>
       <div style="font-size:12px; color:var(--slate); margin-bottom:12px; line-height:1.6;">${t("feature_bulk_reassign_desc")}</div>
       <div style="display:flex; flex-wrap:wrap; gap:8px;" id="permBulkRoles">
-        ${ROLE_KEYS.map(r => `<button type="button" class="perm-role-btn" data-role="${r}" style="border:1px solid ${PERMISSIONS_CONFIG.bulk_reassign.includes(r)?'var(--gold)':'var(--navy-line)'}; background:${PERMISSIONS_CONFIG.bulk_reassign.includes(r)?'var(--gold)':'transparent'}; color:${PERMISSIONS_CONFIG.bulk_reassign.includes(r)?'#fff':'var(--slate)'}; border-radius:16px; padding:7px 14px; font-size:11.5px; font-weight:700;">${t('role_'+r)}</button>`).join("")}
+        ${ROLE_KEYS.map(r => `<button type="button" class="perm-role-btn" data-perm="bulk_reassign" data-role="${r}" style="border:1px solid ${PERMISSIONS_CONFIG.bulk_reassign.includes(r)?'var(--gold)':'var(--navy-line)'}; background:${PERMISSIONS_CONFIG.bulk_reassign.includes(r)?'var(--gold)':'transparent'}; color:${PERMISSIONS_CONFIG.bulk_reassign.includes(r)?'#fff':'var(--slate)'}; border-radius:16px; padding:7px 14px; font-size:11.5px; font-weight:700;">${t('role_'+r)}</button>`).join("")}
       </div>
+
+      <div style="font-size:12px; color:var(--slate); margin:20px 0 12px; line-height:1.6;">${t("feature_resale_edit_desc")}</div>
+      <div style="display:flex; flex-wrap:wrap; gap:8px;" id="permResaleRoles">
+        ${ROLE_KEYS.map(r => `<button type="button" class="perm-role-btn" data-perm="resale_edit_delete" data-role="${r}" style="border:1px solid ${PERMISSIONS_CONFIG.resale_edit_delete.includes(r)?'var(--gold)':'var(--navy-line)'}; background:${PERMISSIONS_CONFIG.resale_edit_delete.includes(r)?'var(--gold)':'transparent'}; color:${PERMISSIONS_CONFIG.resale_edit_delete.includes(r)?'#fff':'var(--slate)'}; border-radius:16px; padding:7px 14px; font-size:11.5px; font-weight:700;">${t('role_'+r)}</button>`).join("")}
+      </div>
+
       <div class="modal-actions" style="margin-top:16px;"><button type="button" class="btn-gold" id="savePermissionsBtn" data-i18n="save">Save</button></div>
       <div style="margin-top:18px; padding-top:14px; border-top:1px solid var(--navy-line); font-size:12px; color:var(--slate); line-height:1.6;">
         <strong style="color:var(--ivory);">${t("feature_export_delete")}</strong><br>${t("locked_gm_only")}
@@ -2382,17 +2397,25 @@ function renderTeam(){
     });
     document.querySelectorAll("[data-edit-agent]").forEach(btn => btn.addEventListener("click", () => openEditAgentModal(btn.dataset.editAgent)));
 
-    let pendingBulkRoles = new Set(PERMISSIONS_CONFIG.bulk_reassign);
+    const pendingPerms = {
+      bulk_reassign: new Set(PERMISSIONS_CONFIG.bulk_reassign),
+      resale_edit_delete: new Set(PERMISSIONS_CONFIG.resale_edit_delete),
+    };
     document.querySelectorAll(".perm-role-btn").forEach(btn => btn.addEventListener("click", () => {
+      const key = btn.dataset.perm;
       const r = btn.dataset.role;
-      const nowOn = !pendingBulkRoles.has(r);
-      if (nowOn) pendingBulkRoles.add(r); else pendingBulkRoles.delete(r);
+      const set = pendingPerms[key];
+      const nowOn = !set.has(r);
+      if (nowOn) set.add(r); else set.delete(r);
       btn.style.borderColor = nowOn ? "var(--gold)" : "var(--navy-line)";
       btn.style.background = nowOn ? "var(--gold)" : "transparent";
       btn.style.color = nowOn ? "#fff" : "var(--slate)";
     }));
     document.getElementById("savePermissionsBtn").addEventListener("click", async () => {
-      await db.collection("settings").doc("permissions").set({ bulk_reassign: Array.from(pendingBulkRoles) }, { merge: true });
+      await db.collection("settings").doc("permissions").set({
+        bulk_reassign: Array.from(pendingPerms.bulk_reassign),
+        resale_edit_delete: Array.from(pendingPerms.resale_edit_delete),
+      }, { merge: true });
       toast(t("toast_permissions_saved"));
     });
   }
@@ -2657,6 +2680,7 @@ function openResaleModal(id){
   document.getElementById("resaleId").value = id || "";
   document.getElementById("resaleModalTitle").textContent = id ? t("modal_edit_resale") : t("modal_add_resale");
   document.getElementById("resalePhotoPreview").innerHTML = "";
+  document.getElementById("resalePhotosInput").disabled = false;
 
   if (id) {
     const u = RESALE_UNITS.find(x => x.id===id);
@@ -2696,14 +2720,13 @@ function renderResalePhotoPreview(){
 
 document.getElementById("resalePhotosInput").addEventListener("change", async (e) => {
   const files = Array.from(e.target.files || []);
-  const unitCode = document.getElementById("resaleUnitCode").value || generateUnitCode();
   const btn = e.target;
   btn.disabled = true;
   try {
     for (const file of files) {
       if (RESALE_PENDING_IMAGES.length >= 6) { toast(t("resale_max_photos")); break; }
-      const url = await uploadResaleImage(file, unitCode);
-      RESALE_PENDING_IMAGES.push(url);
+      const base64 = await resizeImageFile(file, 700);
+      RESALE_PENDING_IMAGES.push(base64);
       renderResalePhotoPreview();
     }
   } catch (err) {
@@ -2718,6 +2741,7 @@ document.getElementById("resalePhotosInput").addEventListener("change", async (e
 document.getElementById("resaleForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const id = document.getElementById("resaleId").value;
+  if (id && !canEditDeleteResale()) return;
   const data = {
     unitCode: document.getElementById("resaleUnitCode").value,
     ownerName: document.getElementById("resaleOwnerName").value.trim(),
@@ -2764,8 +2788,14 @@ function openResaleDetail(id){
   document.getElementById("resaleDetailBody").innerHTML = gallery + rows.map(([l,v]) => `
     <div class="resale-detail-row"><span>${l}</span><span>${escapeHtml(String(v))}</span></div>
   `).join("");
-  document.getElementById("resaleDetailEditBtn").onclick = () => { closeModal("resaleDetailModal"); openResaleModal(id); };
-  document.getElementById("resaleDetailDeleteBtn").onclick = async () => {
+  const canEdit = canEditDeleteResale();
+  const editBtn = document.getElementById("resaleDetailEditBtn");
+  const deleteBtn = document.getElementById("resaleDetailDeleteBtn");
+  editBtn.style.display = canEdit ? "inline-flex" : "none";
+  deleteBtn.style.display = canEdit ? "inline-flex" : "none";
+  editBtn.onclick = () => { closeModal("resaleDetailModal"); openResaleModal(id); };
+  deleteBtn.onclick = async () => {
+    if (!canEditDeleteResale()) return;
     if (!confirm(t("confirm_delete"))) return;
     await db.collection("resale_units").doc(id).delete();
     toast(t("toast_deleted"));
