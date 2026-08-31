@@ -973,6 +973,14 @@ const I18N = {
     lost_budget: "الميزانية", lost_project: "المشروع", lost_timing: "التوقيت",
     lost_competitor: "منافس", lost_noresponse: "عدم رد", lost_other: "أخرى",
     by_lost_reason: "توزيع أسباب الخسارة",
+    report_period: "الفترة الزمنية",
+    period_today: "اليوم", period_week: "هذا الأسبوع", period_month: "هذا الشهر",
+    period_quarter: "هذا الربع", period_year: "هذه السنة", period_all: "كل الوقت",
+    sales_team_report: "تقرير فريق المبيعات", marketing_team_report: "تقرير فريق الماركتنج",
+    overdue_followups_report: "المتابعات المتأخرة",
+    col_agent_name: "الموظف", col_leads_count: "العملاء", col_won_count: "صفقات فايزة",
+    col_conversion: "نسبة التحويل", col_total_value: "إجمالي القيمة",
+    col_due_date: "الموعد", col_lead_name: "العميل", no_overdue: "لا توجد متابعات متأخرة 🎉",
     top_seller_today: "أعلى سيلز اليوم", top_seller_month: "أعلى سيلز الشهر",
     actions: "إجراء", no_activity_yet: "لا يوجد نشاط بعد",
     f_quick_summary: "ملخص التعامل", quick_summary_placeholder: "إيه اللي حصل في المكالمة/الزيارة؟",
@@ -1091,6 +1099,14 @@ const I18N = {
     lost_budget: "Budget", lost_project: "Project", lost_timing: "Timing",
     lost_competitor: "Competitor", lost_noresponse: "No Response", lost_other: "Other",
     by_lost_reason: "Lost Reason Breakdown",
+    report_period: "Period",
+    period_today: "Today", period_week: "This Week", period_month: "This Month",
+    period_quarter: "This Quarter", period_year: "This Year", period_all: "All Time",
+    sales_team_report: "Sales Team Report", marketing_team_report: "Marketing Team Report",
+    overdue_followups_report: "Overdue Follow-ups",
+    col_agent_name: "Agent", col_leads_count: "Leads", col_won_count: "Won Deals",
+    col_conversion: "Conversion", col_total_value: "Total Value",
+    col_due_date: "Due", col_lead_name: "Lead", no_overdue: "No overdue follow-ups 🎉",
     top_seller_today: "Top Seller Today", top_seller_month: "Top Seller This Month",
     actions: "actions", no_activity_yet: "No activity yet",
     f_quick_summary: "Interaction Summary", quick_summary_placeholder: "What happened in this call/visit?",
@@ -1897,36 +1913,132 @@ document.getElementById("taskForm").addEventListener("submit", async (e) => {
 });
 
 /* ---------- Reports ---------- */
+let REPORT_PERIOD = "all";
+
+function getPeriodRange(period){
+  const now = new Date();
+  let start = null;
+  if (period === "today") { start = new Date(now.getFullYear(), now.getMonth(), now.getDate()); }
+  else if (period === "week") { const d = new Date(now); const day = (d.getDay()+6)%7; d.setDate(d.getDate()-day); d.setHours(0,0,0,0); start = d; }
+  else if (period === "month") { start = new Date(now.getFullYear(), now.getMonth(), 1); }
+  else if (period === "quarter") { const q = Math.floor(now.getMonth()/3); start = new Date(now.getFullYear(), q*3, 1); }
+  else if (period === "year") { start = new Date(now.getFullYear(), 0, 1); }
+  return start;
+}
+function leadDate(l){
+  if (!l.createdAt) return null;
+  return l.createdAt.seconds ? new Date(l.createdAt.seconds*1000) : new Date(l.createdAt);
+}
+function filterLeadsByPeriod(period){
+  const start = getPeriodRange(period);
+  if (!start) return LEADS;
+  return LEADS.filter(l => { const d = leadDate(l); return d && d >= start; });
+}
+
+const SALES_ROLES = ["sales_manager","sales_team_leader","sales_supervisor","sales_agent"];
+const MARKETING_ROLES = ["marketing_manager","marketing_team_leader","marketing_supervisor","marketing_agent"];
+
 function renderReports(){
+  const periodLeads = filterLeadsByPeriod(REPORT_PERIOD);
+
   const byStatus = {}; STATUSES.forEach(s => byStatus[s]=0);
-  LEADS.forEach(l => { if (byStatus[l.status]!==undefined) byStatus[l.status]++; });
-  const bySource = {}; LEADS.forEach(l => { const s=l.source||"other"; bySource[s]=(bySource[s]||0)+1; });
-  const byAgent = {}; LEADS.forEach(l => { const a=l.agentEmail||"—"; byAgent[a]=(byAgent[a]||0)+1; });
+  periodLeads.forEach(l => { if (byStatus[l.status]!==undefined) byStatus[l.status]++; });
+  const bySource = {}; periodLeads.forEach(l => { const s=l.source||"other"; bySource[s]=(bySource[s]||0)+1; });
+  const byAgent = {}; periodLeads.forEach(l => { const a=l.agentEmail||"—"; byAgent[a]=(byAgent[a]||0)+1; });
   const byLostReason = {};
-  LEADS.filter(l => l.status==="lost" && l.lostReason).forEach(l => { byLostReason[l.lostReason]=(byLostReason[l.lostReason]||0)+1; });
+  periodLeads.filter(l => l.status==="lost" && l.lostReason).forEach(l => { byLostReason[l.lostReason]=(byLostReason[l.lostReason]||0)+1; });
   const byCampaign = {};
-  LEADS.filter(l => l.campaign).forEach(l => { byCampaign[l.campaign]=(byCampaign[l.campaign]||0)+1; });
+  periodLeads.filter(l => l.campaign).forEach(l => { byCampaign[l.campaign]=(byCampaign[l.campaign]||0)+1; });
 
   const roiBySource = {};
-  LEADS.forEach(l => {
+  periodLeads.forEach(l => {
     const s = l.source||"other";
     if (!roiBySource[s]) roiBySource[s] = { leads:0, won:0, value:0 };
     roiBySource[s].leads++;
     if (l.status==="won") { roiBySource[s].won++; roiBySource[s].value += parseFloat(l.dealValue)||0; }
   });
 
+  const salesAgents = AGENTS.filter(a => SALES_ROLES.includes(a.role));
+  const salesRows = salesAgents.map(a => {
+    const assigned = periodLeads.filter(l => l.assignedTo === a.id);
+    const won = assigned.filter(l => l.status === "won");
+    const value = won.reduce((sum,l) => sum + (parseFloat(l.dealValue)||0), 0);
+    return { name: a.name||a.email, leads: assigned.length, won: won.length, rate: assigned.length ? Math.round((won.length/assigned.length)*100) : 0, value };
+  });
+
+  const marketingAgents = AGENTS.filter(a => MARKETING_ROLES.includes(a.role));
+  const marketingRows = marketingAgents.map(a => {
+    const sourced = periodLeads.filter(l => l.agentId === a.id);
+    const won = sourced.filter(l => l.status === "won");
+    return { name: a.name||a.email, leads: sourced.length, won: won.length, rate: sourced.length ? Math.round((won.length/sourced.length)*100) : 0 };
+  });
+
+  const overdueTasks = TASKS.filter(tk => !tk.done && tk.due && new Date(tk.due) < new Date())
+    .sort((a,b) => new Date(a.due) - new Date(b.due));
+
   document.getElementById("content").innerHTML = `
+    <div class="panel">
+      <div class="panel-head"><h2 data-i18n="report_period">Period</h2></div>
+      <select id="reportPeriodSelect" style="background:var(--navy); border:1px solid var(--navy-line); color:var(--ivory); padding:10px 14px; border-radius:8px; font-size:13px; width:100%;">
+        <option value="all" ${REPORT_PERIOD==="all"?"selected":""}>${t("period_all")}</option>
+        <option value="today" ${REPORT_PERIOD==="today"?"selected":""}>${t("period_today")}</option>
+        <option value="week" ${REPORT_PERIOD==="week"?"selected":""}>${t("period_week")}</option>
+        <option value="month" ${REPORT_PERIOD==="month"?"selected":""}>${t("period_month")}</option>
+        <option value="quarter" ${REPORT_PERIOD==="quarter"?"selected":""}>${t("period_quarter")}</option>
+        <option value="year" ${REPORT_PERIOD==="year"?"selected":""}>${t("period_year")}</option>
+      </select>
+    </div>
+
+    <div class="panel"><div class="panel-head"><h2>${t("sales_team_report")}</h2></div>${teamReportTable(salesRows, true)}</div>
+    <div class="panel"><div class="panel-head"><h2>${t("marketing_team_report")}</h2></div>${teamReportTable(marketingRows, false)}</div>
+    <div class="panel"><div class="panel-head"><h2>${t("overdue_followups_report")}</h2></div>${overdueTable(overdueTasks)}</div>
+
     <div class="panel"><div class="panel-head"><h2>${t("source_roi")}</h2></div>${roiTable(roiBySource)}</div>
     <div class="panel"><div class="panel-head"><h2>${t("by_status")}</h2></div>${barList(Object.entries(byStatus).map(([k,v])=>[t('status_'+k),v]))}</div>
     <div class="panel"><div class="panel-head"><h2>${t("by_source")}</h2></div>${barList(Object.entries(bySource).map(([k,v])=>[t('source_'+k)||k,v]))}</div>
     <div class="panel"><div class="panel-head"><h2>${t("by_campaign")}</h2></div>${barList(Object.entries(byCampaign))}</div>
     <div class="panel"><div class="panel-head"><h2>${t("by_agent")}</h2></div>${barList(Object.entries(byAgent))}</div>
     <div class="panel"><div class="panel-head"><h2>${t("by_lost_reason")}</h2></div>${barList(Object.entries(byLostReason).map(([k,v])=>[t('lost_'+k)||k,v]))}</div>`;
+
+  document.getElementById("reportPeriodSelect").addEventListener("change", (e) => {
+    REPORT_PERIOD = e.target.value;
+    renderReports();
+  });
+}
+
+function teamReportTable(rows, withValue){
+  if (!rows.length) return emptyState(t("empty_leads_title"), t("empty_leads_sub"));
+  return `<div class="table-scroll"><table><thead><tr>
+    <th>${t("col_agent_name")}</th><th>${t("col_leads_count")}</th><th>${t("col_won_count")}</th><th>${t("col_conversion")}</th>
+    ${withValue?`<th>${t("col_total_value")}</th>`:""}
+    </tr></thead><tbody>
+    ${rows.map(r => `<tr>
+      <td>${escapeHtml(r.name)}</td><td>${r.leads}</td><td>${r.won}</td><td>${r.rate}%</td>
+      ${withValue?`<td>${r.value?r.value.toLocaleString():"—"}</td>`:""}
+    </tr>`).join("")}
+    </tbody></table></div>`;
+}
+
+function overdueTable(tasks){
+  if (!tasks.length) return emptyState(t("no_overdue"), "");
+  return `<div class="table-scroll"><table><thead><tr>
+    <th>${t("col_lead_name")}</th><th>${t("col_agent_name")}</th><th>${t("col_due_date")}</th>
+    </tr></thead><tbody>
+    ${tasks.map(tk => {
+      const lead = LEADS.find(l => l.id===tk.leadId);
+      const agent = AGENTS.find(a => a.id===tk.agentId);
+      return `<tr>
+        <td>${escapeHtml(lead?lead.name:"—")}</td>
+        <td>${escapeHtml(agent?(agent.name||agent.email):"—")}</td>
+        <td style="color:var(--danger); font-weight:700;">${fmtTaskDue(tk.due)}</td>
+      </tr>`;
+    }).join("")}
+    </tbody></table></div>`;
 }
 function roiTable(data){
   const entries = Object.entries(data);
   if (!entries.length) return emptyState(t("empty_leads_title"), t("empty_leads_sub"));
-  return `<table><thead><tr>
+  return `<div class="table-scroll"><table><thead><tr>
     <th>${t("roi_source")}</th><th>${t("roi_leads")}</th><th>${t("roi_won")}</th><th>${t("roi_rate")}</th><th>${t("roi_value")}</th>
     </tr></thead><tbody>
     ${entries.map(([src,d]) => `<tr>
@@ -1936,7 +2048,7 @@ function roiTable(data){
       <td>${d.leads ? Math.round((d.won/d.leads)*100) : 0}%</td>
       <td>${d.value ? d.value.toLocaleString() : "—"}</td>
     </tr>`).join("")}
-    </tbody></table>`;
+    </tbody></table></div>`;
 }
 function barList(pairs){
   const max = Math.max(1, ...pairs.map(p=>p[1]));
