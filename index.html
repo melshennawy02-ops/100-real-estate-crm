@@ -130,7 +130,8 @@ input,select,textarea{ font-family:var(--font); }
 .panel-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:12px; }
 .panel-head h2{ font-size:15px; font-weight:800; color:var(--ivory); }
 
-table{ width:100%; border-collapse:collapse; }
+.table-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; margin:0 -4px; padding:0 4px; }
+table{ width:100%; min-width:520px; border-collapse:collapse; }
 thead th{ text-align:start; font-size:11px; color:var(--slate); text-transform:uppercase; letter-spacing:.5px; font-weight:700; padding:0 10px 10px; border-bottom:1px solid var(--navy-line); }
 tbody td{ padding:12px 10px; font-size:13.5px; border-bottom:1px solid rgba(36,64,111,.12); color:var(--ivory); }
 tbody tr:hover{ background:rgba(233,204,126,.04); }
@@ -270,7 +271,8 @@ tbody tr:last-child td{ border-bottom:none; }
 .avatar-mini{ width:24px; height:24px; border-radius:50%; overflow:hidden; background:var(--navy-panel-2); border:1px solid var(--gold-dim); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; color:var(--gold); flex-shrink:0; }
 
 .stage-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(88px,1fr)); gap:8px; margin-bottom:22px; }
-.stage-card{ background:linear-gradient(180deg, var(--navy-panel), var(--navy)); border:1px solid var(--navy-line); border-radius:12px; padding:10px 8px; text-align:center; }
+.stage-card{ background:linear-gradient(180deg, var(--navy-panel), var(--navy)); border:1px solid var(--navy-line); border-radius:12px; padding:10px 8px; text-align:center; transition:border-color .12s, transform .12s; }
+.stage-card:active{ transform:scale(.96); border-color:var(--gold); }
 .stage-card .lbl{ font-size:10px; color:var(--slate); font-weight:600; margin-bottom:4px; line-height:1.3; }
 .stage-card .val{ font-size:18px; font-weight:800; color:var(--gold-bright); }
 
@@ -566,6 +568,17 @@ tbody tr:last-child td{ border-bottom:none; }
     </div>
 
     <div class="quick-contact" id="detailQuickContact"></div>
+
+    <div class="panel" style="border-color:var(--gold-dim); margin-bottom:18px; padding:16px;">
+      <div class="field" style="margin-top:0;">
+        <label data-i18n="f_quick_summary">Interaction Summary</label>
+        <textarea id="quickSummaryInput" rows="2" data-i18n-placeholder="quick_summary_placeholder" placeholder="What happened in this call/visit?"></textarea>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+        <select id="quickMoveTo" style="flex:1; min-width:150px;"></select>
+        <button type="button" class="btn-gold" id="quickUpdateBtn" data-i18n="quick_update_btn">Update & Move</button>
+      </div>
+    </div>
 
     <div class="tabs-row">
       <button class="tab-btn active" data-tab="profile" data-i18n="tab_profile">Profile</button>
@@ -941,6 +954,8 @@ const I18N = {
     by_lost_reason: "توزيع أسباب الخسارة",
     top_seller_today: "أعلى سيلز اليوم", top_seller_month: "أعلى سيلز الشهر",
     actions: "إجراء", no_activity_yet: "لا يوجد نشاط بعد",
+    f_quick_summary: "ملخص التعامل", quick_summary_placeholder: "إيه اللي حصل في المكالمة/الزيارة؟",
+    quick_update_btn: "تحديث ونقل", toast_quick_updated: "تم تحديث حالة العميل",
     f_campaign: "اسم الحملة / الإعلان", by_campaign: "توزيع العملاء حسب الحملة",
     source_roi: "عائد كل مصدر (Source ROI)",
     roi_source: "المصدر", roi_leads: "العملاء", roi_won: "صفقات فايزة",
@@ -1050,6 +1065,8 @@ const I18N = {
     by_lost_reason: "Lost Reason Breakdown",
     top_seller_today: "Top Seller Today", top_seller_month: "Top Seller This Month",
     actions: "actions", no_activity_yet: "No activity yet",
+    f_quick_summary: "Interaction Summary", quick_summary_placeholder: "What happened in this call/visit?",
+    quick_update_btn: "Update & Move", toast_quick_updated: "Lead status updated",
     f_campaign: "Campaign / Ad Name", by_campaign: "Leads by Campaign",
     source_roi: "Source ROI",
     roi_source: "Source", roi_leads: "Leads", roi_won: "Won Deals",
@@ -1383,7 +1400,7 @@ function renderDashboard(){
       </div>
     </div>
     <div class="stage-grid">
-      ${STATUSES.map(s => `<div class="stage-card"><div class="lbl">${t('status_'+s)}</div><div class="val">${stageCounts[s]}</div></div>`).join("")}
+      ${STATUSES.map(s => `<div class="stage-card" data-stage="${s}" style="cursor:pointer;"><div class="lbl">${t('status_'+s)}</div><div class="val">${stageCounts[s]}</div></div>`).join("")}
     </div>
     <div class="panel">
       <div class="panel-head"><h2>${t("recent_leads")}</h2><a href="#leads" style="font-size:12px;color:var(--gold-bright);">${t("view_all")}</a></div>
@@ -1394,6 +1411,12 @@ function renderDashboard(){
       ${todaysTasks.length ? todaysTasks.map(taskItem).join("") : emptyState(t("empty_tasks_title"), t("empty_tasks_sub"))}
     </div>`;
   bindLeadRowEvents();
+  document.querySelectorAll("[data-stage]").forEach(el => el.addEventListener("click", () => goToLeadsFiltered(el.dataset.stage)));
+}
+let PENDING_LEAD_FILTER = null;
+function goToLeadsFiltered(status){
+  PENDING_LEAD_FILTER = status;
+  window.location.hash = "#leads";
 }
 function computeLeaderboard(){
   const now = new Date();
@@ -1436,7 +1459,13 @@ function renderLeads(){
     </div>`;
   document.getElementById("leadSearch").addEventListener("input", filterLeadsView);
   document.getElementById("leadFilter").addEventListener("change", filterLeadsView);
-  bindLeadRowEvents();
+  if (PENDING_LEAD_FILTER) {
+    document.getElementById("leadFilter").value = PENDING_LEAD_FILTER;
+    PENDING_LEAD_FILTER = null;
+    filterLeadsView();
+  } else {
+    bindLeadRowEvents();
+  }
 }
 function filterLeadsView(){
   const q = document.getElementById("leadSearch").value.trim().toLowerCase();
@@ -1446,7 +1475,7 @@ function filterLeadsView(){
   bindLeadRowEvents();
 }
 function leadsTable(list, compact){
-  return `<table><thead><tr>
+  return `<div class="table-scroll"><table><thead><tr>
     <th>${t("col_name")}</th><th>${t("col_phone")}</th>
     ${compact?"":`<th>${t("col_interest")}</th>`}
     <th>${t("col_status")}</th><th>${t("col_rating")}</th>
@@ -1466,7 +1495,7 @@ function leadsTable(list, compact){
         <button class="icon-btn" data-delete="${l.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>
       </td>`}
     </tr>`).join("")}
-    </tbody></table>`;
+    </tbody></table></div>`;
 }
 function bindLeadRowEvents(){
   document.querySelectorAll("[data-edit]").forEach(btn => btn.addEventListener("click", () => openLeadModal(btn.dataset.edit)));
@@ -1974,7 +2003,7 @@ function renderAccounts(){
   bindAccountRowEvents();
 }
 function accountsTable(list){
-  return `<table><thead><tr>
+  return `<div class="table-scroll"><table><thead><tr>
     <th>${t("col_account_name")}</th><th>${t("col_account_type")}</th><th>${t("col_account_contact")}</th><th>${t("col_phone")}</th><th>${t("col_actions")}</th>
     </tr></thead><tbody>
     ${list.map(a => `<tr>
@@ -1987,7 +2016,7 @@ function accountsTable(list){
         <button class="icon-btn" data-delete-account="${a.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>
       </td>
     </tr>`).join("")}
-    </tbody></table>`;
+    </tbody></table></div>`;
 }
 function bindAccountRowEvents(){
   document.querySelectorAll("[data-edit-account]").forEach(btn => btn.addEventListener("click", () => openAccountModal(btn.dataset.editAccount)));
@@ -2156,6 +2185,11 @@ function openLeadDetail(id){
   accountSelect.innerHTML = `<option value="">${t("unlinked")}</option>` + ACCOUNTS.map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join("");
   accountSelect.value = lead.accountId || "";
 
+  const quickMoveSelect = document.getElementById("quickMoveTo");
+  quickMoveSelect.innerHTML = STATUSES.map(s => `<option value="${s}">${t('status_'+s)}</option>`).join("");
+  quickMoveSelect.value = lead.status || "new";
+  document.getElementById("quickSummaryInput").value = "";
+
   renderDetailQuickContact(lead);
   renderDetailTags();
   switchDetailTab("profile");
@@ -2231,6 +2265,32 @@ document.getElementById("detailNewTaskBtn").addEventListener("click", () => {
   if (!DETAIL_LEAD_ID) return;
   openTaskModal();
   document.getElementById("taskLead").value = DETAIL_LEAD_ID;
+});
+
+document.getElementById("quickUpdateBtn").addEventListener("click", async () => {
+  if (!DETAIL_LEAD_ID) return;
+  const btn = document.getElementById("quickUpdateBtn");
+  btn.disabled = true;
+  try {
+    const summary = document.getElementById("quickSummaryInput").value.trim();
+    const newStatus = document.getElementById("quickMoveTo").value;
+    const lead = LEADS.find(l => l.id===DETAIL_LEAD_ID) || {};
+    const statusChanged = lead.status !== newStatus;
+
+    if (statusChanged) await db.collection("leads").doc(DETAIL_LEAD_ID).update({ status: newStatus });
+    if (summary) await logActivity(DETAIL_LEAD_ID, "note", summary);
+    if (statusChanged) await logActivity(DETAIL_LEAD_ID, "status", t("act_status") + " " + t("status_"+newStatus));
+
+    document.getElementById("detailStatus").value = newStatus;
+    document.getElementById("quickSummaryInput").value = "";
+    switchDetailTab("timeline");
+    toast(t("toast_quick_updated"));
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  } finally {
+    btn.disabled = false;
+  }
 });
 
 document.getElementById("detailForm").addEventListener("submit", async (e) => {
