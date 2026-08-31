@@ -338,6 +338,10 @@ tbody tr:last-child td{ border-bottom:none; }
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
         <span data-i18n="nav_reports">Reports</span>
       </a>
+      <a href="#accounts" class="nav-item" data-view="accounts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><path d="M9 9h1M9 13h1M14 9h1M14 13h1"/></svg>
+        <span data-i18n="nav_accounts">Accounts</span>
+      </a>
       <a href="#team" class="nav-item" data-view="team">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         <span data-i18n="nav_team">Team</span>
@@ -638,6 +642,7 @@ tbody tr:last-child td{ border-bottom:none; }
             </select>
           </div>
           <div class="field"><label data-i18n="f_assigned">Assigned To</label><select id="detailAssigned"></select></div>
+          <div class="field"><label data-i18n="f_linked_account">Linked Account</label><select id="detailAccount"></select></div>
           <div class="field full"><label data-i18n="f_notes">Notes</label><textarea id="detailNotes"></textarea></div>
           <div class="field full">
             <label data-i18n="f_tags">Tags</label>
@@ -692,6 +697,36 @@ tbody tr:last-child td{ border-bottom:none; }
       </div>
       <div class="modal-actions">
         <button type="button" class="btn-outline" data-close-modal="taskModal" data-i18n="cancel">Cancel</button>
+        <button type="submit" class="btn-gold" data-i18n="save">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Account -->
+<div class="modal-backdrop" id="accountModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="accountModalTitle" data-i18n="modal_add_account">Add New Account</h3>
+      <button class="modal-close" data-close-modal="accountModal">✕</button>
+    </div>
+    <form id="accountForm">
+      <input type="hidden" id="accountId">
+      <div class="field"><label data-i18n="f_account_name">Company / Account Name</label><input type="text" id="accountName" required></div>
+      <div class="field">
+        <label data-i18n="f_account_type">Account Type</label>
+        <select id="accountType">
+          <option value="developer" data-i18n="account_type_developer">Real Estate Developer</option>
+          <option value="broker" data-i18n="account_type_broker">Broker</option>
+          <option value="partner" data-i18n="account_type_partner">Other Partner</option>
+        </select>
+      </div>
+      <div class="field"><label data-i18n="f_contact_person">Contact Person</label><input type="text" id="accountContact"></div>
+      <div class="field"><label data-i18n="f_phone">Phone</label><input type="tel" id="accountPhone"></div>
+      <div class="field"><label data-i18n="f_email">Email</label><input type="email" id="accountEmail"></div>
+      <div class="field"><label data-i18n="f_account_notes">Notes</label><textarea id="accountNotes"></textarea></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-outline" data-close-modal="accountModal" data-i18n="cancel">Cancel</button>
         <button type="submit" class="btn-gold" data-i18n="save">Save</button>
       </div>
     </form>
@@ -820,6 +855,15 @@ const I18N = {
     f_employee_email: "البريد الإلكتروني", f_employee_password: "كلمة المرور",
     empty_team_title: "لا يوجد موظفين بعد", empty_team_sub: "أضف أول موظف في الفريق",
     toast_employee_added: "تم إنشاء حساب الموظف بنجاح",
+
+    nav_accounts: "الحسابات", accounts_title: "الحسابات", accounts_sub: "شركات التطوير العقاري والوسطاء",
+    add_account: "إضافة حساب", modal_add_account: "إضافة حساب جديد", modal_edit_account: "تعديل الحساب",
+    f_account_name: "اسم الشركة / الحساب", f_account_type: "نوع الحساب",
+    account_type_developer: "شركة تطوير عقاري", account_type_broker: "وسيط عقاري", account_type_partner: "شريك آخر",
+    f_contact_person: "مسؤول التواصل", f_account_notes: "ملاحظات",
+    empty_accounts_title: "لا يوجد حسابات بعد", empty_accounts_sub: "أضف أول شركة أو وسيط تتعامل معه",
+    f_linked_account: "الحساب المرتبط (الشركة/الوسيط)", unlinked: "غير مرتبط",
+    col_account_name: "الاسم", col_account_type: "النوع", col_account_contact: "مسؤول التواصل",
     tab_profile: "الملف الشخصي", tab_timeline: "السجل الزمني",
     f_assigned: "مسؤول عن العميل", f_tags: "الوسوم",
     f_tag_add_placeholder: "أضف وسم...", f_add_note_placeholder: "اكتب ملاحظة...",
@@ -901,6 +945,15 @@ const I18N = {
     f_employee_email: "Email", f_employee_password: "Password",
     empty_team_title: "No employees yet", empty_team_sub: "Add your first team member",
     toast_employee_added: "Employee account created successfully",
+
+    nav_accounts: "Accounts", accounts_title: "Accounts", accounts_sub: "Developer companies and brokers",
+    add_account: "Add Account", modal_add_account: "Add New Account", modal_edit_account: "Edit Account",
+    f_account_name: "Company / Account Name", f_account_type: "Account Type",
+    account_type_developer: "Real Estate Developer", account_type_broker: "Broker", account_type_partner: "Other Partner",
+    f_contact_person: "Contact Person", f_account_notes: "Notes",
+    empty_accounts_title: "No accounts yet", empty_accounts_sub: "Add your first company or broker",
+    f_linked_account: "Linked Account (Company/Broker)", unlinked: "Unlinked",
+    col_account_name: "Name", col_account_type: "Type", col_account_contact: "Contact Person",
     tab_profile: "Profile", tab_timeline: "Timeline",
     f_assigned: "Assigned To", f_tags: "Tags",
     f_tag_add_placeholder: "Add a tag...", f_add_note_placeholder: "Add a note...",
@@ -934,7 +987,7 @@ document.addEventListener("DOMContentLoaded", () => {
    App state & auth
    ========================================================= */
 let CURRENT_USER = null;
-let LEADS = [], TASKS = [], AGENTS = [];
+let LEADS = [], TASKS = [], AGENTS = [], ACCOUNTS = [];
 let currentView = "dashboard";
 
 const STATUSES = ["new","qualified","matched","meeting","offer","negotiation","booking","contract","won","lost"];
@@ -1017,6 +1070,11 @@ function subscribeData(){
     AGENTS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
     renderView();
   }, err => console.error("agents error", err));
+
+  db.collection("accounts").orderBy("createdAt","desc").onSnapshot(snap => {
+    ACCOUNTS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    renderView();
+  }, err => console.error("accounts error", err));
 }
 
 /* ---------- Router ---------- */
@@ -1027,7 +1085,7 @@ function initRouter(){
 }
 function handleRoute(){
   const hash = window.location.hash.replace("#","") || "dashboard";
-  currentView = ["dashboard","leads","pipeline","tasks","reports","team"].includes(hash) ? hash : "dashboard";
+  currentView = ["dashboard","leads","pipeline","tasks","reports","team","accounts"].includes(hash) ? hash : "dashboard";
   document.querySelectorAll(".nav-item").forEach(el => el.classList.toggle("active", el.dataset.view === currentView));
   renderView();
 }
@@ -1060,6 +1118,12 @@ function renderView(){
     actions.innerHTML = `<button class="btn-gold" id="btnAddEmployee">+ <span>${t("add_employee")}</span></button>`;
     document.getElementById("btnAddEmployee").addEventListener("click", () => openEmployeeModal());
     renderTeam();
+  }
+  else if (currentView === "accounts") {
+    title.textContent=t("accounts_title"); sub.textContent=t("accounts_sub");
+    actions.innerHTML = `<button class="btn-gold" id="btnAddAccount">+ <span>${t("add_account")}</span></button>`;
+    document.getElementById("btnAddAccount").addEventListener("click", () => openAccountModal());
+    renderAccounts();
   }
 }
 
@@ -1540,6 +1604,79 @@ function teamRow(a){
     </div>
   </div>`;
 }
+
+/* =========================================================
+   ACCOUNTS (Developer companies / Brokers)
+   ========================================================= */
+function renderAccounts(){
+  document.getElementById("content").innerHTML = `<div class="panel">${ACCOUNTS.length ? accountsTable(ACCOUNTS) : emptyState(t("empty_accounts_title"), t("empty_accounts_sub"))}</div>`;
+  bindAccountRowEvents();
+}
+function accountsTable(list){
+  return `<table><thead><tr>
+    <th>${t("col_account_name")}</th><th>${t("col_account_type")}</th><th>${t("col_account_contact")}</th><th>${t("col_phone")}</th><th>${t("col_actions")}</th>
+    </tr></thead><tbody>
+    ${list.map(a => `<tr>
+      <td>${escapeHtml(a.name||"")}</td>
+      <td>${t('account_type_'+(a.type||"developer"))}</td>
+      <td>${escapeHtml(a.contact||"—")}</td>
+      <td>${escapeHtml(a.phone||"—")}</td>
+      <td class="row-actions">
+        <button class="icon-btn" data-edit-account="${a.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+        <button class="icon-btn" data-delete-account="${a.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>
+      </td>
+    </tr>`).join("")}
+    </tbody></table>`;
+}
+function bindAccountRowEvents(){
+  document.querySelectorAll("[data-edit-account]").forEach(btn => btn.addEventListener("click", () => openAccountModal(btn.dataset.editAccount)));
+  document.querySelectorAll("[data-delete-account]").forEach(btn => btn.addEventListener("click", async () => {
+    if (!confirm(t("confirm_delete"))) return;
+    await db.collection("accounts").doc(btn.dataset.deleteAccount).delete();
+    toast(t("toast_deleted"));
+  }));
+}
+function openAccountModal(id){
+  const form = document.getElementById("accountForm");
+  form.reset();
+  document.getElementById("accountId").value = id || "";
+  document.getElementById("accountModalTitle").textContent = id ? t("modal_edit_account") : t("modal_add_account");
+  if (id) {
+    const acc = ACCOUNTS.find(a => a.id===id);
+    if (acc) {
+      document.getElementById("accountName").value = acc.name||"";
+      document.getElementById("accountType").value = acc.type||"developer";
+      document.getElementById("accountContact").value = acc.contact||"";
+      document.getElementById("accountPhone").value = acc.phone||"";
+      document.getElementById("accountEmail").value = acc.email||"";
+      document.getElementById("accountNotes").value = acc.notes||"";
+    }
+  }
+  document.getElementById("accountModal").classList.add("show");
+}
+document.getElementById("accountForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const id = document.getElementById("accountId").value;
+  const data = {
+    name: document.getElementById("accountName").value.trim(),
+    type: document.getElementById("accountType").value,
+    contact: document.getElementById("accountContact").value.trim(),
+    phone: document.getElementById("accountPhone").value.trim(),
+    email: document.getElementById("accountEmail").value.trim(),
+    notes: document.getElementById("accountNotes").value.trim(),
+  };
+  try {
+    if (id) { await db.collection("accounts").doc(id).update(data); toast(t("toast_updated")); }
+    else {
+      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      data.agentId = CURRENT_USER.uid;
+      await db.collection("accounts").add(data);
+      toast(t("toast_saved"));
+    }
+    closeModal("accountModal");
+  } catch (err) { console.error(err); alert(err.message); }
+});
+
 function openEmployeeModal(){
   document.getElementById("employeeForm").reset();
   document.getElementById("employeeModal").classList.add("show");
@@ -1653,6 +1790,10 @@ function openLeadDetail(id){
   assignedSelect.innerHTML = `<option value="">${t("unassigned")}</option>` + AGENTS.map(a => `<option value="${a.id}">${escapeHtml(a.name||a.email)}</option>`).join("");
   assignedSelect.value = lead.assignedTo || "";
 
+  const accountSelect = document.getElementById("detailAccount");
+  accountSelect.innerHTML = `<option value="">${t("unlinked")}</option>` + ACCOUNTS.map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join("");
+  accountSelect.value = lead.accountId || "";
+
   renderDetailQuickContact(lead);
   renderDetailTags();
   switchDetailTab("profile");
@@ -1755,6 +1896,7 @@ document.getElementById("detailForm").addEventListener("submit", async (e) => {
     dealValue: document.getElementById("detailDealValue").value.trim(),
     lostReason: document.getElementById("detailLostReason").value,
     assignedTo: document.getElementById("detailAssigned").value || null,
+    accountId: document.getElementById("detailAccount").value || null,
     notes: document.getElementById("detailNotes").value.trim(),
     tags: DETAIL_TAGS,
   };
