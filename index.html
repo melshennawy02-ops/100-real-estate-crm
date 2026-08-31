@@ -111,10 +111,10 @@ input,select,textarea{ font-family:var(--font); }
 .logout-btn:hover{ border-color:var(--danger); color:var(--danger); }
 
 .main{ flex:1; min-width:0; display:flex; flex-direction:column; }
-.topbar{ display:flex; align-items:center; justify-content:space-between; padding:18px 28px; border-bottom:1px solid var(--navy-line); gap:16px; }
+.topbar{ display:flex; align-items:center; justify-content:space-between; padding:18px 28px; border-bottom:1px solid var(--navy-line); gap:16px; flex-wrap:wrap; }
 .topbar h1{ font-size:20px; font-weight:800; color:var(--ivory); }
 .topbar-sub{ font-size:12px; color:var(--slate); margin-top:2px; }
-.topbar-actions{ display:flex; align-items:center; gap:10px; }
+.topbar-actions{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .btn-gold{ background:linear-gradient(180deg, var(--gold-dim), var(--gold)); color:#fff; font-weight:800; font-size:13px; padding:10px 16px; border-radius:var(--radius-sm); display:inline-flex; align-items:center; gap:6px; transition:transform .12s; }
 .btn-gold:hover{ transform:translateY(-1px); }
 .btn-outline{ background:transparent; border:1px solid var(--navy-line); color:var(--ivory); font-size:13px; font-weight:700; padding:9px 14px; border-radius:var(--radius-sm); }
@@ -270,10 +270,12 @@ tbody tr:last-child td{ border-bottom:none; }
 .mini-contact .icon-btn.call{ color:#2E9E5B; border-color:rgba(46,158,91,.3); }
 .mini-contact .icon-btn.whatsapp{ color:#25D366; border-color:rgba(37,211,102,.3); }
 
-.top-header{ display:flex; align-items:center; justify-content:space-between; padding:12px 28px; border-bottom:1px solid var(--navy-line); background:rgba(165,121,58,.04); flex-wrap:wrap; gap:8px; }
-.top-header-company{ display:flex; align-items:center; gap:8px; font-weight:800; font-size:14px; color:var(--gold-bright); }
-.top-header-user{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--slate); font-weight:600; cursor:pointer; }
-.avatar-mini{ width:24px; height:24px; border-radius:50%; overflow:hidden; background:var(--navy-panel-2); border:1px solid var(--gold-dim); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; color:var(--gold); flex-shrink:0; }
+.top-header{ display:flex; align-items:center; justify-content:space-between; padding:18px 28px; border-bottom:1px solid var(--navy-line); background:rgba(165,121,58,.06); flex-wrap:wrap; gap:12px; }
+.top-header-company{ display:flex; align-items:center; gap:12px; font-weight:800; font-size:20px; color:var(--gold-bright); }
+.top-header-company #topHeaderLogo{ width:34px !important; height:34px !important; }
+.top-header-company #topHeaderRing{ width:22px !important; height:22px !important; }
+.top-header-user{ display:flex; align-items:center; gap:10px; font-size:15px; color:var(--ivory); font-weight:700; cursor:pointer; }
+.avatar-mini{ width:38px; height:38px; border-radius:50%; overflow:hidden; background:var(--navy-panel-2); border:2px solid var(--gold-dim); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:800; color:var(--gold); flex-shrink:0; }
 
 .stage-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(88px,1fr)); gap:8px; margin-bottom:22px; }
 .stage-card{ background:linear-gradient(180deg, var(--navy-panel), var(--navy)); border:1px solid var(--navy-line); border-radius:12px; padding:10px 8px; text-align:center; transition:border-color .12s, transform .12s; }
@@ -287,7 +289,7 @@ tbody tr:last-child td{ border-bottom:none; }
 .leader-card .leader-label{ font-size:11px; color:var(--slate); font-weight:700; text-transform:uppercase; letter-spacing:.4px; margin-bottom:8px; }
 .leader-card .leader-name{ font-size:16px; font-weight:800; color:var(--ivory); }
 .leader-card .leader-count{ font-size:12px; color:var(--gold-bright); font-weight:700; margin-top:4px; }
-@media (max-width:1100px){ .leader-grid{ grid-template-columns:1fr; } .top-header{ padding:10px 16px; } .pipeline-board{ display:flex; flex-direction:column; grid-auto-flow:unset; overflow-x:visible; } .pipe-col{ width:100%; } }
+@media (max-width:1100px){ .leader-grid{ grid-template-columns:1fr; } .top-header{ padding:14px 16px; } .top-header-company{ font-size:17px; } .top-header-user{ font-size:13.5px; } .pipeline-board{ display:flex; flex-direction:column; grid-auto-flow:unset; overflow-x:visible; } .pipe-col{ width:100%; } }
 
 </style>
 </head>
@@ -595,8 +597,8 @@ tbody tr:last-child td{ border-bottom:none; }
 
     <div class="tabs-row">
       <button class="tab-btn" data-tab="profile" data-i18n="tab_profile" id="profileTabBtn">Profile</button>
-      <button class="tab-btn active" data-tab="timeline" data-i18n="tab_timeline">Timeline</button>
-      <button class="tab-btn" data-tab="feedback" data-i18n="tab_feedback">Customer Feedback</button>
+      <button class="tab-btn" data-tab="timeline" data-i18n="tab_timeline">Timeline</button>
+      <button class="tab-btn active" data-tab="feedback" data-i18n="tab_feedback">Customer Feedback</button>
     </div>
 
     <div class="tab-panel" id="tabProfile">
@@ -1369,7 +1371,7 @@ function renderView(){
   else if (currentView === "leads") {
     title.textContent=t("leads_title"); sub.textContent=t("leads_sub");
     const exportBtn = permLevel() >= 3 ? `<button class="btn-outline" id="btnExportLeads">${t("export_leads")}</button>` : "";
-    actions.innerHTML = `${exportBtn}<button class="btn-outline" id="btnImportLeads">${t("import_leads")}</button><button class="btn-gold" id="btnAddLead">+ <span>${t("add_lead")}</span></button>`;
+    actions.innerHTML = `${exportBtn}<button class="btn-outline" id="btnImportLeads">${t("import_leads")}</button><button class="btn-outline" id="btnAddLead">+ ${t("add_lead")}</button>`;
     document.getElementById("btnAddLead").addEventListener("click", () => openLeadModal());
     document.getElementById("btnImportLeads").addEventListener("click", () => openImportModal());
     if (permLevel() >= 3) document.getElementById("btnExportLeads").addEventListener("click", () => exportAllLeads());
@@ -1479,6 +1481,7 @@ function renderDashboard(){
       ${todaysTasks.length ? todaysTasks.map(taskItem).join("") : emptyState(t("empty_tasks_title"), t("empty_tasks_sub"))}
     </div>`;
   bindLeadRowEvents();
+  document.querySelectorAll(".task-item [data-open]").forEach(el => el.addEventListener("click", () => openLeadDetail(el.dataset.open)));
   document.querySelectorAll("[data-stage]").forEach(el => el.addEventListener("click", () => goToLeadsFiltered(el.dataset.stage)));
   document.querySelectorAll("[data-stat-kind]").forEach(el => el.addEventListener("click", () => {
     const kind = el.dataset.statKind;
@@ -1876,7 +1879,7 @@ function taskItem(tk){
     </div>
     <div class="task-body">
       <div class="task-title ${tk.done?'done':''}">${escapeHtml(tk.title||"")}</div>
-      <div class="task-meta ${overdue?'overdue':''}">${lead?escapeHtml(lead.name)+" · ":""}${t('type_'+(tk.type||'call'))} · ${overdue?t('overdue')+" · ":""}${fmtTaskDue(tk.due)}</div>
+      <div class="task-meta ${overdue?'overdue':''}">${lead?`<span class="row-name-link" data-open="${lead.id}">${escapeHtml(lead.name)}</span> · `:""}${t('type_'+(tk.type||'call'))} · ${overdue?t('overdue')+" · ":""}${fmtTaskDue(tk.due)}</div>
     </div>
     <button class="icon-btn" data-delete-task="${tk.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>
   </div>`;
@@ -1885,6 +1888,7 @@ function bindTaskEvents(){
   document.querySelectorAll("[data-toggle]").forEach(el => el.addEventListener("click", async () => {
     const done = el.dataset.done==="true"; await db.collection("tasks").doc(el.dataset.toggle).update({done:!done});
   }));
+  document.querySelectorAll(".task-item [data-open]").forEach(el => el.addEventListener("click", () => openLeadDetail(el.dataset.open)));
   document.querySelectorAll("[data-delete-task]").forEach(el => el.addEventListener("click", async () => {
     if (!confirm(t("confirm_delete"))) return;
     await db.collection("tasks").doc(el.dataset.deleteTask).delete(); toast(t("toast_deleted"));
@@ -2396,7 +2400,7 @@ function openLeadDetail(id){
   renderDetailOverview(lead);
   renderDetailQuickContact(lead);
   renderDetailTags();
-  switchDetailTab("timeline");
+  switchDetailTab("feedback");
   subscribeTimeline(id);
   applyProfileTabPermissions();
 
