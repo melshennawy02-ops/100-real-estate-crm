@@ -260,6 +260,10 @@ tbody tr:last-child td{ border-bottom:none; }
 .timeline-text{ font-size:13px; color:var(--ivory); font-weight:600; }
 .timeline-meta{ font-size:11px; color:var(--slate); margin-top:2px; }
 
+.lead-overview{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; background:var(--navy); border:1px solid var(--navy-line); border-radius:12px; padding:12px 14px; margin-bottom:14px; }
+.lead-overview .ov-item{ min-width:0; }
+.lead-overview .ov-label{ font-size:10px; color:var(--slate); font-weight:600; margin-bottom:3px; }
+.lead-overview .ov-value{ font-size:12.5px; color:var(--ivory); font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .row-name-link{ cursor:pointer; color:var(--gold-bright); font-weight:700; text-decoration:underline; text-decoration-style:dotted; text-underline-offset:2px; }
 .row-name-link:hover{ color:var(--gold); text-decoration-style:solid; }
 .mini-contact{ display:flex; gap:6px; }
@@ -569,6 +573,8 @@ tbody tr:last-child td{ border-bottom:none; }
       <button class="modal-close" data-close-modal="leadDetailModal">✕</button>
     </div>
 
+    <div class="lead-overview" id="detailOverview"></div>
+
     <div class="quick-contact" id="detailQuickContact"></div>
 
     <div class="panel" style="border-color:var(--gold-dim); margin-bottom:18px; padding:16px;">
@@ -576,25 +582,23 @@ tbody tr:last-child td{ border-bottom:none; }
         <label data-i18n="f_quick_summary">Interaction Summary</label>
         <textarea id="quickSummaryInput" rows="2" data-i18n-placeholder="quick_summary_placeholder" placeholder="What happened in this call/visit?"></textarea>
       </div>
-      <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
-        <select id="quickMoveTo" style="flex:1; min-width:150px;"></select>
-        <button type="button" class="btn-gold" id="quickUpdateBtn" data-i18n="quick_update_btn">Update & Move</button>
-      </div>
       <div class="field">
-        <label data-i18n="f_next_followup_at">Next Follow-up Date & Time</label>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <input type="datetime-local" id="quickFollowupAt" style="flex:1; min-width:170px;">
-          <button type="button" class="btn-outline" id="quickScheduleBtn" data-i18n="schedule_followup">Schedule</button>
-        </div>
+        <label data-i18n="f_move_to_stage">Move to Stage</label>
+        <select id="quickMoveTo"></select>
       </div>
+      <div class="field" id="quickFollowupWrap">
+        <label data-i18n="f_next_followup_at">Next Follow-up Date & Time</label>
+        <input type="datetime-local" id="quickFollowupAt">
+      </div>
+      <button type="button" class="btn-gold" id="quickUpdateBtn" style="width:100%; margin-top:6px;" data-i18n="quick_update_btn">Save</button>
     </div>
 
     <div class="tabs-row">
-      <button class="tab-btn active" data-tab="profile" data-i18n="tab_profile">Profile</button>
-      <button class="tab-btn" data-tab="timeline" data-i18n="tab_timeline">Timeline</button>
+      <button class="tab-btn" data-tab="profile" data-i18n="tab_profile">Profile</button>
+      <button class="tab-btn active" data-tab="timeline" data-i18n="tab_timeline">Timeline</button>
     </div>
 
-    <div class="tab-panel active" id="tabProfile">
+    <div class="tab-panel" id="tabProfile">
       <div id="profileReadonlyNotice" style="display:none; background:rgba(165,121,58,.08); border:1px solid var(--gold-dim); border-radius:10px; padding:10px 12px; font-size:12px; color:var(--slate); margin-bottom:14px;" data-i18n="readonly_notice"></div>
       <form id="detailForm">
         <input type="hidden" id="detailLeadId">
@@ -966,7 +970,7 @@ const I18N = {
     top_seller_today: "أعلى سيلز اليوم", top_seller_month: "أعلى سيلز الشهر",
     actions: "إجراء", no_activity_yet: "لا يوجد نشاط بعد",
     f_quick_summary: "ملخص التعامل", quick_summary_placeholder: "إيه اللي حصل في المكالمة/الزيارة؟",
-    quick_update_btn: "تحديث ونقل", toast_quick_updated: "تم تحديث حالة العميل",
+    quick_update_btn: "حفظ", toast_quick_updated: "تم تحديث حالة العميل",
     f_next_followup_at: "موعد المتابعة القادم (تاريخ ووقت)", schedule_followup: "حدد الموعد",
     toast_followup_scheduled: "تم تحديد موعد المتابعة", act_followup_scheduled: "تم تحديد موعد متابعة بتاريخ",
     followup_task_title: "متابعة",
@@ -1082,7 +1086,7 @@ const I18N = {
     top_seller_today: "Top Seller Today", top_seller_month: "Top Seller This Month",
     actions: "actions", no_activity_yet: "No activity yet",
     f_quick_summary: "Interaction Summary", quick_summary_placeholder: "What happened in this call/visit?",
-    quick_update_btn: "Update & Move", toast_quick_updated: "Lead status updated",
+    quick_update_btn: "Save", toast_quick_updated: "Lead status updated",
     f_next_followup_at: "Next Follow-up Date & Time", schedule_followup: "Schedule",
     toast_followup_scheduled: "Follow-up scheduled", act_followup_scheduled: "Follow-up scheduled for",
     followup_task_title: "Follow-up",
@@ -2265,14 +2269,36 @@ function openLeadDetail(id){
   quickMoveSelect.value = lead.status || "new";
   document.getElementById("quickSummaryInput").value = "";
   document.getElementById("quickFollowupAt").value = "";
+  toggleFollowupWrap(quickMoveSelect.value);
 
+  renderDetailOverview(lead);
   renderDetailQuickContact(lead);
   renderDetailTags();
-  switchDetailTab("profile");
+  switchDetailTab("timeline");
   subscribeTimeline(id);
   applyProfileTabPermissions();
 
   document.getElementById("leadDetailModal").classList.add("show");
+}
+
+function toggleFollowupWrap(status){
+  document.getElementById("quickFollowupWrap").style.display = (status === "lost") ? "none" : "block";
+}
+document.getElementById("quickMoveTo").addEventListener("change", (e) => toggleFollowupWrap(e.target.value));
+
+function renderDetailOverview(lead){
+  const agent = AGENTS.find(a => a.id === lead.assignedTo);
+  const items = [
+    [t("f_status"), `<span class="badge ${lead.status||'new'}">${t('status_'+(lead.status||'new'))}</span>`],
+    [t("f_rating"), `<span class="badge ${lead.rating||'warm'}">${t('rating_'+(lead.rating||'warm'))}</span>`],
+    [t("f_project"), escapeHtml(lead.project || "—")],
+    [t("f_interest"), escapeHtml(lead.interest || "—")],
+    [t("f_source"), t('source_'+(lead.source||'other'))],
+    [t("f_assigned"), agent ? escapeHtml(agent.name||agent.email) : t("unassigned")],
+  ];
+  document.getElementById("detailOverview").innerHTML = items.map(([label,val]) => `
+    <div class="ov-item"><div class="ov-label">${label}</div><div class="ov-value">${val}</div></div>
+  `).join("");
 }
 
 function applyProfileTabPermissions(){
@@ -2365,6 +2391,7 @@ document.getElementById("quickUpdateBtn").addEventListener("click", async () => 
   try {
     const summary = document.getElementById("quickSummaryInput").value.trim();
     const newStatus = document.getElementById("quickMoveTo").value;
+    const followupDt = document.getElementById("quickFollowupAt").value;
     const lead = LEADS.find(l => l.id===DETAIL_LEAD_ID) || {};
     const statusChanged = lead.status !== newStatus;
 
@@ -2372,38 +2399,24 @@ document.getElementById("quickUpdateBtn").addEventListener("click", async () => 
     if (summary) await logActivity(DETAIL_LEAD_ID, "note", summary);
     if (statusChanged) await logActivity(DETAIL_LEAD_ID, "status", t("act_status") + " " + t("status_"+newStatus));
 
+    if (newStatus !== "lost" && followupDt) {
+      await db.collection("tasks").add({
+        title: (lead.name || "") + " — " + t("followup_task_title"),
+        leadId: DETAIL_LEAD_ID,
+        type: "followup",
+        due: followupDt,
+        done: false,
+        agentId: CURRENT_USER.uid,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+      await logActivity(DETAIL_LEAD_ID, "task", t("act_followup_scheduled") + " " + fmtTaskDue(followupDt));
+    }
+
     document.getElementById("detailStatus").value = newStatus;
     document.getElementById("quickSummaryInput").value = "";
+    document.getElementById("quickFollowupAt").value = "";
     switchDetailTab("timeline");
     toast(t("toast_quick_updated"));
-  } catch (err) {
-    console.error(err);
-    alert(err.message);
-  } finally {
-    btn.disabled = false;
-  }
-});
-
-document.getElementById("quickScheduleBtn").addEventListener("click", async () => {
-  if (!DETAIL_LEAD_ID) return;
-  const dt = document.getElementById("quickFollowupAt").value;
-  if (!dt) return;
-  const btn = document.getElementById("quickScheduleBtn");
-  btn.disabled = true;
-  try {
-    const lead = LEADS.find(l => l.id===DETAIL_LEAD_ID) || {};
-    await db.collection("tasks").add({
-      title: (lead.name || "") + " — " + t("followup_task_title"),
-      leadId: DETAIL_LEAD_ID,
-      type: "followup",
-      due: dt,
-      done: false,
-      agentId: CURRENT_USER.uid,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    });
-    await logActivity(DETAIL_LEAD_ID, "task", t("act_followup_scheduled") + " " + fmtTaskDue(dt));
-    document.getElementById("quickFollowupAt").value = "";
-    toast(t("toast_followup_scheduled"));
   } catch (err) {
     console.error(err);
     alert(err.message);
