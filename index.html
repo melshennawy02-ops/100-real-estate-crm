@@ -594,8 +594,9 @@ tbody tr:last-child td{ border-bottom:none; }
     </div>
 
     <div class="tabs-row">
-      <button class="tab-btn" data-tab="profile" data-i18n="tab_profile">Profile</button>
+      <button class="tab-btn" data-tab="profile" data-i18n="tab_profile" id="profileTabBtn">Profile</button>
       <button class="tab-btn active" data-tab="timeline" data-i18n="tab_timeline">Timeline</button>
+      <button class="tab-btn" data-tab="feedback" data-i18n="tab_feedback">Customer Feedback</button>
     </div>
 
     <div class="tab-panel" id="tabProfile">
@@ -703,6 +704,7 @@ tbody tr:last-child td{ border-bottom:none; }
           <div class="field full"><label data-i18n="f_notes">Notes</label><textarea id="detailNotes"></textarea></div>
           <div class="field full">
             <label data-i18n="f_tags">Tags</label>
+            <div style="font-size:11px; color:var(--slate); margin-bottom:8px; line-height:1.5;" data-i18n="f_tags_hint"></div>
             <div class="tag-list" id="detailTagList"></div>
             <div class="tag-add-row">
               <input type="text" id="detailTagInput" data-i18n-placeholder="f_tag_add_placeholder" placeholder="Add a tag...">
@@ -726,6 +728,10 @@ tbody tr:last-child td{ border-bottom:none; }
         <button type="button" class="btn-outline" id="detailNewTaskBtn" data-i18n="new_task">+ New Task</button>
       </div>
       <div class="timeline-list" id="detailTimelineList"></div>
+    </div>
+
+    <div class="tab-panel" id="tabFeedback">
+      <div class="timeline-list" id="detailFeedbackList"></div>
     </div>
   </div>
 </div>
@@ -1019,9 +1025,11 @@ const I18N = {
     my_profile: "ملفي الشخصي", f_avatar: "الصورة الشخصية",
     edit_agent: "تعديل بيانات الموظف", change_photo: "تغيير الصورة",
     toast_profile_saved: "تم حفظ الملف الشخصي", toast_company_saved: "تم حفظ بيانات الشركة",
-    tab_profile: "الملف الشخصي", tab_timeline: "السجل الزمني",
-    f_assigned: "مسؤول عن العميل", f_tags: "الوسوم",
-    f_tag_add_placeholder: "أضف وسم...", f_add_note_placeholder: "اكتب ملاحظة...",
+    tab_profile: "الملف الشخصي", tab_timeline: "السجل الزمني", tab_feedback: "فيدباك العميل",
+    empty_feedback_title: "لا توجد ملخصات تعامل بعد", empty_feedback_sub: "أضف ملخص للتعامل من خانة ملخص التعامل",
+    f_assigned: "مسؤول عن العميل", f_tags: "هاش تاج",
+    f_tag_add_placeholder: "مثال: VIP أو يفضل_المساء", f_add_note_placeholder: "اكتب ملاحظة...",
+    f_tags_hint: "استخدمها لتمييز العميل بعلامة سريعة تسهّل البحث والفرز لاحقًا — مثال: #VIP، #يفضل_التواصل_مساءً، #من_معرض_الساحل",
     add: "إضافة", new_task: "+ مهمة جديدة", unassigned: "غير معيّن", none: "—",
     act_created: "تم إنشاء العميل", act_call: "تم تسجيل مكالمة",
     act_whatsapp: "تم فتح واتساب", act_sms: "تم فتح رسالة نصية",
@@ -1135,9 +1143,11 @@ const I18N = {
     my_profile: "My Profile", f_avatar: "Profile Picture",
     edit_agent: "Edit Employee", change_photo: "Change Photo",
     toast_profile_saved: "Profile saved", toast_company_saved: "Company info saved",
-    tab_profile: "Profile", tab_timeline: "Timeline",
-    f_assigned: "Assigned To", f_tags: "Tags",
-    f_tag_add_placeholder: "Add a tag...", f_add_note_placeholder: "Add a note...",
+    tab_profile: "Profile", tab_timeline: "Timeline", tab_feedback: "Customer Feedback",
+    empty_feedback_title: "No interaction summaries yet", empty_feedback_sub: "Add one from the Interaction Summary box",
+    f_assigned: "Assigned To", f_tags: "Hashtag",
+    f_tag_add_placeholder: "e.g. VIP or Prefers_Evening", f_add_note_placeholder: "Add a note...",
+    f_tags_hint: "Use it to flag a lead for quick searching and filtering later — e.g. #VIP, #Prefers_Evening_Calls, #From_Coast_Exhibition",
     add: "Add", new_task: "+ New Task", unassigned: "Unassigned", none: "—",
     act_created: "Lead created", act_call: "Call logged",
     act_whatsapp: "WhatsApp opened", act_sms: "SMS opened",
@@ -2313,6 +2323,7 @@ function applyProfileTabPermissions(){
   document.querySelectorAll("#detailTagList [data-remove-tag]").forEach(btn => btn.disabled = !editable);
   document.getElementById("detailSaveBtn").style.display = editable ? "inline-flex" : "none";
   document.getElementById("profileReadonlyNotice").style.display = editable ? "none" : "block";
+  document.getElementById("profileTabBtn").style.display = editable ? "inline-flex" : "none";
 }
 
 function renderDetailQuickContact(lead){
@@ -2331,7 +2342,7 @@ function renderDetailQuickContact(lead){
 
 function renderDetailTags(){
   document.getElementById("detailTagList").innerHTML = DETAIL_TAGS.map(tag => `
-    <span class="tag-chip">${escapeHtml(tag)}<button type="button" data-remove-tag="${escapeHtml(tag)}">✕</button></span>
+    <span class="tag-chip">#${escapeHtml(tag)}<button type="button" data-remove-tag="${escapeHtml(tag)}">✕</button></span>
   `).join("") || "";
   document.querySelectorAll("[data-remove-tag]").forEach(btn => btn.addEventListener("click", () => {
     DETAIL_TAGS = DETAIL_TAGS.filter(tg => tg !== btn.dataset.removeTag);
@@ -2340,16 +2351,18 @@ function renderDetailTags(){
 }
 document.getElementById("detailTagAddBtn").addEventListener("click", () => {
   const input = document.getElementById("detailTagInput");
-  const val = input.value.trim();
+  const val = input.value.trim().replace(/^#/,"").replace(/\s+/g,"_");
   if (val && !DETAIL_TAGS.includes(val)) { DETAIL_TAGS.push(val); renderDetailTags(); }
   input.value = "";
 });
 
 document.querySelectorAll(".tab-btn").forEach(btn => btn.addEventListener("click", () => switchDetailTab(btn.dataset.tab)));
 function switchDetailTab(tab){
+  if (tab === "profile" && permLevel() < 3) tab = "timeline";
   document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab===tab));
   document.getElementById("tabProfile").classList.toggle("active", tab==="profile");
   document.getElementById("tabTimeline").classList.toggle("active", tab==="timeline");
+  document.getElementById("tabFeedback").classList.toggle("active", tab==="feedback");
 }
 
 function subscribeTimeline(leadId){
@@ -2362,6 +2375,18 @@ function subscribeTimeline(leadId){
       list.innerHTML = items.map(a => `
         <div class="timeline-item">
           <div class="timeline-icon">${ACT_ICONS[a.type]||ACT_ICONS.note}</div>
+          <div>
+            <div class="timeline-text">${escapeHtml(a.text||"")}</div>
+            <div class="timeline-meta">${escapeHtml(a.agentEmail||"")} · ${fmtDate(a.createdAt)}</div>
+          </div>
+        </div>`).join("");
+
+      const notes = items.filter(a => a.type === "note").slice().reverse();
+      const feedbackList = document.getElementById("detailFeedbackList");
+      if (!notes.length) { feedbackList.innerHTML = emptyState(t("empty_feedback_title"), t("empty_feedback_sub")); return; }
+      feedbackList.innerHTML = notes.map(a => `
+        <div class="timeline-item">
+          <div class="timeline-icon">${ACT_ICONS.note}</div>
           <div>
             <div class="timeline-text">${escapeHtml(a.text||"")}</div>
             <div class="timeline-meta">${escapeHtml(a.agentEmail||"")} · ${fmtDate(a.createdAt)}</div>
