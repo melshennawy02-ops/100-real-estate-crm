@@ -32,6 +32,22 @@
   --font: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
 }
 
+html[data-theme="dark"]{
+  --navy-deep:   #12182A;
+  --navy:        #171F35;
+  --navy-panel:  #1C2540;
+  --navy-panel-2:#232E4E;
+  --navy-line:   #313E62;
+  --gold:        #C9A24B;
+  --gold-bright: #E9CC7E;
+  --gold-dim:    #A5793A;
+  --ivory:       #F1EEE3;
+  --slate:       #93A0C4;
+  --slate-dim:   #6C7AA0;
+  --danger:      #E0685A;
+  --success:     #4EA483;
+}
+
 *{ box-sizing:border-box; margin:0; padding:0; }
 
 html,body{ height:100%; font-family:var(--font); background:var(--navy-deep); color:var(--ivory); overflow-x:hidden; }
@@ -338,6 +354,20 @@ tbody tr:last-child td{ border-bottom:none; }
 .perm-list-item.locked{ cursor:default; opacity:.7; }
 .perm-list-item.locked:hover{ background:transparent; }
 .perm-list-item.locked .perm-num{ border-color:var(--navy-line); color:var(--slate); }
+.toggle-switch{ position:relative; width:46px; height:26px; flex-shrink:0; }
+.toggle-switch input{ opacity:0; width:0; height:0; }
+.toggle-switch .ts-slider{ position:absolute; inset:0; background:var(--navy-line); border-radius:14px; cursor:pointer; transition:.2s; }
+.toggle-switch .ts-slider::before{ content:""; position:absolute; width:20px; height:20px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.2s; }
+.toggle-switch input:checked + .ts-slider{ background:var(--gold); }
+html[dir="rtl"] .toggle-switch input:checked + .ts-slider::before{ transform:translateX(-20px); }
+html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:translateX(20px); }
+.settings-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 2px; border-bottom:1px solid rgba(36,64,111,.08); }
+.settings-row:last-child{ border-bottom:none; }
+.settings-row .sr-label{ font-size:13.5px; font-weight:700; color:var(--ivory); }
+.settings-row .sr-sub{ font-size:11px; color:var(--slate); margin-top:2px; }
+.theme-choice-row{ display:flex; gap:10px; }
+.theme-choice-btn{ flex:1; padding:12px; border-radius:12px; border:1.5px solid var(--navy-line); background:transparent; color:var(--slate); font-size:12.5px; font-weight:700; display:flex; flex-direction:column; align-items:center; gap:6px; }
+.theme-choice-btn.active{ border-color:var(--gold); color:var(--gold-bright); background:rgba(201,162,75,.08); }
 .row-name-link{ cursor:pointer; color:var(--gold-bright); font-weight:700; text-decoration:underline; text-decoration-style:dotted; text-underline-offset:2px; }
 .row-name-link:hover{ color:var(--gold); text-decoration-style:solid; }
 .mini-contact{ display:flex; gap:6px; }
@@ -465,6 +495,10 @@ tbody tr:last-child td{ border-bottom:none; }
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         <span data-i18n="nav_team">Team</span>
       </a>
+      <a href="#settings" class="nav-item" data-view="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span data-i18n="nav_bn_settings">Settings</span>
+      </a>
     </nav>
     <div class="sidebar-foot">
       <div class="user-chip" id="userChipBtn" style="cursor:pointer;">
@@ -511,7 +545,7 @@ tbody tr:last-child td{ border-bottom:none; }
     <div class="content" id="content"></div>
   </div>
   <nav class="bottom-nav">
-    <a href="#" class="bn-item" id="bnSettings">
+    <a href="#settings" class="bn-item" id="bnSettings" data-view="settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       <span data-i18n="nav_bn_settings">Settings</span>
     </a>
@@ -1207,6 +1241,24 @@ const I18N = {
     public_unit_not_found: "الوحدة غير متاحة أو تم حذفها",
     added_by: "أضيفت بواسطة",
 
+    settings_sub: "إدارة حسابك وتفضيلات النظام",
+    settings_password: "كلمة المرور", settings_current_password: "كلمة المرور الحالية",
+    settings_new_password: "كلمة المرور الجديدة", settings_confirm_password: "تأكيد كلمة المرور الجديدة",
+    settings_change_password: "تغيير كلمة المرور",
+    settings_fill_all: "من فضلك املأ كل الخانات", settings_password_short: "كلمة المرور لازم تكون 6 حروف على الأقل",
+    settings_password_mismatch: "كلمة المرور الجديدة وتأكيدها مش متطابقين",
+    toast_password_changed: "تم تغيير كلمة المرور بنجاح",
+    settings_appearance: "المظهر", settings_theme_light: "فاتح", settings_theme_dark: "داكن",
+    settings_language: "اللغة",
+    settings_notifications: "الإشعارات",
+    settings_overdue_sound: "تنبيه صوتي عند تأخر مهمة",
+    settings_overdue_sound_sub: "صوت تنبيه عند فتح الرئيسية لو فيه مهام متأخرة",
+    settings_week_start: "بداية الأسبوع في التقارير",
+    day_saturday: "السبت", day_sunday: "الأحد", day_monday: "الاثنين",
+    settings_my_activity: "سجل نشاطي",
+    perm_item_resale_phone: "رؤية رقم هاتف مالك وحدة الريسيل",
+    feature_resale_phone_desc: "حدد الوظائف المسموح لها برؤية رقم هاتف مالك الوحدة جوا النظام:",
+
     selected_count: "محدد", assign_to_agent: "تعيين لموظف...", apply_assign: "تطبيق",
     clear_selection: "إلغاء التحديد", toast_bulk_assigned: "تم نقل العملاء المحددين بنجاح",
     permissions_management: "إدارة الصلاحيات",
@@ -1366,6 +1418,24 @@ const I18N = {
     public_unit_not_found: "This unit is unavailable or has been removed",
     added_by: "Added By",
 
+    settings_sub: "Manage your account and system preferences",
+    settings_password: "Password", settings_current_password: "Current Password",
+    settings_new_password: "New Password", settings_confirm_password: "Confirm New Password",
+    settings_change_password: "Change Password",
+    settings_fill_all: "Please fill in all fields", settings_password_short: "Password must be at least 6 characters",
+    settings_password_mismatch: "New password and confirmation don't match",
+    toast_password_changed: "Password changed successfully",
+    settings_appearance: "Appearance", settings_theme_light: "Light", settings_theme_dark: "Dark",
+    settings_language: "Language",
+    settings_notifications: "Notifications",
+    settings_overdue_sound: "Overdue Task Sound Alert",
+    settings_overdue_sound_sub: "Play a sound on the home screen when there are overdue tasks",
+    settings_week_start: "Week Start Day (Reports)",
+    day_saturday: "Saturday", day_sunday: "Sunday", day_monday: "Monday",
+    settings_my_activity: "My Activity Log",
+    perm_item_resale_phone: "View Resale Owner's Phone Number",
+    feature_resale_phone_desc: "Choose which roles are allowed to see the unit owner's phone number in the system:",
+
     selected_count: "selected", assign_to_agent: "Assign to agent...", apply_assign: "Apply",
     clear_selection: "Clear selection", toast_bulk_assigned: "Selected leads reassigned successfully",
     permissions_management: "Permissions Management",
@@ -1442,6 +1512,26 @@ const I18N = {
 };
 
 function getLang(){ return localStorage.getItem("crm_lang") || "ar"; }
+function getTheme(){ return localStorage.getItem("crm_theme") || "light"; }
+function setTheme(theme){
+  localStorage.setItem("crm_theme", theme);
+  if (theme === "dark") document.documentElement.setAttribute("data-theme","dark");
+  else document.documentElement.removeAttribute("data-theme");
+}
+setTheme(getTheme());
+function getWeekStart(){ return localStorage.getItem("crm_week_start") || "mon"; }
+function setWeekStart(v){ localStorage.setItem("crm_week_start", v); }
+function getNotifSound(){ return localStorage.getItem("crm_notif_sound") === "1"; }
+function setNotifSound(v){ localStorage.setItem("crm_notif_sound", v ? "1" : "0"); }
+function playAlertBeep(){
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const osc = ctx.createOscillator(); const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 880; gain.gain.value = 0.08;
+    osc.start(); setTimeout(() => { osc.stop(); ctx.close(); }, 180);
+  } catch(e) {}
+}
 function setLang(lang){ localStorage.setItem("crm_lang", lang); applyLang(lang); }
 function t(key){ const lang = getLang(); return (I18N[lang] && I18N[lang][key]) || key; }
 function applyLang(lang){
@@ -1470,7 +1560,8 @@ let DASHBOARD_RESALE_TIMER = null;
 let SELECTED_LEAD_IDS = new Set();
 const DEFAULT_BULK_ROLES = ["general_manager","company_admin","sales_manager","marketing_manager"];
 const DEFAULT_RESALE_EDIT_ROLES = ["general_manager","company_admin"];
-let PERMISSIONS_CONFIG = { bulk_reassign: DEFAULT_BULK_ROLES, resale_edit_delete: DEFAULT_RESALE_EDIT_ROLES };
+const DEFAULT_RESALE_PHONE_ROLES = ["general_manager","company_admin"];
+let PERMISSIONS_CONFIG = { bulk_reassign: DEFAULT_BULK_ROLES, resale_edit_delete: DEFAULT_RESALE_EDIT_ROLES, resale_view_phone: DEFAULT_RESALE_PHONE_ROLES };
 
 function canBulkReassign(){
   return PERMISSIONS_CONFIG.bulk_reassign.includes(myRole());
@@ -1662,7 +1753,6 @@ loginForm.addEventListener("submit", async (e) => {
 document.getElementById("logoutBtn").addEventListener("click", () => { auth.signOut(); });
 document.getElementById("userChipBtn").addEventListener("click", () => openProfileModal());
 document.getElementById("topHeaderUserBtn").addEventListener("click", () => openProfileModal());
-document.getElementById("bnSettings").addEventListener("click", (e) => { e.preventDefault(); openProfileModal(); });
 document.getElementById("bnFab").addEventListener("click", () => openLeadModal());
 
 document.getElementById("menuBtn").addEventListener("click", () => {
@@ -1714,6 +1804,7 @@ function subscribeData(){
       const d = doc.data();
       PERMISSIONS_CONFIG.bulk_reassign = Array.isArray(d.bulk_reassign) ? d.bulk_reassign : DEFAULT_BULK_ROLES;
       PERMISSIONS_CONFIG.resale_edit_delete = Array.isArray(d.resale_edit_delete) ? d.resale_edit_delete : DEFAULT_RESALE_EDIT_ROLES;
+      PERMISSIONS_CONFIG.resale_view_phone = Array.isArray(d.resale_view_phone) ? d.resale_view_phone : DEFAULT_RESALE_PHONE_ROLES;
     }
     renderView();
   }, err => console.error("permissions settings error", err));
@@ -1727,7 +1818,7 @@ function initRouter(){
 }
 function handleRoute(){
   const hash = window.location.hash.replace("#","") || "dashboard";
-  currentView = ["dashboard","leads","pipeline","tasks","reports","team","accounts","resale"].includes(hash) ? hash : "dashboard";
+  currentView = ["dashboard","leads","pipeline","tasks","reports","team","accounts","resale","settings"].includes(hash) ? hash : "dashboard";
   const restricted = { team:3, accounts:2, reports:2 };
   if (restricted[currentView] && permLevel() < restricted[currentView]) {
     currentView = "dashboard";
@@ -1781,6 +1872,10 @@ function renderView(){
     actions.innerHTML = `<button class="btn-gold" id="btnAddResale">+ <span>${t("add_resale_unit")}</span></button>`;
     document.getElementById("btnAddResale").addEventListener("click", () => openResaleModal());
     renderResale();
+  }
+  else if (currentView === "settings") {
+    title.textContent=t("nav_bn_settings"); sub.textContent=t("settings_sub");
+    renderSettings();
   }
 }
 
@@ -1837,6 +1932,10 @@ function renderDashboard(){
   const doneTodayTasks = allTodayTasks.filter(tk => tk.done);
   const perfPct = allTodayTasks.length ? Math.round((doneTodayTasks.length/allTodayTasks.length)*100) : 0;
   const overdueCount = TASKS.filter(tk => !tk.done && tk.due && new Date(tk.due) < new Date()).length;
+  if (overdueCount > 0 && getNotifSound() && !sessionStorage.getItem("overdue_beeped")) {
+    playAlertBeep();
+    sessionStorage.setItem("overdue_beeped", "1");
+  }
   const convRate = totalLeads ? Math.round((LEADS.filter(l=>l.status==="won").length/totalLeads)*100) : 0;
   const recentActivities = ALL_ACTIVITIES.slice().sort((a,b)=>{
     const da = a.createdAt&&a.createdAt.seconds?a.createdAt.seconds:0, db=b.createdAt&&b.createdAt.seconds?b.createdAt.seconds:0;
@@ -2431,7 +2530,12 @@ function getPeriodRange(period){
   const now = new Date();
   let start = null;
   if (period === "today") { start = new Date(now.getFullYear(), now.getMonth(), now.getDate()); }
-  else if (period === "week") { const d = new Date(now); const day = (d.getDay()+6)%7; d.setDate(d.getDate()-day); d.setHours(0,0,0,0); start = d; }
+  else if (period === "week") {
+    const d = new Date(now);
+    const startDay = { sat:6, sun:0, mon:1 }[getWeekStart()] ?? 1;
+    const day = (d.getDay() - startDay + 7) % 7;
+    d.setDate(d.getDate()-day); d.setHours(0,0,0,0); start = d;
+  }
   else if (period === "month") { start = new Date(now.getFullYear(), now.getMonth(), 1); }
   else if (period === "quarter") { const q = Math.floor(now.getMonth()/3); start = new Date(now.getFullYear(), q*3, 1); }
   else if (period === "year") { start = new Date(now.getFullYear(), 0, 1); }
@@ -2578,9 +2682,74 @@ function barList(pairs){
 }
 
 /* ---------- Team ---------- */
-function renderTeam(){
+function renderSettings(){
   const level = permLevel();
-  let html = "";
+  const mine = myAgentDoc();
+  const myActivities = ALL_ACTIVITIES.filter(a => a.agentEmail === CURRENT_USER.email)
+    .slice().sort((a,b) => {
+      const da = a.createdAt&&a.createdAt.seconds?a.createdAt.seconds:0, db=b.createdAt&&b.createdAt.seconds?b.createdAt.seconds:0;
+      return db-da;
+    }).slice(0,15);
+
+  let html = `
+    <div class="panel">
+      <div class="panel-head"><h2>${t("my_profile")}</h2></div>
+      <div style="display:flex; align-items:center; gap:14px; margin-bottom:16px;">
+        <div class="user-avatar" id="settingsAvatarPreview" style="width:56px; height:56px; font-size:20px; overflow:hidden;">${mine&&mine.avatarBase64?`<img src="${mine.avatarBase64}" style="width:100%;height:100%;object-fit:cover;">`:CURRENT_USER.email.charAt(0).toUpperCase()}</div>
+        <div class="field" style="margin-top:0; flex:1;">
+          <label data-i18n="f_avatar">Profile Picture</label>
+          <input type="file" id="settingsAvatarInput" accept="image/*">
+        </div>
+      </div>
+      <div class="field"><label data-i18n="f_employee_name">Employee Name</label><input type="text" id="settingsNameInput" value="${escapeHtml((mine&&mine.name)||CURRENT_USER.email.split('@')[0])}"></div>
+      <div class="modal-actions" style="margin-top:16px;"><button type="button" class="btn-gold" id="settingsSaveProfileBtn" data-i18n="save">Save</button></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>${t("settings_password")}</h2></div>
+      <div class="field" style="margin-top:0;"><label data-i18n="settings_current_password">Current Password</label><input type="password" id="currentPasswordInput"></div>
+      <div class="field"><label data-i18n="settings_new_password">New Password</label><input type="password" id="newPasswordInput"></div>
+      <div class="field"><label data-i18n="settings_confirm_password">Confirm New Password</label><input type="password" id="confirmPasswordInput"></div>
+      <div class="modal-actions" style="margin-top:16px;"><button type="button" class="btn-gold" id="changePasswordBtn" data-i18n="settings_change_password">Change Password</button></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>${t("settings_appearance")}</h2></div>
+      <div class="theme-choice-row">
+        <button type="button" class="theme-choice-btn ${getTheme()==='light'?'active':''}" data-theme-choice="light">☀️ ${t("settings_theme_light")}</button>
+        <button type="button" class="theme-choice-btn ${getTheme()==='dark'?'active':''}" data-theme-choice="dark">🌙 ${t("settings_theme_dark")}</button>
+      </div>
+      <div class="settings-row" style="margin-top:8px;">
+        <div><div class="sr-label">${t("settings_language")}</div></div>
+        <div class="lang-toggle"><button data-lang="ar">AR</button><button data-lang="en">EN</button></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>${t("settings_notifications")}</h2></div>
+      <div class="settings-row">
+        <div><div class="sr-label">${t("settings_overdue_sound")}</div><div class="sr-sub">${t("settings_overdue_sound_sub")}</div></div>
+        <label class="toggle-switch"><input type="checkbox" id="notifSoundToggle" ${getNotifSound()?"checked":""}><span class="ts-slider"></span></label>
+      </div>
+      <div class="field" style="margin-top:14px;">
+        <label>${t("settings_week_start")}</label>
+        <select id="weekStartSelect">
+          <option value="sat" ${getWeekStart()==='sat'?'selected':''}>${t("day_saturday")}</option>
+          <option value="sun" ${getWeekStart()==='sun'?'selected':''}>${t("day_sunday")}</option>
+          <option value="mon" ${getWeekStart()==='mon'?'selected':''}>${t("day_monday")}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>${t("settings_my_activity")}</h2></div>
+      ${myActivities.length ? myActivities.map(a => `
+        <div class="activity-feed-item">
+          <div class="timeline-icon">${ACT_ICONS[a.type]||ACT_ICONS.note}</div>
+          <div><div class="timeline-text">${escapeHtml(a.text||"")}</div><div class="timeline-meta">${fmtDate(a.createdAt)}</div></div>
+        </div>`).join("") : emptyState(t("empty_activities_title"), t("empty_activities_sub"))}
+    </div>`;
+
   if (level >= 3) {
     const c = COMPANY_SETTINGS || {};
     const isGM = myRole() === "general_manager";
@@ -2614,14 +2783,60 @@ function renderTeam(){
       </div>
     </div>`;
   }
-  html += `<div class="panel">${AGENTS.length ? AGENTS.map(a => teamRow(a, level)).join("") : emptyState(t("empty_team_title"), t("empty_team_sub"))}</div>`;
+
   document.getElementById("content").innerHTML = html;
+
+  document.getElementById("settingsAvatarInput").addEventListener("change", async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const base64 = await resizeImageFile(file, 200);
+    document.getElementById("settingsAvatarPreview").innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;">`;
+    document.getElementById("settingsAvatarPreview").dataset.pending = base64;
+  });
+  document.getElementById("settingsSaveProfileBtn").addEventListener("click", async () => {
+    const pending = document.getElementById("settingsAvatarPreview").dataset.pending;
+    const data = { name: document.getElementById("settingsNameInput").value.trim(), email: CURRENT_USER.email };
+    if (!mine) { data.role = "general_manager"; data.createdAt = firebase.firestore.FieldValue.serverTimestamp(); }
+    if (pending) data.avatarBase64 = pending;
+    await db.collection("agents").doc(CURRENT_USER.uid).set(data, { merge: true });
+    toast(t("toast_profile_saved"));
+  });
+
+  document.getElementById("changePasswordBtn").addEventListener("click", async () => {
+    const current = document.getElementById("currentPasswordInput").value;
+    const next = document.getElementById("newPasswordInput").value;
+    const confirm = document.getElementById("confirmPasswordInput").value;
+    if (!current || !next) { alert(t("settings_fill_all")); return; }
+    if (next.length < 6) { alert(t("settings_password_short")); return; }
+    if (next !== confirm) { alert(t("settings_password_mismatch")); return; }
+    const btn = document.getElementById("changePasswordBtn");
+    btn.disabled = true;
+    try {
+      const cred = firebase.auth.EmailAuthProvider.credential(CURRENT_USER.email, current);
+      await CURRENT_USER.reauthenticateWithCredential(cred);
+      await CURRENT_USER.updatePassword(next);
+      toast(t("toast_password_changed"));
+      document.getElementById("currentPasswordInput").value = "";
+      document.getElementById("newPasswordInput").value = "";
+      document.getElementById("confirmPasswordInput").value = "";
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  document.querySelectorAll("[data-theme-choice]").forEach(btn => btn.addEventListener("click", () => {
+    setTheme(btn.dataset.themeChoice);
+    document.querySelectorAll("[data-theme-choice]").forEach(b => b.classList.toggle("active", b===btn));
+  }));
+  document.getElementById("notifSoundToggle").addEventListener("change", (e) => setNotifSound(e.target.checked));
+  document.getElementById("weekStartSelect").addEventListener("change", (e) => setWeekStart(e.target.value));
+  document.querySelectorAll("#content .lang-toggle button").forEach(btn => btn.addEventListener("click", () => setLang(btn.dataset.lang)));
 
   if (level >= 3) {
     const logoInput = document.getElementById("companyLogoInput");
     if (logoInput) logoInput.addEventListener("change", async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
+      const file = e.target.files[0]; if (!file) return;
       const base64 = await resizeImageFile(file, 200);
       document.getElementById("companyLogoPreview").innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;">`;
       document.getElementById("companyLogoPreview").dataset.pending = base64;
@@ -2634,14 +2849,23 @@ function renderTeam(){
       await db.collection("settings").doc("company").set(data, { merge: true });
       toast(t("toast_company_saved"));
     });
-    document.querySelectorAll("[data-edit-agent]").forEach(btn => btn.addEventListener("click", () => openEditAgentModal(btn.dataset.editAgent)));
     document.querySelectorAll("[data-perm-key]").forEach(el => el.addEventListener("click", () => openPermissionModal(el.dataset.permKey)));
+  }
+}
+
+function renderTeam(){
+  const level = permLevel();
+  const html = `<div class="panel">${AGENTS.length ? AGENTS.map(a => teamRow(a, level)).join("") : emptyState(t("empty_team_title"), t("empty_team_sub"))}</div>`;
+  document.getElementById("content").innerHTML = html;
+  if (level >= 3) {
+    document.querySelectorAll("[data-edit-agent]").forEach(btn => btn.addEventListener("click", () => openEditAgentModal(btn.dataset.editAgent)));
   }
 }
 
 const PERMISSION_FEATURES = [
   { key: "bulk_reassign", titleKey: "perm_item_bulk_reassign", descKey: "feature_bulk_reassign_desc" },
   { key: "resale_edit_delete", titleKey: "perm_item_resale_edit", descKey: "feature_resale_edit_desc" },
+  { key: "resale_view_phone", titleKey: "perm_item_resale_phone", descKey: "feature_resale_phone_desc" },
 ];
 
 function openPermissionModal(key){
@@ -3020,7 +3244,7 @@ function openResaleDetail(id){
   if (!u) return;
   document.getElementById("resaleDetailCode").textContent = u.unitCode || "—";
   const gallery = (u.images && u.images.length) ? `<div class="resale-detail-gallery">${u.images.map(src=>`<img src="${src}">`).join("")}</div>` : "";
-  const canSeePhone = permLevel() >= 3;
+  const canSeePhone = PERMISSIONS_CONFIG.resale_view_phone.includes(myRole());
   const creator = AGENTS.find(a => a.id === u.agentId);
   const rows = [
     [t("f_owner_name"), u.ownerName||"—"],
