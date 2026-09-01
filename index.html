@@ -1185,6 +1185,7 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
           <option value="marketing_agent" data-i18n="role_marketing_agent">Marketing Agent</option>
         </select>
       </div>
+      <div class="field"><label data-i18n="f_monthly_target">Monthly Target (Deals)</label><input type="number" id="editAgentTarget" min="0"></div>
       <div class="modal-actions">
         <button type="button" class="btn-outline" data-close-modal="editAgentModal" data-i18n="cancel">Cancel</button>
         <button type="submit" class="btn-gold" data-i18n="save">Save</button>
@@ -1352,6 +1353,10 @@ const I18N = {
 
     stale_leads_report: "عملاء بدون متابعة (5 أيام أو أكتر)",
     no_stale_leads: "كل العملاء متابعين، مفيش أي عميل مهمل 🎉",
+    vs_last_month: "عن الشهر اللي فات", my_target_title: "المستهدف الشهري",
+    my_target_sub: "نسبة إنجازك من المستهدف بتاعك هذا الشهر", no_target_set: "لسه مفيش مستهدف محدد لك — كلّم مديرك يحدده",
+    f_monthly_target: "المستهدف الشهري (عدد الصفقات)",
+    col_target: "المستهدف", col_achievement: "نسبة الإنجاز",
     col_days_inactive: "أيام بدون متابعة", days_unit: "يوم",
 
     documents_title: "المستندات (حتى 5 مستندات)",
@@ -1573,6 +1578,10 @@ const I18N = {
 
     stale_leads_report: "Leads With No Follow-up (5+ Days)",
     no_stale_leads: "All leads are being followed up, nothing neglected 🎉",
+    vs_last_month: "vs last month", my_target_title: "Monthly Target",
+    my_target_sub: "Your achievement rate toward this month's target", no_target_set: "No target set for you yet — ask your manager to set one",
+    f_monthly_target: "Monthly Target (Deals)",
+    col_target: "Target", col_achievement: "Achievement",
     col_days_inactive: "Days Inactive", days_unit: "days",
 
     documents_title: "Documents (up to 5)",
@@ -2149,7 +2158,7 @@ function initRouter(){
 function handleRoute(){
   const hash = window.location.hash.replace("#","") || "dashboard";
   currentView = ["dashboard","leads","pipeline","tasks","reports","team","accounts","resale","rental","settings"].includes(hash) ? hash : "dashboard";
-  const restricted = { team:3, accounts:2, reports:2 };
+  const restricted = { team:3, accounts:2 };
   if (restricted[currentView] && permLevel() < restricted[currentView]) {
     currentView = "dashboard";
     if (hash !== "dashboard") { window.location.hash = "#dashboard"; return; }
@@ -3014,7 +3023,106 @@ function filterLeadsByPeriod(period){
 const SALES_ROLES = ["sales_manager","sales_team_leader","sales_supervisor","sales_agent"];
 const MARKETING_ROLES = ["marketing_manager","marketing_team_leader","marketing_supervisor","marketing_agent"];
 
+const AGGREGATE_REPORT_ROLES = ["general_manager","company_admin","sales_manager","marketing_manager"];
+
+function monthRange(offset){
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth()+offset, 1);
+  const end = new Date(now.getFullYear(), now.getMonth()+offset+1, 1);
+  return { start, end };
+}
+function countInMonth(list, dateFn, offset, filterFn){
+  const { start, end } = monthRange(offset);
+  return list.filter(item => {
+    const d = dateFn(item);
+    return d && d >= start && d < end && (!filterFn || filterFn(item));
+  }).length;
+}
+function deltaBadge(current, previous){
+  if (!previous) return `<span style="font-size:10.5px; color:var(--slate); font-weight:700;">—</span>`;
+  const pct = Math.round(((current-previous)/previous)*100);
+  const up = pct >= 0;
+  const color = up ? "var(--success)" : "var(--danger)";
+  return `<span style="font-size:10.5px; color:${color}; font-weight:700;">${up?"▲":"▼"} ${Math.abs(pct)}%</span>`;
+}
+const DONUT_COLORS = ["#C9A24B","#4EA483","#5B8CD6","#9370DB","#E0685A","#D68C50","#6E4E1E","#A5793A","#276B4E","#E9CC7E"];
+function donutChart(segments, size){
+  size = size || 150;
+  const total = segments.reduce((s,x) => s+x.value, 0) || 1;
+  const r = size/2 - 16, c = 2*Math.PI*r, cx = size/2, cy = size/2;
+  let offset = 0;
+  const circles = segments.filter(s=>s.value>0).map(seg => {
+    const dash = (seg.value/total) * c;
+    const el = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${seg.color}" stroke-width="18" stroke-dasharray="${dash} ${c-dash}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})"/>`;
+    offset += dash;
+    return el;
+  }).join("");
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">${circles}<text x="${cx}" y="${cy+5}" text-anchor="middle" font-size="18" font-weight="800" fill="var(--gold-bright)">${total}</text></svg>`;
+}
+function donutLegend(segments){
+  return segments.filter(s=>s.value>0).map(s => `
+    <div style="display:flex; align-items:center; gap:8px; font-size:11.5px; margin-bottom:6px;">
+      <span style="width:10px; height:10px; border-radius:3px; background:${s.color}; flex-shrink:0;"></span>
+      <span style="color:var(--ivory); flex:1;">${escapeHtml(s.label)}</span>
+      <span style="color:var(--gold-bright); font-weight:800;">${s.value}</span>
+    </div>`).join("");
+}
+
 function renderReports(){
+  if (AGGREGATE_REPORT_ROLES.includes(myRole())) renderAggregateReports();
+  else renderMyPerformanceReport();
+}
+
+function renderMyPerformanceReport(){
+  const mine = myAgentDoc();
+  const myId = CURRENT_USER.uid;
+  const isMarketing = (myRole()||"").startsWith("marketing");
+  const myLeads = isMarketing ? LEADS.filter(l => l.agentId === myId) : LEADS.filter(l => l.assignedTo === myId);
+
+  const wonThis = countInMonth(myLeads, leadDate, 0, l => l.status==="won");
+  const wonLast = countInMonth(myLeads, leadDate, -1, l => l.status==="won");
+  const newThis = countInMonth(myLeads, leadDate, 0);
+  const newLast = countInMonth(myLeads, leadDate, -1);
+  const totalMine = myLeads.length;
+  const wonTotal = myLeads.filter(l=>l.status==="won").length;
+  const convRate = totalMine ? Math.round((wonTotal/totalMine)*100) : 0;
+  const target = (mine && mine.monthlyTarget) || 0;
+  const targetPct = target ? Math.min(100, Math.round((wonThis/target)*100)) : 0;
+
+  const statusSegments = STATUSES.filter(s=>!["won","lost"].includes(s)).map((s,i) => ({
+    label: t('status_'+s), value: myLeads.filter(l=>l.status===s).length, color: DONUT_COLORS[i%DONUT_COLORS.length],
+  }));
+
+  document.getElementById("content").innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-card-v2"><div><div class="sc-label">${t("stat_total_leads")}</div><div class="sc-value">${totalMine}</div></div><div class="stat-icon-badge purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg></div></div>
+      <div class="stat-card-v2"><div><div class="sc-label">${t("qs_closed")} (${t("period_month")})</div><div class="sc-value">${wonThis}</div><div class="sc-unit">${deltaBadge(wonThis, wonLast)} ${t("vs_last_month")}</div></div><div class="stat-icon-badge green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></div></div>
+      <div class="stat-card-v2"><div><div class="sc-label">${t("stat_new_month")}</div><div class="sc-value">${newThis}</div><div class="sc-unit">${deltaBadge(newThis, newLast)} ${t("vs_last_month")}</div></div><div class="stat-icon-badge blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg></div></div>
+      <div class="stat-card-v2"><div><div class="sc-label">${t("qs_conversion")}</div><div class="sc-value">${convRate}%</div></div><div class="stat-icon-badge orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg></div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>${t("my_target_title")}</h2></div>
+      ${target ? `
+        <div style="display:flex; align-items:center; gap:18px;">
+          ${progressRing(targetPct)}
+          <div style="flex:1;">
+            <div style="font-size:13px; color:var(--ivory); font-weight:700;">${wonThis} / ${target} ${t("qs_closed")}</div>
+            <div style="font-size:11.5px; color:var(--slate); margin-top:4px;">${t("my_target_sub")}</div>
+          </div>
+        </div>` : `<div style="font-size:12.5px; color:var(--slate);">${t("no_target_set")}</div>`}
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>${t("by_status")}</h2></div>
+      <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+        <div>${donutChart(statusSegments)}</div>
+        <div style="flex:1; min-width:150px;">${donutLegend(statusSegments)}</div>
+      </div>
+    </div>`;
+}
+
+function renderAggregateReports(){
   const periodLeads = filterLeadsByPeriod(REPORT_PERIOD);
 
   const byStatus = {}; STATUSES.forEach(s => byStatus[s]=0);
@@ -3039,14 +3147,18 @@ function renderReports(){
     const assigned = periodLeads.filter(l => l.assignedTo === a.id);
     const won = assigned.filter(l => l.status === "won");
     const value = won.reduce((sum,l) => sum + (parseFloat(l.dealValue)||0), 0);
-    return { name: a.name||a.email, leads: assigned.length, won: won.length, rate: assigned.length ? Math.round((won.length/assigned.length)*100) : 0, value };
+    const wonThisMonth = countInMonth(LEADS.filter(l=>l.assignedTo===a.id), leadDate, 0, l=>l.status==="won");
+    const target = a.monthlyTarget || 0;
+    return { name: a.name||a.email, leads: assigned.length, won: won.length, rate: assigned.length ? Math.round((won.length/assigned.length)*100) : 0, value, target, achievement: target ? Math.min(100, Math.round((wonThisMonth/target)*100)) : null };
   });
 
   const marketingAgents = AGENTS.filter(a => MARKETING_ROLES.includes(a.role));
   const marketingRows = marketingAgents.map(a => {
     const sourced = periodLeads.filter(l => l.agentId === a.id);
     const won = sourced.filter(l => l.status === "won");
-    return { name: a.name||a.email, leads: sourced.length, won: won.length, rate: sourced.length ? Math.round((won.length/sourced.length)*100) : 0 };
+    const wonThisMonth = countInMonth(LEADS.filter(l=>l.agentId===a.id), leadDate, 0, l=>l.status==="won");
+    const target = a.monthlyTarget || 0;
+    return { name: a.name||a.email, leads: sourced.length, won: won.length, rate: sourced.length ? Math.round((won.length/sourced.length)*100) : 0, target, achievement: target ? Math.min(100, Math.round((wonThisMonth/target)*100)) : null };
   });
 
   const overdueTasks = TASKS.filter(tk => !tk.done && tk.due && new Date(tk.due) < new Date())
@@ -3063,6 +3175,11 @@ function renderReports(){
   }).filter(x => x.daysSince === null || x.daysSince >= STALE_DAYS)
     .sort((a,b) => (b.daysSince||999) - (a.daysSince||999));
 
+  const newLeadsThis = countInMonth(LEADS, leadDate, 0);
+  const newLeadsLast = countInMonth(LEADS, leadDate, -1);
+  const wonThisMonth = countInMonth(LEADS, leadDate, 0, l => l.status==="won");
+  const wonLastMonth = countInMonth(LEADS, leadDate, -1, l => l.status==="won");
+
   document.getElementById("content").innerHTML = `
     <div class="panel">
       <div class="panel-head"><h2 data-i18n="report_period">Period</h2></div>
@@ -3076,13 +3193,24 @@ function renderReports(){
       </select>
     </div>
 
+    <div class="stat-grid">
+      <div class="stat-card-v2"><div><div class="sc-label">${t("stat_new_month")}</div><div class="sc-value">${newLeadsThis}</div><div class="sc-unit">${deltaBadge(newLeadsThis, newLeadsLast)} ${t("vs_last_month")}</div></div><div class="stat-icon-badge purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg></div></div>
+      <div class="stat-card-v2"><div><div class="sc-label">${t("qs_closed")}</div><div class="sc-value">${wonThisMonth}</div><div class="sc-unit">${deltaBadge(wonThisMonth, wonLastMonth)} ${t("vs_last_month")}</div></div><div class="stat-icon-badge green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></div></div>
+    </div>
+
     <div class="panel"><div class="panel-head"><h2>${t("stale_leads_report")}</h2></div>${staleLeadsTable(staleLeads)}</div>
     <div class="panel"><div class="panel-head"><h2>${t("sales_team_report")}</h2></div>${teamReportTable(salesRows, true)}</div>
     <div class="panel"><div class="panel-head"><h2>${t("marketing_team_report")}</h2></div>${teamReportTable(marketingRows, false)}</div>
     <div class="panel"><div class="panel-head"><h2>${t("overdue_followups_report")}</h2></div>${overdueTable(overdueTasks)}</div>
 
     <div class="panel"><div class="panel-head"><h2>${t("source_roi")}</h2></div>${roiTable(roiBySource)}</div>
-    <div class="panel"><div class="panel-head"><h2>${t("by_status")}</h2></div>${barList(Object.entries(byStatus).map(([k,v])=>[t('status_'+k),v]))}</div>
+    <div class="panel">
+      <div class="panel-head"><h2>${t("by_status")}</h2></div>
+      <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+        <div>${donutChart(STATUSES.map((s,i)=>({label:t('status_'+s), value:byStatus[s], color:DONUT_COLORS[i%DONUT_COLORS.length]})))}</div>
+        <div style="flex:1; min-width:150px;">${donutLegend(STATUSES.map((s,i)=>({label:t('status_'+s), value:byStatus[s], color:DONUT_COLORS[i%DONUT_COLORS.length]})))}</div>
+      </div>
+    </div>
     <div class="panel"><div class="panel-head"><h2>${t("by_source")}</h2></div>${barList(Object.entries(bySource).map(([k,v])=>[t('source_'+k)||k,v]))}</div>
     <div class="panel"><div class="panel-head"><h2>${t("by_campaign")}</h2></div>${barList(Object.entries(byCampaign))}</div>
     <div class="panel"><div class="panel-head"><h2>${t("by_agent")}</h2></div>${barList(Object.entries(byAgent))}</div>
@@ -3113,10 +3241,13 @@ function teamReportTable(rows, withValue){
   return `<div class="table-scroll"><table><thead><tr>
     <th>${t("col_agent_name")}</th><th>${t("col_leads_count")}</th><th>${t("col_won_count")}</th><th>${t("col_conversion")}</th>
     ${withValue?`<th>${t("col_total_value")}</th>`:""}
+    <th>${t("col_target")}</th><th>${t("col_achievement")}</th>
     </tr></thead><tbody>
     ${rows.map(r => `<tr>
       <td>${escapeHtml(r.name)}</td><td>${r.leads}</td><td>${r.won}</td><td>${r.rate}%</td>
       ${withValue?`<td>${r.value?r.value.toLocaleString():"—"}</td>`:""}
+      <td>${r.target || "—"}</td>
+      <td>${r.achievement!==null ? `<div style="display:flex; align-items:center; gap:6px;"><div style="width:50px; height:6px; background:rgba(91,107,140,.15); border-radius:4px; overflow:hidden;"><div style="height:100%; width:${r.achievement}%; background:linear-gradient(90deg, var(--gold), var(--gold-bright));"></div></div><span style="font-size:11px; color:var(--gold-bright); font-weight:700;">${r.achievement}%</span></div>` : "—"}</td>
     </tr>`).join("")}
     </tbody></table></div>`;
 }
@@ -3508,6 +3639,7 @@ function openEditAgentModal(id){
   document.getElementById("editAgentId").value = id;
   document.getElementById("editAgentName").value = a.name || "";
   document.getElementById("editAgentRole").value = a.role || "sales_agent";
+  document.getElementById("editAgentTarget").value = a.monthlyTarget || 0;
   document.getElementById("editAgentModal").classList.add("show");
 }
 document.getElementById("editAgentForm").addEventListener("submit", async (e) => {
@@ -3516,6 +3648,7 @@ document.getElementById("editAgentForm").addEventListener("submit", async (e) =>
   await db.collection("agents").doc(id).update({
     name: document.getElementById("editAgentName").value.trim(),
     role: document.getElementById("editAgentRole").value,
+    monthlyTarget: parseInt(document.getElementById("editAgentTarget").value, 10) || 0,
   });
   toast(t("toast_updated"));
   closeModal("editAgentModal");
@@ -3565,7 +3698,7 @@ function applyPermissions(){
   const reportsNav = document.querySelector('.nav-item[data-view="reports"]');
   if (teamNav) teamNav.style.display = level >= 3 ? "flex" : "none";
   if (accountsNav) accountsNav.style.display = level >= 2 ? "flex" : "none";
-  if (reportsNav) reportsNav.style.display = level >= 2 ? "flex" : "none";
+  if (reportsNav) reportsNav.style.display = "flex";
 
   const mine = myAgentDoc();
   const displayName = (mine && mine.name) || CURRENT_USER.email.split("@")[0];
@@ -3575,7 +3708,7 @@ function applyPermissions(){
   document.getElementById("topHeaderUserName").textContent = displayName;
   document.getElementById("topHeaderAvatar").innerHTML = avatarHtml;
 
-  const restricted = { team:3, accounts:2, reports:2 };
+  const restricted = { team:3, accounts:2 };
   if (restricted[currentView] && level < restricted[currentView]) {
     window.location.hash = "#dashboard";
   }
