@@ -359,6 +359,18 @@ tbody tr:last-child td{ border-bottom:none; }
   </div>
 </div>
 
+<!-- PUBLIC UNIT LANDING PAGE (no login required) -->
+<div id="publicUnitScreen" style="display:none; min-height:100vh; padding:24px 16px 60px;">
+  <div style="max-width:480px; margin:0 auto;">
+    <div style="display:flex; align-items:center; gap:10px; justify-content:center; margin-bottom:24px;">
+      <span class="ring-mark" id="publicRing"></span>
+      <img id="publicLogo" style="display:none; width:26px; height:26px; border-radius:50%; object-fit:cover;">
+      <span id="publicCompanyName" style="font-weight:800; color:var(--gold-bright); font-size:16px;">100%</span>
+    </div>
+    <div id="publicUnitBody"></div>
+  </div>
+</div>
+
 <!-- LOADING -->
 <div class="loading-screen" id="loadingScreen" style="display:none">
   <div class="spinner"></div>
@@ -867,6 +879,7 @@ tbody tr:last-child td{ border-bottom:none; }
     </div>
     <div id="resaleDetailBody"></div>
     <div class="modal-actions">
+      <button type="button" class="btn-gold" id="resaleDetailShareBtn" data-i18n="copy_share_link">Copy Share Link</button>
       <button type="button" class="btn-outline" id="resaleDetailEditBtn" data-i18n="edit_agent">Edit</button>
       <button type="button" class="btn-outline" id="resaleDetailDeleteBtn" style="color:var(--danger); border-color:var(--danger);" data-i18n="delete">Delete</button>
     </div>
@@ -1118,6 +1131,8 @@ const I18N = {
     resale_search_placeholder: "ابحث بكود الوحدة أو المشروع...",
     toast_resale_saved: "تم حفظ الوحدة بنجاح", resale_max_photos: "أقصى عدد صور مسموح 6",
     resale_upload_error: "فشل رفع الصورة. تأكد إنك فعّلت Firebase Storage وضبطت قواعد الأمان بتاعته:",
+    copy_share_link: "نسخ رابط المشاركة", toast_link_copied: "تم نسخ الرابط",
+    public_unit_not_found: "الوحدة غير متاحة أو تم حذفها",
 
     selected_count: "محدد", assign_to_agent: "تعيين لموظف...", apply_assign: "تطبيق",
     clear_selection: "إلغاء التحديد", toast_bulk_assigned: "تم نقل العملاء المحددين بنجاح",
@@ -1267,6 +1282,8 @@ const I18N = {
     resale_search_placeholder: "Search by unit code or project...",
     toast_resale_saved: "Unit saved successfully", resale_max_photos: "Maximum 6 photos allowed",
     resale_upload_error: "Image upload failed. Make sure Firebase Storage is enabled and its security rules are set:",
+    copy_share_link: "Copy Share Link", toast_link_copied: "Link copied",
+    public_unit_not_found: "This unit is unavailable or has been removed",
 
     selected_count: "selected", assign_to_agent: "Assign to agent...", apply_assign: "Apply",
     clear_selection: "Clear selection", toast_bulk_assigned: "Selected leads reassigned successfully",
@@ -1448,6 +1465,7 @@ db.collection("settings").doc("company").onSnapshot(doc => {
   document.getElementById("loginBrandTitle").textContent = name;
   document.getElementById("sidebarBrandName").childNodes[0].textContent = name;
   document.getElementById("topHeaderCompanyName").textContent = name;
+  document.getElementById("publicCompanyName").textContent = name;
   if (d.logoBase64) {
     document.getElementById("loginLogoImg").src = d.logoBase64;
     document.getElementById("loginLogoImg").style.display = "block";
@@ -1457,8 +1475,52 @@ db.collection("settings").doc("company").onSnapshot(doc => {
     document.getElementById("topHeaderLogo").src = d.logoBase64;
     document.getElementById("topHeaderLogo").style.display = "block";
     document.getElementById("topHeaderRing").style.display = "none";
+    document.getElementById("publicLogo").src = d.logoBase64;
+    document.getElementById("publicLogo").style.display = "block";
+    document.getElementById("publicRing").style.display = "none";
   }
 }, err => console.error("company settings error", err));
+
+/* ---------- Public shared unit landing page (no login required) ---------- */
+const PUBLIC_UNIT_CODE = new URLSearchParams(window.location.search).get("unit");
+if (PUBLIC_UNIT_CODE) {
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("publicUnitScreen").style.display = "block";
+  document.addEventListener("DOMContentLoaded", () => { applyLang(getLang()); loadPublicUnit(PUBLIC_UNIT_CODE); });
+}
+function loadPublicUnit(code){
+  const body = document.getElementById("publicUnitBody");
+  body.innerHTML = `<div style="text-align:center; padding:60px 0;"><div class="spinner" style="margin:0 auto;"></div></div>`;
+  db.collection("resale_units").where("unitCode","==", code).limit(1).get().then(snap => {
+    if (snap.empty) { body.innerHTML = emptyState(t("public_unit_not_found"), ""); return; }
+    const u = snap.docs[0].data();
+    const gallery = (u.images && u.images.length)
+      ? `<div style="border-radius:var(--radius-lg); overflow:hidden; margin-bottom:16px;"><img id="publicUnitImg" src="${u.images[0]}" style="width:100%; height:260px; object-fit:cover; display:block;"></div>`
+      : `<div class="resale-card-noimg" style="height:220px; border-radius:var(--radius-lg); margin-bottom:16px;">🏠</div>`;
+    body.innerHTML = `
+      ${gallery}
+      <div class="panel">
+        <div class="resale-card-code">${escapeHtml(u.unitCode||"")}</div>
+        <div style="font-size:20px; font-weight:800; color:var(--ivory); margin-top:4px;">${escapeHtml(u.project||"—")} · ${t('unit_'+(u.unitType||'apartment'))}</div>
+        <div style="font-size:13px; color:var(--slate); margin-top:4px;">${escapeHtml(u.area||"—")}</div>
+        <div style="font-size:24px; font-weight:800; color:var(--gold-bright); margin-top:12px;">${u.price ? escapeHtml(u.price) : "—"}</div>
+        <span class="badge ${u.status||'available'}" style="margin-top:10px; display:inline-block;">${t('resale_status_'+(u.status||'available'))}</span>
+        <div style="margin-top:18px;">
+          <div class="resale-detail-row"><span>${t("f_unit_floor")}</span><span>${escapeHtml(u.floor||"—")}</span></div>
+          <div class="resale-detail-row"><span>${t("f_unit_area_sqm")}</span><span>${escapeHtml(u.areaSqm||"—")}</span></div>
+          ${u.notes ? `<div class="resale-detail-row"><span>${t("f_notes")}</span><span>${escapeHtml(u.notes)}</span></div>` : ""}
+        </div>
+      </div>`;
+    if (u.images && u.images.length > 1) {
+      let idx = 0;
+      setInterval(() => {
+        idx = (idx+1) % u.images.length;
+        const img = document.getElementById("publicUnitImg");
+        if (img) img.src = u.images[idx];
+      }, 2800);
+    }
+  }).catch(err => { console.error(err); body.innerHTML = emptyState(t("public_unit_not_found"), ""); });
+}
 
 const authTimeout = setTimeout(() => {
   const fb = document.getElementById("loadingFallback");
@@ -1467,6 +1529,7 @@ const authTimeout = setTimeout(() => {
 
 auth.onAuthStateChanged(user => {
   clearTimeout(authTimeout);
+  if (PUBLIC_UNIT_CODE) return;
   if (!user) {
     document.getElementById("loginScreen").style.display = "flex";
     document.getElementById("loadingScreen").style.display = "none";
@@ -2839,7 +2902,25 @@ function openResaleDetail(id){
     toast(t("toast_deleted"));
     closeModal("resaleDetailModal");
   };
+  document.getElementById("resaleDetailShareBtn").onclick = () => copyResaleShareLink(u.unitCode);
   document.getElementById("resaleDetailModal").classList.add("show");
+}
+
+function copyResaleShareLink(unitCode){
+  const url = window.location.origin + window.location.pathname + "?unit=" + encodeURIComponent(unitCode);
+  const done = () => toast(t("toast_link_copied"));
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(done).catch(() => fallbackCopy(url, done));
+  } else {
+    fallbackCopy(url, done);
+  }
+}
+function fallbackCopy(text, done){
+  const ta = document.createElement("textarea");
+  ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); done(); } catch(e) { alert(text); }
+  document.body.removeChild(ta);
 }
 
 function openEmployeeModal(){
