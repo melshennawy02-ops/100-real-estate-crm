@@ -2124,12 +2124,10 @@ function renderLeads(){
           <option value="all">${t("filter_all")}</option>
           ${STATUSES.map(s => `<option value="${s}">${t('status_'+s)}</option>`).join("")}
         </select>
-      </div>
-      <div>
         <span class="agent-filter-toggle" id="agentFilterToggle">${t("filter_by_agent")} <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></span>
-        <div class="agent-filter-row" id="agentFilterRow" style="display:none;">
-          ${AGENTS.map(a => `<button type="button" class="agent-filter-btn" data-agent="${a.id}">${escapeHtml(a.name||a.email)}</button>`).join("")}
-        </div>
+      </div>
+      <div class="agent-filter-row" id="agentFilterRow" style="display:none;">
+        ${AGENTS.map(a => `<button type="button" class="agent-filter-btn" data-agent="${a.id}">${escapeHtml(a.name||a.email)}</button>`).join("")}
       </div>
       <div id="bulkBar" style="display:none;"></div>
       <div id="leadsTableWrap" style="margin-top:16px;">${LEADS.length ? leadsTable(LEADS) : emptyState(t("empty_leads_title"), t("empty_leads_sub"))}</div>
