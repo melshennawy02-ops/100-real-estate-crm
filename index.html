@@ -1133,6 +1133,7 @@ const I18N = {
     resale_upload_error: "فشل رفع الصورة. تأكد إنك فعّلت Firebase Storage وضبطت قواعد الأمان بتاعته:",
     copy_share_link: "نسخ رابط المشاركة", toast_link_copied: "تم نسخ الرابط",
     public_unit_not_found: "الوحدة غير متاحة أو تم حذفها",
+    added_by: "أضيفت بواسطة",
 
     selected_count: "محدد", assign_to_agent: "تعيين لموظف...", apply_assign: "تطبيق",
     clear_selection: "إلغاء التحديد", toast_bulk_assigned: "تم نقل العملاء المحددين بنجاح",
@@ -1284,6 +1285,7 @@ const I18N = {
     resale_upload_error: "Image upload failed. Make sure Firebase Storage is enabled and its security rules are set:",
     copy_share_link: "Copy Share Link", toast_link_copied: "Link copied",
     public_unit_not_found: "This unit is unavailable or has been removed",
+    added_by: "Added By",
 
     selected_count: "selected", assign_to_agent: "Assign to agent...", apply_assign: "Apply",
     clear_selection: "Clear selection", toast_bulk_assigned: "Selected leads reassigned successfully",
@@ -2874,9 +2876,11 @@ function openResaleDetail(id){
   if (!u) return;
   document.getElementById("resaleDetailCode").textContent = u.unitCode || "—";
   const gallery = (u.images && u.images.length) ? `<div class="resale-detail-gallery">${u.images.map(src=>`<img src="${src}">`).join("")}</div>` : "";
+  const canSeePhone = permLevel() >= 3;
+  const creator = AGENTS.find(a => a.id === u.agentId);
   const rows = [
     [t("f_owner_name"), u.ownerName||"—"],
-    [t("f_owner_phone"), u.ownerPhone||"—"],
+    canSeePhone ? [t("f_owner_phone"), u.ownerPhone||"—"] : [t("added_by"), (creator&&creator.name)||u.agentEmail||"—"],
     [t("f_project"), u.project||"—"],
     [t("f_area"), u.area||"—"],
     [t("f_unit_type"), t('unit_'+(u.unitType||'apartment'))],
@@ -2886,6 +2890,7 @@ function openResaleDetail(id){
     [t("f_resale_status"), t('resale_status_'+(u.status||'available'))],
     [t("f_notes"), u.notes||"—"],
   ];
+  if (canSeePhone) rows.push([t("added_by"), (creator&&creator.name)||u.agentEmail||"—"]);
   document.getElementById("resaleDetailBody").innerHTML = gallery + rows.map(([l,v]) => `
     <div class="resale-detail-row"><span>${l}</span><span>${escapeHtml(String(v))}</span></div>
   `).join("");
