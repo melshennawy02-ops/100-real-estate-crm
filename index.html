@@ -2122,11 +2122,13 @@ function renderDashboard(){
   STATUSES.forEach(s => stageCounts[s] = LEADS.filter(l => l.status===s).length);
 
   const lb = computeLeaderboard();
-  const topOpportunities = LEADS
+  const isAdminTier = permLevel() >= 3;
+  const scopedLeads = isAdminTier ? LEADS : LEADS.filter(l => l.assignedTo === CURRENT_USER.uid);
+  const topOpportunities = scopedLeads
     .map(l => ({ lead:l, score: computeLeadScore(l) }))
     .filter(x => x.score !== null)
     .sort((a,b) => b.score - a.score)
-    .slice(0,5);
+    .slice(0, isAdminTier ? 10 : 5);
 
   document.getElementById("content").innerHTML = `
     <div class="welcome-banner">
@@ -2180,11 +2182,16 @@ function renderDashboard(){
       <div class="panel-head"><h2>${t("top_opportunities")}</h2></div>
       ${topOpportunities.length ? topOpportunities.map(({lead,score}) => {
         const tier = leadScoreTier(score);
+        const withAgent = AGENTS.find(a => a.id === lead.assignedTo);
+        const byAgent = AGENTS.find(a => a.id === lead.agentId);
+        const namesLine = isAdminTier
+          ? ` · ${t("currently_with")}: ${escapeHtml((withAgent&&(withAgent.name||withAgent.email))||t("unassigned"))} · ${t("created_by")}: ${escapeHtml((byAgent&&(byAgent.name||byAgent.email))||lead.agentEmail||"—")}`
+          : "";
         return `<div class="activity-feed-item" data-open="${lead.id}" style="cursor:pointer;">
           <div class="stat-icon-badge ${score>=65?'orange':score>=35?'blue':'purple'}" style="width:34px; height:34px; font-size:14px; font-weight:800;">${tier.emoji}</div>
           <div style="flex:1;">
             <div class="timeline-text">${escapeHtml(lead.name||"")}</div>
-            <div class="timeline-meta">${t('status_'+lead.status)} · ${t(tier.key)} · ${score}/100</div>
+            <div class="timeline-meta">${t('status_'+lead.status)} · ${t(tier.key)} · ${score}/100${namesLine}</div>
           </div>
         </div>`;
       }).join("") : emptyState(t("empty_activities_title"), "")}
