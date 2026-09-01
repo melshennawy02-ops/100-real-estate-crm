@@ -2328,7 +2328,7 @@ function renderDashboard(){
 
   const lb = computeLeaderboard();
   const isAdminTier = permLevel() >= 3;
-  const scopedLeads = isAdminTier ? LEADS : LEADS.filter(l => l.assignedTo === CURRENT_USER.uid);
+  const scopedLeads = isAdminTier ? LEADS : LEADS.filter(l => l.assignedTo === CURRENT_USER.uid || l.agentId === CURRENT_USER.uid);
   const topOpportunities = scopedLeads
     .map(l => ({ lead:l, score: computeLeadScore(l) }))
     .filter(x => x.score !== null)
@@ -2384,7 +2384,8 @@ function renderDashboard(){
         const tier = leadScoreTier(score);
         const withAgent = AGENTS.find(a => a.id === lead.assignedTo);
         const byAgent = AGENTS.find(a => a.id === lead.agentId);
-        const namesLine = isAdminTier
+        const isCreator = lead.agentId === CURRENT_USER.uid;
+        const namesLine = (isAdminTier || isCreator)
           ? ` · ${t("currently_with")}: ${escapeHtml((withAgent&&(withAgent.name||withAgent.email))||t("unassigned"))} · ${t("created_by")}: ${escapeHtml((byAgent&&(byAgent.name||byAgent.email))||lead.agentEmail||"—")}`
           : "";
         return `<div class="activity-feed-item" data-open="${lead.id}" style="cursor:pointer;">
