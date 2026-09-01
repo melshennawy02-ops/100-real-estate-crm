@@ -558,10 +558,6 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
       <span data-i18n="nav_dashboard">Home</span>
     </a>
-    <a href="#" class="bn-item" id="bnLogout">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
-      <span data-i18n="logout">Logout</span>
-    </a>
   </nav>
 </div>
 
@@ -2059,7 +2055,6 @@ document.getElementById("logoutBtn").addEventListener("click", () => { auth.sign
 document.getElementById("userChipBtn").addEventListener("click", () => openProfileModal());
 document.getElementById("topHeaderUserBtn").addEventListener("click", () => openProfileModal());
 document.getElementById("bnFab").addEventListener("click", () => openLeadModal());
-document.getElementById("bnLogout").addEventListener("click", (e) => { e.preventDefault(); auth.signOut(); });
 
 document.getElementById("menuBtn").addEventListener("click", () => {
   document.getElementById("sidebar").classList.toggle("open");
