@@ -90,6 +90,9 @@ input,select,textarea{ font-family:var(--font); }
 .brand-title{ text-align:center; font-weight:800; font-size:30px; letter-spacing:.5px; background:linear-gradient(180deg, var(--gold-bright), var(--gold)); -webkit-background-clip:text; background-clip:text; color:transparent; }
 .brand-sub{ text-align:center; color:var(--slate); font-size:13px; letter-spacing:2px; margin-top:4px; text-transform:uppercase; }
 .lang-toggle{ position:absolute; top:18px; inset-inline-end:18px; display:flex; gap:4px; background:rgba(0,0,0,.25); border:1px solid var(--navy-line); border-radius:20px; padding:3px; }
+.lang-toggle-inline{ position:static; display:flex; gap:4px; background:rgba(0,0,0,.25); border:1px solid var(--navy-line); border-radius:20px; padding:3px; }
+.lang-toggle-inline button{ background:transparent; color:var(--slate); font-size:12px; font-weight:700; padding:5px 14px; border-radius:16px; }
+.lang-toggle-inline button.active{ background:var(--gold); color:#fff; }
 .lang-toggle button{ background:transparent; color:var(--slate); font-size:12px; font-weight:700; padding:5px 12px; border-radius:16px; }
 .lang-toggle button.active{ background:var(--gold); color:#fff; }
 .field{ margin-top:20px; }
@@ -368,6 +371,10 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
 .theme-choice-row{ display:flex; gap:10px; }
 .theme-choice-btn{ flex:1; padding:12px; border-radius:12px; border:1.5px solid var(--navy-line); background:transparent; color:var(--slate); font-size:12.5px; font-weight:700; display:flex; flex-direction:column; align-items:center; gap:6px; }
 .theme-choice-btn.active{ border-color:var(--gold); color:var(--gold-bright); background:rgba(201,162,75,.08); }
+.agent-filter-row{ display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+.agent-filter-btn{ padding:6px 13px; border-radius:14px; font-size:11.5px; font-weight:700; border:1px solid var(--navy-line); color:var(--slate); background:transparent; }
+.agent-filter-btn.active{ background:var(--gold); color:#fff; border-color:var(--gold); }
+.agent-filter-toggle{ font-size:11.5px; color:var(--gold-bright); font-weight:700; cursor:pointer; margin-top:10px; display:inline-flex; align-items:center; gap:4px; }
 .row-name-link{ cursor:pointer; color:var(--gold-bright); font-weight:700; text-decoration:underline; text-decoration-style:dotted; text-underline-offset:2px; }
 .row-name-link:hover{ color:var(--gold); text-decoration-style:solid; }
 .mini-contact{ display:flex; gap:6px; }
@@ -506,12 +513,6 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
         <div class="user-meta">
           <div class="name" id="userName">—</div>
           <div class="role" id="userEmail">—</div>
-        </div>
-      </div>
-      <div style="display:flex; gap:6px; margin-top:10px;">
-        <div class="lang-toggle" style="flex:1; justify-content:center;">
-          <button data-lang="ar">AR</button>
-          <button data-lang="en">EN</button>
         </div>
       </div>
       <button class="logout-btn" id="logoutBtn" data-i18n="logout">Logout</button>
@@ -736,6 +737,13 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
       <div class="field" id="quickFollowupWrap">
         <label data-i18n="f_next_followup_at">Next Follow-up Date & Time</label>
         <input type="datetime-local" id="quickFollowupAt">
+        <label style="margin-top:10px;" data-i18n="f_alert_offset">Sound Alert Timing</label>
+        <select id="quickAlertOffset">
+          <option value="60" data-i18n="alert_1h_before">1 hour before</option>
+          <option value="120" data-i18n="alert_2h_before">2 hours before</option>
+          <option value="0" data-i18n="alert_at_time">At the exact time</option>
+          <option value="1440" data-i18n="alert_1d_before">1 day before</option>
+        </select>
       </div>
       <button type="button" class="btn-gold" id="quickUpdateBtn" style="width:100%; margin-top:6px;" data-i18n="quick_update_btn">Save</button>
     </div>
@@ -1177,6 +1185,7 @@ const I18N = {
     recent_leads: "أحدث العملاء المحتملين", today_tasks: "مهام اليوم", view_all: "عرض الكل",
     leads_title: "العملاء المحتملين", leads_sub: "إدارة جهات الاتصال والعملاء المحتملين",
     add_lead: "إضافة عميل محتمل", search_placeholder: "ابحث بالاسم أو رقم الهاتف...", filter_all: "الكل",
+    filter_by_agent: "تصفية حسب الموظف",
     col_name: "الاسم", col_phone: "الهاتف", col_interest: "الاهتمام", col_status: "الحالة",
     col_rating: "التقييم", col_actions: "إجراءات",
     empty_leads_title: "لا يوجد عملاء محتملين بعد", empty_leads_sub: "ابدأ بإضافة أول عميل محتمل لمتابعته",
@@ -1258,6 +1267,12 @@ const I18N = {
     settings_my_activity: "سجل نشاطي",
     perm_item_resale_phone: "رؤية رقم هاتف مالك وحدة الريسيل",
     feature_resale_phone_desc: "حدد الوظائف المسموح لها برؤية رقم هاتف مالك الوحدة جوا النظام:",
+    f_alert_offset: "وقت التنبيه الصوتي",
+    alert_1h_before: "قبلها بساعة", alert_2h_before: "قبلها بساعتين",
+    alert_at_time: "في نفس الموعد", alert_1d_before: "قبلها بيوم",
+    settings_followup_sound: "تنبيه صوتي قبل موعد المتابعة",
+    settings_followup_sound_sub: "صوت تنبيه في الوقت اللي تحدده قبل ميعاد المتابعة مع العميل",
+    toast_followup_alert: "تذكير بموعد متابعة",
 
     selected_count: "محدد", assign_to_agent: "تعيين لموظف...", apply_assign: "تطبيق",
     clear_selection: "إلغاء التحديد", toast_bulk_assigned: "تم نقل العملاء المحددين بنجاح",
@@ -1354,6 +1369,7 @@ const I18N = {
     recent_leads: "Recent Leads", today_tasks: "Today's Tasks", view_all: "View all",
     leads_title: "Leads", leads_sub: "Manage contacts and leads",
     add_lead: "Add Lead", search_placeholder: "Search by name or phone...", filter_all: "All",
+    filter_by_agent: "Filter by Agent",
     col_name: "Name", col_phone: "Phone", col_interest: "Interest", col_status: "Status",
     col_rating: "Rating", col_actions: "Actions",
     empty_leads_title: "No leads yet", empty_leads_sub: "Start by adding your first lead to follow up on",
@@ -1435,6 +1451,12 @@ const I18N = {
     settings_my_activity: "My Activity Log",
     perm_item_resale_phone: "View Resale Owner's Phone Number",
     feature_resale_phone_desc: "Choose which roles are allowed to see the unit owner's phone number in the system:",
+    f_alert_offset: "Sound Alert Timing",
+    alert_1h_before: "1 hour before", alert_2h_before: "2 hours before",
+    alert_at_time: "At the exact time", alert_1d_before: "1 day before",
+    settings_followup_sound: "Sound Alert Before Follow-up",
+    settings_followup_sound_sub: "Play a sound at the time you set before a follow-up appointment",
+    toast_followup_alert: "Follow-up reminder",
 
     selected_count: "selected", assign_to_agent: "Assign to agent...", apply_assign: "Apply",
     clear_selection: "Clear selection", toast_bulk_assigned: "Selected leads reassigned successfully",
@@ -1523,6 +1545,25 @@ function getWeekStart(){ return localStorage.getItem("crm_week_start") || "mon";
 function setWeekStart(v){ localStorage.setItem("crm_week_start", v); }
 function getNotifSound(){ return localStorage.getItem("crm_notif_sound") === "1"; }
 function setNotifSound(v){ localStorage.setItem("crm_notif_sound", v ? "1" : "0"); }
+function getFollowupAlertSound(){ return localStorage.getItem("crm_followup_alert_sound") !== "0"; }
+function setFollowupAlertSound(v){ localStorage.setItem("crm_followup_alert_sound", v ? "1" : "0"); }
+function checkFollowupAlerts(){
+  if (!getFollowupAlertSound()) return;
+  const now = new Date();
+  TASKS.forEach(tk => {
+    if (tk.done || !tk.due || tk.alertOffsetMinutes == null) return;
+    const dueDate = new Date(tk.due);
+    if (isNaN(dueDate.getTime())) return;
+    const alertTime = new Date(dueDate.getTime() - tk.alertOffsetMinutes*60000);
+    const key = "alerted_" + tk.id;
+    if (now >= alertTime && now < dueDate && !sessionStorage.getItem(key)) {
+      playAlertBeep();
+      toast(t("toast_followup_alert") + (tk.title ? ": " + tk.title : ""));
+      sessionStorage.setItem(key, "1");
+    }
+  });
+}
+setInterval(checkFollowupAlerts, 30000);
 function playAlertBeep(){
   try {
     const ctx = new (window.AudioContext||window.webkitAudioContext)();
@@ -1539,14 +1580,14 @@ function applyLang(lang){
   document.documentElement.lang = lang;
   document.documentElement.dir = dict.dir;
   document.querySelectorAll("[data-i18n]").forEach(el => { const k = el.getAttribute("data-i18n"); if (dict[k]) el.textContent = dict[k]; });
-  document.querySelectorAll(".lang-toggle button").forEach(btn => btn.classList.toggle("active", btn.dataset.lang === lang));
+  document.querySelectorAll(".lang-toggle button, .lang-toggle-inline button").forEach(btn => btn.classList.toggle("active", btn.dataset.lang === lang));
   document.getElementById("loadingFallbackText").textContent = dict.loading_fallback;
   document.getElementById("retryBtnText").textContent = dict.retry;
   document.dispatchEvent(new CustomEvent("langchange", { detail: { lang } }));
 }
 document.addEventListener("DOMContentLoaded", () => {
   applyLang(getLang());
-  document.querySelectorAll(".lang-toggle button").forEach(btn => btn.addEventListener("click", () => setLang(btn.dataset.lang)));
+  document.querySelectorAll(".lang-toggle button, .lang-toggle-inline button").forEach(btn => btn.addEventListener("click", () => setLang(btn.dataset.lang)));
 });
 
 /* =========================================================
@@ -1775,6 +1816,7 @@ function subscribeData(){
 
   db.collection("tasks").orderBy("due","asc").onSnapshot(snap => {
     TASKS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    checkFollowupAlerts();
     renderView();
   }, err => console.error("tasks error", err));
 
@@ -2083,11 +2125,32 @@ function renderLeads(){
           ${STATUSES.map(s => `<option value="${s}">${t('status_'+s)}</option>`).join("")}
         </select>
       </div>
+      <div>
+        <span class="agent-filter-toggle" id="agentFilterToggle">${t("filter_by_agent")} <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></span>
+        <div class="agent-filter-row" id="agentFilterRow" style="display:none;">
+          ${AGENTS.map(a => `<button type="button" class="agent-filter-btn" data-agent="${a.id}">${escapeHtml(a.name||a.email)}</button>`).join("")}
+        </div>
+      </div>
       <div id="bulkBar" style="display:none;"></div>
       <div id="leadsTableWrap" style="margin-top:16px;">${LEADS.length ? leadsTable(LEADS) : emptyState(t("empty_leads_title"), t("empty_leads_sub"))}</div>
     </div>`;
   document.getElementById("leadSearch").addEventListener("input", filterLeadsView);
   document.getElementById("leadFilter").addEventListener("change", filterLeadsView);
+  document.getElementById("agentFilterToggle").addEventListener("click", () => {
+    const row = document.getElementById("agentFilterRow");
+    row.style.display = row.style.display === "none" ? "flex" : "none";
+  });
+  document.querySelectorAll(".agent-filter-btn").forEach(btn => {
+    btn.classList.toggle("active", SELECTED_FILTER_AGENTS.has(btn.dataset.agent));
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.agent;
+      if (SELECTED_FILTER_AGENTS.has(id)) SELECTED_FILTER_AGENTS.delete(id);
+      else SELECTED_FILTER_AGENTS.add(id);
+      btn.classList.toggle("active");
+      filterLeadsView();
+    });
+  });
+  if (SELECTED_FILTER_AGENTS.size) document.getElementById("agentFilterRow").style.display = "flex";
   if (PENDING_LEAD_FILTER) {
     document.getElementById("leadFilter").value = PENDING_LEAD_FILTER;
     PENDING_LEAD_FILTER = null;
@@ -2096,10 +2159,15 @@ function renderLeads(){
     bindLeadRowEvents();
   }
 }
+let SELECTED_FILTER_AGENTS = new Set();
 function filterLeadsView(){
   const q = document.getElementById("leadSearch").value.trim().toLowerCase();
   const status = document.getElementById("leadFilter").value;
-  const filtered = LEADS.filter(l => (!q || (l.name||"").toLowerCase().includes(q) || (l.phone||"").includes(q)) && (status==="all"||l.status===status));
+  const filtered = LEADS.filter(l =>
+    (!q || (l.name||"").toLowerCase().includes(q) || (l.phone||"").includes(q)) &&
+    (status==="all"||l.status===status) &&
+    (SELECTED_FILTER_AGENTS.size===0 || SELECTED_FILTER_AGENTS.has(l.assignedTo))
+  );
   document.getElementById("leadsTableWrap").innerHTML = filtered.length ? leadsTable(filtered) : emptyState(t("empty_leads_title"), t("empty_leads_sub"));
   bindLeadRowEvents();
 }
@@ -2721,7 +2789,7 @@ function renderSettings(){
       </div>
       <div class="settings-row" style="margin-top:8px;">
         <div><div class="sr-label">${t("settings_language")}</div></div>
-        <div class="lang-toggle"><button data-lang="ar">AR</button><button data-lang="en">EN</button></div>
+        <div class="lang-toggle-inline"><button data-lang="ar">AR</button><button data-lang="en">EN</button></div>
       </div>
     </div>
 
@@ -2730,6 +2798,10 @@ function renderSettings(){
       <div class="settings-row">
         <div><div class="sr-label">${t("settings_overdue_sound")}</div><div class="sr-sub">${t("settings_overdue_sound_sub")}</div></div>
         <label class="toggle-switch"><input type="checkbox" id="notifSoundToggle" ${getNotifSound()?"checked":""}><span class="ts-slider"></span></label>
+      </div>
+      <div class="settings-row">
+        <div><div class="sr-label">${t("settings_followup_sound")}</div><div class="sr-sub">${t("settings_followup_sound_sub")}</div></div>
+        <label class="toggle-switch"><input type="checkbox" id="followupSoundToggle" ${getFollowupAlertSound()?"checked":""}><span class="ts-slider"></span></label>
       </div>
       <div class="field" style="margin-top:14px;">
         <label>${t("settings_week_start")}</label>
@@ -2830,8 +2902,9 @@ function renderSettings(){
     document.querySelectorAll("[data-theme-choice]").forEach(b => b.classList.toggle("active", b===btn));
   }));
   document.getElementById("notifSoundToggle").addEventListener("change", (e) => setNotifSound(e.target.checked));
+  document.getElementById("followupSoundToggle").addEventListener("change", (e) => setFollowupAlertSound(e.target.checked));
   document.getElementById("weekStartSelect").addEventListener("change", (e) => setWeekStart(e.target.value));
-  document.querySelectorAll("#content .lang-toggle button").forEach(btn => btn.addEventListener("click", () => setLang(btn.dataset.lang)));
+  document.querySelectorAll("#content .lang-toggle-inline button").forEach(btn => btn.addEventListener("click", () => setLang(btn.dataset.lang)));
 
   if (level >= 3) {
     const logoInput = document.getElementById("companyLogoInput");
@@ -3419,6 +3492,7 @@ function openLeadDetail(id){
   quickMoveSelect.value = lead.status || "new";
   document.getElementById("quickSummaryInput").value = "";
   document.getElementById("quickFollowupAt").value = "";
+  document.getElementById("quickAlertOffset").value = "60";
   toggleFollowupWrap(quickMoveSelect.value);
 
   renderDetailOverview(lead);
@@ -3565,11 +3639,13 @@ document.getElementById("quickUpdateBtn").addEventListener("click", async () => 
     if (statusChanged) await logActivity(DETAIL_LEAD_ID, "status", t("act_status") + " " + t("status_"+newStatus));
 
     if (newStatus !== "lost" && followupDt) {
+      const alertOffsetMinutes = parseInt(document.getElementById("quickAlertOffset").value, 10);
       await db.collection("tasks").add({
         title: (lead.name || "") + " — " + t("followup_task_title"),
         leadId: DETAIL_LEAD_ID,
         type: "followup",
         due: followupDt,
+        alertOffsetMinutes,
         done: false,
         agentId: CURRENT_USER.uid,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
