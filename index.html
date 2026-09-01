@@ -1504,13 +1504,17 @@ function loadPublicUnit(code){
       <div class="panel">
         <div class="resale-card-code">${escapeHtml(u.unitCode||"")}</div>
         <div style="font-size:20px; font-weight:800; color:var(--ivory); margin-top:4px;">${escapeHtml(u.project||"—")} · ${t('unit_'+(u.unitType||'apartment'))}</div>
-        <div style="font-size:13px; color:var(--slate); margin-top:4px;">${escapeHtml(u.area||"—")}</div>
         <div style="font-size:24px; font-weight:800; color:var(--gold-bright); margin-top:12px;">${u.price ? escapeHtml(u.price) : "—"}</div>
         <span class="badge ${u.status||'available'}" style="margin-top:10px; display:inline-block;">${t('resale_status_'+(u.status||'available'))}</span>
         <div style="margin-top:18px;">
+          <div class="resale-detail-row"><span>${t("f_project")}</span><span>${escapeHtml(u.project||"—")}</span></div>
+          <div class="resale-detail-row"><span>${t("f_area")}</span><span>${escapeHtml(u.area||"—")}</span></div>
+          <div class="resale-detail-row"><span>${t("f_unit_type")}</span><span>${t('unit_'+(u.unitType||'apartment'))}</span></div>
           <div class="resale-detail-row"><span>${t("f_unit_floor")}</span><span>${escapeHtml(u.floor||"—")}</span></div>
           <div class="resale-detail-row"><span>${t("f_unit_area_sqm")}</span><span>${escapeHtml(u.areaSqm||"—")}</span></div>
-          ${u.notes ? `<div class="resale-detail-row"><span>${t("f_notes")}</span><span>${escapeHtml(u.notes)}</span></div>` : ""}
+          <div class="resale-detail-row"><span>${t("f_unit_price")}</span><span>${u.price?escapeHtml(u.price):"—"}</span></div>
+          <div class="resale-detail-row"><span>${t("f_resale_status")}</span><span>${t('resale_status_'+(u.status||'available'))}</span></div>
+          <div class="resale-detail-row"><span>${t("f_notes")}</span><span>${u.notes?escapeHtml(u.notes):"—"}</span></div>
         </div>
       </div>`;
     if (u.images && u.images.length > 1) {
