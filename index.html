@@ -375,6 +375,9 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
 .agent-filter-btn{ padding:6px 13px; border-radius:14px; font-size:11.5px; font-weight:700; border:1px solid var(--navy-line); color:var(--slate); background:transparent; }
 .agent-filter-btn.active{ background:var(--gold); color:#fff; border-color:var(--gold); }
 .agent-filter-toggle{ font-size:11.5px; color:var(--gold-bright); font-weight:700; cursor:pointer; margin-top:10px; display:inline-flex; align-items:center; gap:4px; }
+.phone-row{ display:flex; gap:8px; margin-bottom:8px; }
+.phone-row input{ flex:1; }
+.phone-row .remove-phone-btn{ width:38px; height:38px; flex-shrink:0; }
 .row-name-link{ cursor:pointer; color:var(--gold-bright); font-weight:700; text-decoration:underline; text-decoration-style:dotted; text-underline-offset:2px; }
 .row-name-link:hover{ color:var(--gold); text-decoration-style:solid; }
 .mini-contact{ display:flex; gap:6px; }
@@ -579,7 +582,11 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
       <input type="hidden" id="leadId">
       <div class="form-grid">
         <div class="field full"><label data-i18n="f_name">Full Name</label><input type="text" id="leadName" required></div>
-        <div class="field"><label data-i18n="f_phone">Phone</label><input type="tel" id="leadPhone" required></div>
+        <div class="field full">
+          <label data-i18n="f_phone">Phone</label>
+          <div id="leadPhonesWrap"></div>
+          <button type="button" class="btn-outline" id="addPhoneBtn" style="margin-top:4px;">+ <span data-i18n="add_phone">Add Phone</span></button>
+        </div>
         <div class="field"><label data-i18n="f_email">Email</label><input type="email" id="leadEmail"></div>
         <div class="field"><label data-i18n="f_interest">Interest</label><input type="text" id="leadInterest"></div>
         <div class="field">
@@ -722,6 +729,7 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
     </div>
 
     <div class="lead-overview" id="detailOverview"></div>
+    <div class="panel" id="detailExtraPhones" style="display:none; margin-bottom:14px; padding:12px 14px;"></div>
 
     <div class="quick-contact" id="detailQuickContact"></div>
 
@@ -1186,6 +1194,7 @@ const I18N = {
     leads_title: "العملاء المحتملين", leads_sub: "إدارة جهات الاتصال والعملاء المحتملين",
     add_lead: "إضافة عميل محتمل", search_placeholder: "ابحث بالاسم أو رقم الهاتف...", filter_all: "الكل",
     filter_by_agent: "تصفية حسب الموظف",
+    add_phone: "إضافة رقم", f_extra_phones: "أرقام إضافية",
     col_name: "الاسم", col_phone: "الهاتف", col_interest: "الاهتمام", col_status: "الحالة",
     col_rating: "التقييم", col_actions: "إجراءات",
     empty_leads_title: "لا يوجد عملاء محتملين بعد", empty_leads_sub: "ابدأ بإضافة أول عميل محتمل لمتابعته",
@@ -1370,6 +1379,7 @@ const I18N = {
     leads_title: "Leads", leads_sub: "Manage contacts and leads",
     add_lead: "Add Lead", search_placeholder: "Search by name or phone...", filter_all: "All",
     filter_by_agent: "Filter by Agent",
+    add_phone: "Add Phone", f_extra_phones: "Extra Phone Numbers",
     col_name: "Name", col_phone: "Phone", col_interest: "Interest", col_status: "Status",
     col_rating: "Rating", col_actions: "Actions",
     empty_leads_title: "No leads yet", empty_leads_sub: "Start by adding your first lead to follow up on",
@@ -2222,11 +2232,13 @@ function openLeadModal(id){
   form.reset();
   document.getElementById("leadId").value = id || "";
   document.getElementById("leadModalTitle").textContent = id ? t("modal_edit_lead") : t("modal_add_lead");
+  let phones = [""];
   if (id) {
     const lead = LEADS.find(l => l.id===id);
     if (lead) {
       document.getElementById("leadName").value = lead.name||"";
-      document.getElementById("leadPhone").value = lead.phone||"";
+      phones = [lead.phone||"", ...(Array.isArray(lead.extraPhones)?lead.extraPhones:[])];
+      if (!phones.length) phones = [""];
       document.getElementById("leadEmail").value = lead.email||"";
       document.getElementById("leadInterest").value = lead.interest||"";
       document.getElementById("leadSource").value = lead.source||"facebook";
@@ -2247,14 +2259,29 @@ function openLeadModal(id){
       document.getElementById("leadNotes").value = lead.notes||"";
     }
   }
+  const wrap = document.getElementById("leadPhonesWrap");
+  wrap.innerHTML = "";
+  phones.forEach((p,i) => addPhoneRow(p, i===0));
   document.getElementById("leadModal").classList.add("show");
 }
+function addPhoneRow(value, isPrimary){
+  const wrap = document.getElementById("leadPhonesWrap");
+  const row = document.createElement("div");
+  row.className = "phone-row";
+  row.innerHTML = `<input type="tel" class="phone-input" value="${escapeHtml(value||"")}" ${isPrimary?"required":""}>` +
+    (isPrimary ? "" : `<button type="button" class="icon-btn remove-phone-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>`);
+  wrap.appendChild(row);
+  if (!isPrimary) row.querySelector(".remove-phone-btn").addEventListener("click", () => row.remove());
+}
+document.getElementById("addPhoneBtn").addEventListener("click", () => addPhoneRow("", false));
 document.getElementById("leadForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const id = document.getElementById("leadId").value;
+  const phoneInputs = Array.from(document.querySelectorAll("#leadPhonesWrap .phone-input")).map(el => el.value.trim()).filter(Boolean);
   const data = {
     name: document.getElementById("leadName").value.trim(),
-    phone: document.getElementById("leadPhone").value.trim(),
+    phone: phoneInputs[0] || "",
+    extraPhones: phoneInputs.slice(1),
     email: document.getElementById("leadEmail").value.trim(),
     interest: document.getElementById("leadInterest").value.trim(),
     source: document.getElementById("leadSource").value,
@@ -3521,6 +3548,24 @@ function renderDetailOverview(lead){
   document.getElementById("detailOverview").innerHTML = items.map(([label,val]) => `
     <div class="ov-item"><div class="ov-label">${label}</div><div class="ov-value">${val}</div></div>
   `).join("");
+
+  const extraWrap = document.getElementById("detailExtraPhones");
+  if (Array.isArray(lead.extraPhones) && lead.extraPhones.length) {
+    extraWrap.style.display = "block";
+    extraWrap.innerHTML = `<div class="ov-label" style="margin-bottom:6px;">${t("f_extra_phones")}</div>` + lead.extraPhones.map(p => `
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(36,64,111,.08); font-size:12.5px;">
+        <span style="color:var(--ivory); font-weight:700;">${escapeHtml(p)}</span>
+        <div class="mini-contact">
+          <button type="button" class="icon-btn call" data-extra-call="${escapeHtml(p)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.34 1.79.65 2.65a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.43-1.42a2 2 0 0 1 2.11-.45c.86.31 1.75.53 2.65.65A2 2 0 0 1 22 16.92z"/></svg></button>
+          <button type="button" class="icon-btn whatsapp" data-extra-whatsapp="${escapeHtml(p)}"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.5A10 10 0 1 0 12 2z"/></svg></button>
+        </div>
+      </div>`).join("");
+    extraWrap.querySelectorAll("[data-extra-call]").forEach(btn => btn.addEventListener("click", () => doCall(btn.dataset.extraCall, DETAIL_LEAD_ID)));
+    extraWrap.querySelectorAll("[data-extra-whatsapp]").forEach(btn => btn.addEventListener("click", () => doWhatsapp(btn.dataset.extraWhatsapp, DETAIL_LEAD_ID)));
+  } else {
+    extraWrap.style.display = "none";
+    extraWrap.innerHTML = "";
+  }
 }
 
 function applyProfileTabPermissions(){
