@@ -123,6 +123,50 @@ input,select,textarea{ font-family:var(--font); }
 
 .stat-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
 .stat-card{ background:linear-gradient(180deg, var(--navy-panel), var(--navy)); border:1px solid var(--navy-line); border-radius:var(--radius-lg); padding:18px 20px; position:relative; overflow:hidden; }
+.welcome-banner{ background:linear-gradient(135deg, #17253F, #1F3358); border-radius:var(--radius-lg); padding:26px 24px; margin-bottom:20px; position:relative; overflow:hidden; border:1px solid rgba(233,204,126,.2); }
+.welcome-banner .wb-text{ position:relative; z-index:1; }
+.welcome-banner h2{ color:#fff; font-size:19px; font-weight:800; margin-bottom:4px; }
+.welcome-banner p{ color:rgba(255,255,255,.6); font-size:12.5px; }
+.welcome-banner svg{ position:absolute; inset-inline-start:16px; bottom:0; opacity:.5; height:90%; }
+
+.stat-card-v2{ background:var(--navy-panel); border:1px solid var(--navy-line); border-radius:var(--radius-lg); padding:16px 18px; display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+.stat-card-v2 .sc-label{ font-size:12px; color:var(--slate); font-weight:600; margin-bottom:8px; }
+.stat-card-v2 .sc-value{ font-size:26px; font-weight:800; color:var(--ivory); }
+.stat-card-v2 .sc-unit{ font-size:11px; color:var(--slate); margin-top:2px; }
+.stat-icon-badge{ width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.stat-icon-badge svg{ width:19px; height:19px; }
+.stat-icon-badge.green{ background:rgba(78,156,130,.15); color:var(--success); }
+.stat-icon-badge.purple{ background:rgba(147,112,219,.15); color:#9370DB; }
+.stat-icon-badge.blue{ background:rgba(91,140,214,.15); color:#5B8CD6; }
+.stat-icon-badge.orange{ background:rgba(214,140,80,.15); color:#D68C50; }
+
+.perf-panel{ display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+.progress-ring-wrap{ position:relative; width:120px; height:120px; flex-shrink:0; }
+.progress-ring-wrap .pr-text{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:800; color:var(--gold-bright); }
+.perf-info{ flex:1; min-width:160px; }
+.perf-info .pi-title{ font-size:14px; font-weight:700; color:var(--ivory); margin-bottom:4px; }
+.perf-info .pi-sub{ font-size:12px; color:var(--slate); margin-bottom:12px; }
+
+.quick-stats-row{ display:flex; justify-content:space-around; text-align:center; }
+.quick-stats-row .qs-item{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+.quick-stats-row .qs-icon{ width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.quick-stats-row .qs-icon svg{ width:17px; height:17px; }
+.quick-stats-row .qs-value{ font-size:16px; font-weight:800; color:var(--ivory); }
+.quick-stats-row .qs-label{ font-size:10.5px; color:var(--slate); }
+
+.activity-feed-item{ display:flex; align-items:center; gap:10px; padding:10px 2px; border-bottom:1px solid rgba(36,64,111,.08); }
+.activity-feed-item:last-child{ border-bottom:none; }
+
+.bottom-nav{ display:none; }
+@media (max-width:1100px){
+  .bottom-nav{ display:flex; position:fixed; bottom:0; left:0; right:0; z-index:60; background:var(--navy-panel); border-top:1px solid var(--navy-line); padding:8px 6px calc(8px + env(safe-area-inset-bottom)); align-items:center; justify-content:space-around; }
+  .bn-item{ display:flex; flex-direction:column; align-items:center; gap:3px; color:var(--slate); font-size:9.5px; font-weight:700; flex:1; padding:4px 0; }
+  .bn-item svg{ width:20px; height:20px; }
+  .bn-item.active{ color:var(--gold-bright); }
+  .bn-fab{ width:50px; height:50px; border-radius:50%; background:linear-gradient(180deg, var(--gold-dim), var(--gold-bright)); display:flex; align-items:center; justify-content:center; color:#fff; margin-top:-26px; box-shadow:0 4px 14px rgba(165,121,58,.4); flex-shrink:0; }
+  .bn-fab svg{ width:24px; height:24px; }
+  .content{ padding-bottom:90px; }
+}
 .stat-card::after{ content:""; position:absolute; top:-30px; inset-inline-end:-30px; width:90px; height:90px; border:1px solid rgba(201,162,75,.15); border-radius:50%; }
 .stat-label{ font-size:12px; color:var(--slate); font-weight:600; letter-spacing:.3px; }
 .stat-value{ font-size:30px; font-weight:800; margin-top:8px; color:var(--gold-bright); }
@@ -466,6 +510,27 @@ tbody tr:last-child td{ border-bottom:none; }
     </div>
     <div class="content" id="content"></div>
   </div>
+  <nav class="bottom-nav">
+    <a href="#" class="bn-item" id="bnSettings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span data-i18n="nav_bn_settings">Settings</span>
+    </a>
+    <a href="#reports" class="bn-item" data-view="reports">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+      <span data-i18n="nav_reports">Reports</span>
+    </a>
+    <button type="button" class="bn-fab" id="bnFab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <a href="#tasks" class="bn-item" data-view="tasks">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      <span data-i18n="nav_bn_followups">Follow-ups</span>
+    </a>
+    <a href="#dashboard" class="bn-item" data-view="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
+      <span data-i18n="nav_dashboard">Home</span>
+    </a>
+  </nav>
 </div>
 
 <!-- Modal: Lead -->
@@ -1065,6 +1130,13 @@ const I18N = {
     retry: "إعادة المحاولة",
     nav_dashboard: "الرئيسية", nav_leads: "العملاء المحتملين", nav_pipeline: "مسار الصفقات",
     nav_tasks: "المهام والمتابعات", nav_reports: "التقارير", nav_team: "الفريق", logout: "تسجيل الخروج",
+    nav_bn_settings: "الإعدادات", nav_bn_followups: "المتابعات",
+    welcome_back: "مرحبا بك مجددا 👋", welcome_sub: "نظرة عامة على أداء اليوم",
+    stat_new_month: "صفقات مضافة هذا الشهر", perf_today: "أداء اليوم",
+    perf_no_activity: "لا يوجد نشاط بعد", perf_no_activity_sub: "ابدأ بإضافة متابعة أو صفقة جديدة",
+    quick_stats: "إحصائيات سريعة", qs_closed: "صفقات مغلقة", qs_conversion: "نسبة التحويل", qs_overdue: "المهام المتأخرة",
+    recent_activities: "آخر النشاطات", empty_activities_title: "لا توجد نشاطات حاليًا",
+    empty_activities_sub: "ستظهر هنا آخر النشاطات والتحديثات",
     dash_title: "الرئيسية", dash_sub: "نظرة عامة على أداء اليوم",
     stat_total_leads: "إجمالي العملاء", stat_open_deals: "صفقات مفتوحة",
     stat_won_month: "صفقات مغلقة هذا الشهر", stat_followups_today: "متابعات اليوم",
@@ -1217,6 +1289,13 @@ const I18N = {
     retry: "Retry",
     nav_dashboard: "Dashboard", nav_leads: "Leads", nav_pipeline: "Pipeline",
     nav_tasks: "Tasks & Follow-ups", nav_reports: "Reports", nav_team: "Team", logout: "Logout",
+    nav_bn_settings: "Settings", nav_bn_followups: "Follow-ups",
+    welcome_back: "Welcome back 👋", welcome_sub: "Today's performance overview",
+    stat_new_month: "Deals Added This Month", perf_today: "Today's Performance",
+    perf_no_activity: "No activity yet", perf_no_activity_sub: "Start by adding a follow-up or a new deal",
+    quick_stats: "Quick Stats", qs_closed: "Closed Deals", qs_conversion: "Conversion Rate", qs_overdue: "Overdue Tasks",
+    recent_activities: "Recent Activities", empty_activities_title: "No activities yet",
+    empty_activities_sub: "Recent activities and updates will appear here",
     dash_title: "Dashboard", dash_sub: "Today's performance overview",
     stat_total_leads: "Total Customers", stat_open_deals: "Open Deals",
     stat_won_month: "Closed This Month", stat_followups_today: "Follow-ups Today",
@@ -1583,6 +1662,8 @@ loginForm.addEventListener("submit", async (e) => {
 document.getElementById("logoutBtn").addEventListener("click", () => { auth.signOut(); });
 document.getElementById("userChipBtn").addEventListener("click", () => openProfileModal());
 document.getElementById("topHeaderUserBtn").addEventListener("click", () => openProfileModal());
+document.getElementById("bnSettings").addEventListener("click", (e) => { e.preventDefault(); openProfileModal(); });
+document.getElementById("bnFab").addEventListener("click", () => openLeadModal());
 
 document.getElementById("menuBtn").addEventListener("click", () => {
   document.getElementById("sidebar").classList.toggle("open");
@@ -1653,6 +1734,7 @@ function handleRoute(){
     if (hash !== "dashboard") { window.location.hash = "#dashboard"; return; }
   }
   document.querySelectorAll(".nav-item").forEach(el => el.classList.toggle("active", el.dataset.view === currentView));
+  document.querySelectorAll(".bn-item[data-view]").forEach(el => el.classList.toggle("active", el.dataset.view === currentView));
   renderView();
 }
 document.addEventListener("langchange", () => { if (CURRENT_USER) renderView(); });
@@ -1742,11 +1824,24 @@ function renderDashboard(){
     const d = l.createdAt.seconds ? new Date(l.createdAt.seconds*1000) : new Date(l.createdAt);
     return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
   }).length;
+  const newMonth = LEADS.filter(l => {
+    const d = leadDate(l);
+    return d && d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
+  }).length;
   const todaysFollowupTasks = TASKS.filter(tk => isToday(tk.due) && !tk.done);
   const followupLeadIds = new Set(todaysFollowupTasks.map(tk => tk.leadId).filter(Boolean));
   const followupsToday = followupLeadIds.size;
   const recent = LEADS.slice(0,5);
   const todaysTasks = TASKS.filter(tk => !tk.done).slice(0,5);
+  const allTodayTasks = TASKS.filter(tk => isToday(tk.due));
+  const doneTodayTasks = allTodayTasks.filter(tk => tk.done);
+  const perfPct = allTodayTasks.length ? Math.round((doneTodayTasks.length/allTodayTasks.length)*100) : 0;
+  const overdueCount = TASKS.filter(tk => !tk.done && tk.due && new Date(tk.due) < new Date()).length;
+  const convRate = totalLeads ? Math.round((LEADS.filter(l=>l.status==="won").length/totalLeads)*100) : 0;
+  const recentActivities = ALL_ACTIVITIES.slice().sort((a,b)=>{
+    const da = a.createdAt&&a.createdAt.seconds?a.createdAt.seconds:0, db=b.createdAt&&b.createdAt.seconds?b.createdAt.seconds:0;
+    return db-da;
+  }).slice(0,5);
 
   const stageCounts = {};
   STATUSES.forEach(s => stageCounts[s] = LEADS.filter(l => l.status===s).length);
@@ -1754,12 +1849,38 @@ function renderDashboard(){
   const lb = computeLeaderboard();
 
   document.getElementById("content").innerHTML = `
-    <div class="stat-grid">
-      ${statCard(t("stat_total_leads"), totalLeads, "all")}
-      ${statCard(t("stat_open_deals"), openDeals, "open")}
-      ${statCard(t("stat_won_month"), wonMonth, "won")}
-      ${statCard(t("stat_followups_today"), followupsToday, "tasks")}
+    <div class="welcome-banner">
+      <svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg"><path d="M20 100 L100 40 L180 100" stroke="#E9CC7E" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="35" y="95" width="24" height="45" stroke="#E9CC7E" stroke-width="1.6" fill="none"/><rect x="90" y="70" width="28" height="70" stroke="#E9CC7E" stroke-width="1.6" fill="none"/><rect x="140" y="88" width="24" height="52" stroke="#E9CC7E" stroke-width="1.6" fill="none"/></svg>
+      <div class="wb-text">
+        <h2>${t("welcome_back")}</h2>
+        <p>${t("welcome_sub")}</p>
+      </div>
     </div>
+
+    <div class="stat-grid">
+      <div class="stat-card-v2"><div><div class="sc-label">${t("stat_open_deals")}</div><div class="sc-value">${openDeals}</div><div class="sc-unit">${t("col_status")}</div></div><div class="stat-icon-badge green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="18" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></div></div>
+      <div class="stat-card-v2"><div><div class="sc-label">${t("stat_total_leads")}</div><div class="sc-value">${totalLeads}</div></div><div class="stat-icon-badge purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg></div></div>
+      <div class="stat-card-v2"><div><div class="sc-label">${t("stat_followups_today")}</div><div class="sc-value">${followupsToday}</div></div><div class="stat-icon-badge blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div></div>
+      <div class="stat-card-v2"><div><div class="sc-label">${t("stat_new_month")}</div><div class="sc-value">${newMonth}</div></div><div class="stat-icon-badge orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M12 12v4M10 14h4"/></svg></div></div>
+    </div>
+
+    <div class="panel perf-panel">
+      <div class="progress-ring-wrap">${progressRing(perfPct)}</div>
+      <div class="perf-info">
+        <div class="pi-title">${t("perf_today")}</div>
+        <div class="pi-sub">${allTodayTasks.length ? `${doneTodayTasks.length}/${allTodayTasks.length} ${t("col_due_date")}` : t("perf_no_activity")}</div>
+        <button type="button" class="btn-gold" id="dashAddTaskBtn">+ ${t("new_task")}</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="quick-stats-row">
+        <div class="qs-item"><div class="qs-icon" style="background:rgba(78,156,130,.15); color:var(--success);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></div><div class="qs-value">${wonMonth}</div><div class="qs-label">${t("qs_closed")}</div></div>
+        <div class="qs-item"><div class="qs-icon" style="background:rgba(201,162,75,.18); color:var(--gold-bright);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg></div><div class="qs-value">${convRate}%</div><div class="qs-label">${t("qs_conversion")}</div></div>
+        <div class="qs-item"><div class="qs-icon" style="background:rgba(166,57,44,.12); color:var(--danger);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div><div class="qs-value">${overdueCount}</div><div class="qs-label">${t("qs_overdue")}</div></div>
+      </div>
+    </div>
+
     <div class="leader-grid">
       <div class="leader-card">
         <div class="leader-label">🏆 ${t("top_seller_today")}</div>
@@ -1780,6 +1901,14 @@ function renderDashboard(){
       <div id="dashResaleSpotlight">${RESALE_UNITS.length ? "" : emptyState(t("empty_resale_title"), t("empty_resale_sub"))}</div>
     </div>
     <div class="panel">
+      <div class="panel-head"><h2>${t("recent_activities")}</h2></div>
+      ${recentActivities.length ? recentActivities.map(a => `
+        <div class="activity-feed-item">
+          <div class="timeline-icon">${ACT_ICONS[a.type]||ACT_ICONS.note}</div>
+          <div><div class="timeline-text">${escapeHtml(a.text||"")}</div><div class="timeline-meta">${escapeHtml(a.agentEmail||"")} · ${fmtDate(a.createdAt)}</div></div>
+        </div>`).join("") : emptyState(t("empty_activities_title"), t("empty_activities_sub"))}
+    </div>
+    <div class="panel">
       <div class="panel-head"><h2>${t("recent_leads")}</h2><a href="#leads" style="font-size:12px;color:var(--gold-bright);">${t("view_all")}</a></div>
       ${recent.length ? leadsTable(recent, true) : emptyState(t("empty_leads_title"), t("empty_leads_sub"))}
     </div>
@@ -1789,6 +1918,8 @@ function renderDashboard(){
     </div>`;
   bindLeadRowEvents();
   startDashboardResaleSpotlight();
+  const addTaskBtn = document.getElementById("dashAddTaskBtn");
+  if (addTaskBtn) addTaskBtn.addEventListener("click", () => openTaskModal());
   document.querySelectorAll(".task-item [data-open]").forEach(el => el.addEventListener("click", () => openLeadDetail(el.dataset.open)));
   document.querySelectorAll("[data-stage]").forEach(el => el.addEventListener("click", () => goToLeadsFiltered(el.dataset.stage)));
   document.querySelectorAll("[data-stat-kind]").forEach(el => el.addEventListener("click", () => {
@@ -1798,6 +1929,15 @@ function renderDashboard(){
     else if (kind === "open") window.location.hash = "#pipeline";
     else if (kind === "tasks") window.location.hash = "#tasks";
   }));
+}
+function progressRing(pct){
+  const r = 52, c = 2*Math.PI*r;
+  const offset = c - (pct/100)*c;
+  return `<svg viewBox="0 0 120 120" width="120" height="120">
+    <circle cx="60" cy="60" r="${r}" stroke="var(--navy-panel-2)" stroke-width="10" fill="none"/>
+    <circle cx="60" cy="60" r="${r}" stroke="var(--gold)" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${offset}" transform="rotate(-90 60 60)"/>
+    <text x="60" y="66" text-anchor="middle" font-size="20" font-weight="800" fill="var(--gold-bright)">${pct}%</text>
+  </svg>`;
 }
 let PENDING_LEAD_FILTER = null;
 function goToLeadsFiltered(status){
