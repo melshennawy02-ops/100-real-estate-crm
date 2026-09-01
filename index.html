@@ -1819,6 +1819,7 @@ document.getElementById("publicLeadForm").addEventListener("submit", async (e) =
       source: PUBLIC_FORM_SOURCE,
       campaign: PUBLIC_FORM_CAMPAIGN,
       assignedTo: PUBLIC_FORM_AGENT,
+      agentId: PUBLIC_FORM_AGENT,
       status: "new",
       rating: "warm",
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -2017,9 +2018,10 @@ function renderView(){
   else if (currentView === "leads") {
     title.textContent=t("leads_title"); sub.textContent=t("leads_sub");
     const exportBtn = myRole() === "general_manager" ? `<button class="btn-gold" id="btnExportLeads">${t("export_leads")}</button>` : "";
-    actions.innerHTML = `${exportBtn}<button class="btn-gold" id="btnImportLeads">${t("import_leads")}</button><button class="btn-gold" id="btnAddLead">+ ${t("add_lead")}</button>`;
+    actions.innerHTML = `${exportBtn}<button class="btn-outline" id="btnCopyLeadLink">${t("copy_lead_form_link")}</button><button class="btn-gold" id="btnImportLeads">${t("import_leads")}</button><button class="btn-gold" id="btnAddLead">+ ${t("add_lead")}</button>`;
     document.getElementById("btnAddLead").addEventListener("click", () => openLeadModal());
     document.getElementById("btnImportLeads").addEventListener("click", () => openImportModal());
+    document.getElementById("btnCopyLeadLink").addEventListener("click", () => copyMyLeadFormLink());
     if (myRole() === "general_manager") document.getElementById("btnExportLeads").addEventListener("click", () => exportAllLeads());
     renderLeads();
   }
@@ -3622,6 +3624,15 @@ function fallbackCopy(text, done){
   document.body.appendChild(ta); ta.select();
   try { document.execCommand("copy"); done(); } catch(e) { alert(text); }
   document.body.removeChild(ta);
+}
+function copyMyLeadFormLink(){
+  const url = window.location.origin + window.location.pathname + "?form=1&agent=" + encodeURIComponent(CURRENT_USER.uid);
+  const done = () => toast(t("toast_link_copied"));
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(done).catch(() => fallbackCopy(url, done));
+  } else {
+    fallbackCopy(url, done);
+  }
 }
 
 function openEmployeeModal(){
