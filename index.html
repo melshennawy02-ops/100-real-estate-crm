@@ -455,6 +455,32 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
   </div>
 </div>
 
+<!-- PUBLIC LEAD CAPTURE FORM (no login required) -->
+<div id="publicFormScreen" style="display:none; min-height:100vh; padding:24px 16px 60px;">
+  <div style="max-width:440px; margin:0 auto;">
+    <div style="display:flex; align-items:center; gap:10px; justify-content:center; margin-bottom:24px;">
+      <span class="ring-mark" id="publicFormRing"></span>
+      <img id="publicFormLogo" style="display:none; width:26px; height:26px; border-radius:50%; object-fit:cover;">
+      <span id="publicFormCompanyName" style="font-weight:800; color:var(--gold-bright); font-size:16px;">100%</span>
+    </div>
+    <div id="publicFormBody">
+      <div class="panel">
+        <h2 style="font-size:18px; font-weight:800; color:var(--ivory); margin-bottom:6px;" data-i18n="public_form_title"></h2>
+        <p style="font-size:12.5px; color:var(--slate); margin-bottom:18px;" data-i18n="public_form_sub"></p>
+        <form id="publicLeadForm">
+          <div class="field" style="margin-top:0;"><label data-i18n="f_name">Name</label><input type="text" id="pfName" required></div>
+          <div class="field"><label data-i18n="f_phone">Phone</label><input type="tel" id="pfPhone" required></div>
+          <div class="field"><label data-i18n="f_interest">Interest</label><input type="text" id="pfInterest"></div>
+          <div class="field">
+            <div class="g-recaptcha" data-sitekey="YOUR_RECAPTCHA_SITE_KEY" data-callback="onRecaptchaSuccess" data-expired-callback="onRecaptchaExpired"></div>
+          </div>
+          <button type="submit" class="btn-gold" style="width:100%; margin-top:14px;" id="pfSubmitBtn" disabled data-i18n="public_form_submit"></button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- LOADING -->
 <div class="loading-screen" id="loadingScreen" style="display:none">
   <div class="spinner"></div>
@@ -730,6 +756,12 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
 
     <div class="lead-overview" id="detailOverview"></div>
     <div class="panel" id="detailExtraPhones" style="display:none; margin-bottom:14px; padding:12px 14px;"></div>
+
+    <div class="panel" style="margin-bottom:14px; padding:14px;">
+      <div class="panel-head" style="margin-bottom:10px;"><h2 style="font-size:13px;" data-i18n="documents_title">Documents</h2></div>
+      <div class="resale-photo-preview" id="detailDocsPreview"></div>
+      <input type="file" id="detailDocsInput" accept="image/*" multiple style="margin-top:8px;">
+    </div>
 
     <div class="quick-contact" id="detailQuickContact"></div>
 
@@ -1148,6 +1180,7 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <script>
@@ -1246,6 +1279,24 @@ const I18N = {
 
     nav_resale: "الريسيل", resale_title: "الريسيل", resale_sub: "الوحدات المعروضة لإعادة البيع",
     resale_spotlight: "وحدات ريسيل مميزة",
+    top_opportunities: "أفضل الفرص", score_hot: "فرصة قوية", score_warm: "فرصة متوسطة", score_cold: "فرصة ضعيفة",
+    lead_score: "نقطة العميل",
+    created_by: "أضافه", currently_with: "العميل حاليًا عند",
+
+    public_form_title: "اهتمامك بيهمنا 🏠",
+    public_form_sub: "املأ بياناتك وهيتواصل معاك فريقنا في أقرب وقت",
+    public_form_submit: "إرسال",
+    public_form_thanks_title: "تم استلام بياناتك بنجاح ✅",
+    public_form_thanks_sub: "هيتواصل معاك أحد فريقنا قريبًا جدًا",
+
+    stale_leads_report: "عملاء بدون متابعة (5 أيام أو أكتر)",
+    no_stale_leads: "كل العملاء متابعين، مفيش أي عميل مهمل 🎉",
+    col_days_inactive: "أيام بدون متابعة", days_unit: "يوم",
+
+    documents_title: "المستندات (حتى 5 مستندات)",
+    lead_capture_link_title: "لينك جذب عملاء جدد",
+    lead_capture_link_desc: "ده لينكك الشخصي — أي عميل يملأ النموذج من خلاله هيتحط عليك إنت مباشرة في النظام. شاركه في وسائل التواصل الاجتماعي (زي bio إنستجرام) أو أي مكان بتتواصل بيه مع عملاء جداد.",
+    copy_lead_form_link: "نسخ اللينك",
     add_resale_unit: "إضافة وحدة", modal_add_resale: "إضافة وحدة ريسيل", modal_edit_resale: "تعديل الوحدة",
     f_unit_code: "كود الوحدة", f_owner_name: "اسم مالك الوحدة", f_owner_phone: "هاتف المالك",
     f_unit_floor: "الدور", f_unit_area_sqm: "المساحة (م²)", f_unit_price: "السعر",
@@ -1431,6 +1482,24 @@ const I18N = {
 
     nav_resale: "Resale", resale_title: "Resale", resale_sub: "Units listed for resale",
     resale_spotlight: "Featured Resale Units",
+    top_opportunities: "Top Opportunities", score_hot: "Strong Opportunity", score_warm: "Moderate Opportunity", score_cold: "Weak Opportunity",
+    lead_score: "Lead Score",
+    created_by: "Added By", currently_with: "Currently Assigned To",
+
+    public_form_title: "We'd Love to Help You 🏠",
+    public_form_sub: "Fill in your details and our team will reach out shortly",
+    public_form_submit: "Submit",
+    public_form_thanks_title: "Your details were received ✅",
+    public_form_thanks_sub: "One of our team members will contact you very soon",
+
+    stale_leads_report: "Leads With No Follow-up (5+ Days)",
+    no_stale_leads: "All leads are being followed up, nothing neglected 🎉",
+    col_days_inactive: "Days Inactive", days_unit: "days",
+
+    documents_title: "Documents (up to 5)",
+    lead_capture_link_title: "New Lead Capture Link",
+    lead_capture_link_desc: "This is your personal link — any customer who fills the form through it gets assigned directly to you in the system. Share it on social media (e.g. your Instagram bio) or anywhere you connect with new customers.",
+    copy_lead_form_link: "Copy Link",
     add_resale_unit: "Add Unit", modal_add_resale: "Add Resale Unit", modal_edit_resale: "Edit Unit",
     f_unit_code: "Unit Code", f_owner_name: "Owner Name", f_owner_phone: "Owner Phone",
     f_unit_floor: "Floor", f_unit_area_sqm: "Area (sqm)", f_unit_price: "Price",
@@ -1689,6 +1758,7 @@ db.collection("settings").doc("company").onSnapshot(doc => {
   document.getElementById("sidebarBrandName").childNodes[0].textContent = name;
   document.getElementById("topHeaderCompanyName").textContent = name;
   document.getElementById("publicCompanyName").textContent = name;
+  document.getElementById("publicFormCompanyName").textContent = name;
   if (d.logoBase64) {
     document.getElementById("loginLogoImg").src = d.logoBase64;
     document.getElementById("loginLogoImg").style.display = "block";
@@ -1701,6 +1771,9 @@ db.collection("settings").doc("company").onSnapshot(doc => {
     document.getElementById("publicLogo").src = d.logoBase64;
     document.getElementById("publicLogo").style.display = "block";
     document.getElementById("publicRing").style.display = "none";
+    document.getElementById("publicFormLogo").src = d.logoBase64;
+    document.getElementById("publicFormLogo").style.display = "block";
+    document.getElementById("publicFormRing").style.display = "none";
   }
 }, err => console.error("company settings error", err));
 
@@ -1711,6 +1784,57 @@ if (PUBLIC_UNIT_CODE) {
   document.getElementById("publicUnitScreen").style.display = "block";
   document.addEventListener("DOMContentLoaded", () => { applyLang(getLang()); loadPublicUnit(PUBLIC_UNIT_CODE); });
 }
+
+/* ---------- Public lead capture form (no login required) ---------- */
+const PUBLIC_FORM_PARAM = new URLSearchParams(window.location.search).get("form");
+const PUBLIC_FORM_CAMPAIGN = new URLSearchParams(window.location.search).get("campaign") || "";
+const PUBLIC_FORM_SOURCE = new URLSearchParams(window.location.search).get("source") || "website";
+const PUBLIC_FORM_AGENT = new URLSearchParams(window.location.search).get("agent") || null;
+if (PUBLIC_FORM_PARAM) {
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("publicFormScreen").style.display = "block";
+  document.addEventListener("DOMContentLoaded", () => applyLang(getLang()));
+}
+let RECAPTCHA_TOKEN = null;
+function onRecaptchaSuccess(token){
+  RECAPTCHA_TOKEN = token;
+  const btn = document.getElementById("pfSubmitBtn");
+  if (btn) btn.disabled = false;
+}
+function onRecaptchaExpired(){
+  RECAPTCHA_TOKEN = null;
+  const btn = document.getElementById("pfSubmitBtn");
+  if (btn) btn.disabled = true;
+}
+document.getElementById("publicLeadForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!RECAPTCHA_TOKEN) return;
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  try {
+    await db.collection("leads").add({
+      name: document.getElementById("pfName").value.trim(),
+      phone: document.getElementById("pfPhone").value.trim(),
+      interest: document.getElementById("pfInterest").value.trim(),
+      source: PUBLIC_FORM_SOURCE,
+      campaign: PUBLIC_FORM_CAMPAIGN,
+      assignedTo: PUBLIC_FORM_AGENT,
+      status: "new",
+      rating: "warm",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    document.getElementById("publicFormBody").innerHTML = `<div class="panel" style="text-align:center; padding:40px 20px;">
+      <div style="font-size:40px; margin-bottom:14px;">✅</div>
+      <h2 style="font-size:17px; font-weight:800; color:var(--ivory); margin-bottom:8px;">${t("public_form_thanks_title")}</h2>
+      <p style="font-size:13px; color:var(--slate);">${t("public_form_thanks_sub")}</p>
+    </div>`;
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+    btn.disabled = false;
+  }
+});
+
 function loadPublicUnit(code){
   const body = document.getElementById("publicUnitBody");
   body.innerHTML = `<div style="text-align:center; padding:60px 0;"><div class="spinner" style="margin:0 auto;"></div></div>`;
@@ -1756,7 +1880,7 @@ const authTimeout = setTimeout(() => {
 
 auth.onAuthStateChanged(user => {
   clearTimeout(authTimeout);
-  if (PUBLIC_UNIT_CODE) return;
+  if (PUBLIC_UNIT_CODE || PUBLIC_FORM_PARAM) return;
   if (!user) {
     document.getElementById("loginScreen").style.display = "flex";
     document.getElementById("loadingScreen").style.display = "none";
@@ -1842,7 +1966,7 @@ function subscribeData(){
   }, err => console.error("accounts error", err));
 
   db.collectionGroup("activities").onSnapshot(snap => {
-    ALL_ACTIVITIES = snap.docs.map(d => d.data());
+    ALL_ACTIVITIES = snap.docs.map(d => ({ ...d.data(), leadId: d.ref.parent.parent.id }));
     if (currentView === "dashboard") renderView();
   }, err => console.error("activities collection group error", err));
 
@@ -1998,6 +2122,11 @@ function renderDashboard(){
   STATUSES.forEach(s => stageCounts[s] = LEADS.filter(l => l.status===s).length);
 
   const lb = computeLeaderboard();
+  const topOpportunities = LEADS
+    .map(l => ({ lead:l, score: computeLeadScore(l) }))
+    .filter(x => x.score !== null)
+    .sort((a,b) => b.score - a.score)
+    .slice(0,5);
 
   document.getElementById("content").innerHTML = `
     <div class="welcome-banner">
@@ -2048,6 +2177,19 @@ function renderDashboard(){
       ${STATUSES.map(s => `<div class="stage-card" data-stage="${s}" style="cursor:pointer;"><div class="lbl">${t('status_'+s)}</div><div class="val">${stageCounts[s]}</div></div>`).join("")}
     </div>
     <div class="panel">
+      <div class="panel-head"><h2>${t("top_opportunities")}</h2></div>
+      ${topOpportunities.length ? topOpportunities.map(({lead,score}) => {
+        const tier = leadScoreTier(score);
+        return `<div class="activity-feed-item" data-open="${lead.id}" style="cursor:pointer;">
+          <div class="stat-icon-badge ${score>=65?'orange':score>=35?'blue':'purple'}" style="width:34px; height:34px; font-size:14px; font-weight:800;">${tier.emoji}</div>
+          <div style="flex:1;">
+            <div class="timeline-text">${escapeHtml(lead.name||"")}</div>
+            <div class="timeline-meta">${t('status_'+lead.status)} · ${t(tier.key)} · ${score}/100</div>
+          </div>
+        </div>`;
+      }).join("") : emptyState(t("empty_activities_title"), "")}
+    </div>
+    <div class="panel">
       <div class="panel-head"><h2>${t("resale_spotlight")}</h2><a href="#resale" style="font-size:12px;color:var(--gold-bright);">${t("view_all")}</a></div>
       <div id="dashResaleSpotlight">${RESALE_UNITS.length ? "" : emptyState(t("empty_resale_title"), t("empty_resale_sub"))}</div>
     </div>
@@ -2072,6 +2214,7 @@ function renderDashboard(){
   const addTaskBtn = document.getElementById("dashAddTaskBtn");
   if (addTaskBtn) addTaskBtn.addEventListener("click", () => openTaskModal());
   document.querySelectorAll(".task-item [data-open]").forEach(el => el.addEventListener("click", () => openLeadDetail(el.dataset.open)));
+  document.querySelectorAll(".activity-feed-item[data-open]").forEach(el => el.addEventListener("click", () => openLeadDetail(el.dataset.open)));
   document.querySelectorAll("[data-stage]").forEach(el => el.addEventListener("click", () => goToLeadsFiltered(el.dataset.stage)));
   document.querySelectorAll("[data-stat-kind]").forEach(el => el.addEventListener("click", () => {
     const kind = el.dataset.statKind;
@@ -2094,6 +2237,41 @@ let PENDING_LEAD_FILTER = null;
 function goToLeadsFiltered(status){
   PENDING_LEAD_FILTER = status;
   window.location.hash = "#leads";
+}
+function computeLeadScore(lead){
+  if (["won","lost"].includes(lead.status)) return null;
+  const acts = ALL_ACTIVITIES.filter(a => a.leadId === lead.id);
+  const now = Date.now();
+
+  let recencyScore = 0;
+  if (acts.length) {
+    const lastActMs = acts.reduce((max,a) => {
+      const t = a.createdAt && a.createdAt.seconds ? a.createdAt.seconds*1000 : 0;
+      return t > max ? t : max;
+    }, 0);
+    if (lastActMs) {
+      const daysSince = (now - lastActMs) / 86400000;
+      if (daysSince <= 1) recencyScore = 30;
+      else if (daysSince <= 3) recencyScore = 22;
+      else if (daysSince <= 7) recencyScore = 12;
+      else if (daysSince <= 14) recencyScore = 5;
+    }
+  }
+
+  const engagementScore = Math.min(acts.length * 4, 25);
+
+  const stageIdx = PIPELINE_STATUSES.indexOf(lead.status);
+  const stageScore = stageIdx >= 0 ? Math.round((stageIdx/(PIPELINE_STATUSES.length-1)) * 25) : 0;
+
+  const ratingScore = { hot:20, warm:10, cold:0 }[lead.rating] || 0;
+
+  return Math.min(100, recencyScore + engagementScore + stageScore + ratingScore);
+}
+function leadScoreTier(score){
+  if (score === null) return null;
+  if (score >= 65) return { emoji:"🔥", key:"score_hot" };
+  if (score >= 35) return { emoji:"🟡", key:"score_warm" };
+  return { emoji:"⚪", key:"score_cold" };
 }
 function computeLeaderboard(){
   const now = new Date();
@@ -2685,6 +2863,17 @@ function renderReports(){
   const overdueTasks = TASKS.filter(tk => !tk.done && tk.due && new Date(tk.due) < new Date())
     .sort((a,b) => new Date(a.due) - new Date(b.due));
 
+  const STALE_DAYS = 5;
+  const staleLeads = LEADS.filter(l => !["won","lost"].includes(l.status)).map(l => {
+    const acts = ALL_ACTIVITIES.filter(a => a.leadId === l.id);
+    let lastMs = 0;
+    acts.forEach(a => { const t = a.createdAt&&a.createdAt.seconds?a.createdAt.seconds*1000:0; if (t>lastMs) lastMs=t; });
+    if (!lastMs) { const cd = leadDate(l); lastMs = cd ? cd.getTime() : 0; }
+    const daysSince = lastMs ? Math.floor((Date.now()-lastMs)/86400000) : null;
+    return { lead:l, daysSince };
+  }).filter(x => x.daysSince === null || x.daysSince >= STALE_DAYS)
+    .sort((a,b) => (b.daysSince||999) - (a.daysSince||999));
+
   document.getElementById("content").innerHTML = `
     <div class="panel">
       <div class="panel-head"><h2 data-i18n="report_period">Period</h2></div>
@@ -2698,6 +2887,7 @@ function renderReports(){
       </select>
     </div>
 
+    <div class="panel"><div class="panel-head"><h2>${t("stale_leads_report")}</h2></div>${staleLeadsTable(staleLeads)}</div>
     <div class="panel"><div class="panel-head"><h2>${t("sales_team_report")}</h2></div>${teamReportTable(salesRows, true)}</div>
     <div class="panel"><div class="panel-head"><h2>${t("marketing_team_report")}</h2></div>${teamReportTable(marketingRows, false)}</div>
     <div class="panel"><div class="panel-head"><h2>${t("overdue_followups_report")}</h2></div>${overdueTable(overdueTasks)}</div>
@@ -2713,6 +2903,20 @@ function renderReports(){
     REPORT_PERIOD = e.target.value;
     renderReports();
   });
+  document.querySelectorAll("[data-open-stale]").forEach(el => el.addEventListener("click", () => openLeadDetail(el.dataset.openStale)));
+}
+
+function staleLeadsTable(rows){
+  if (!rows.length) return emptyState(t("no_stale_leads"), "");
+  return `<div class="table-scroll"><table><thead><tr>
+    <th>${t("col_lead_name")}</th><th>${t("col_status")}</th><th>${t("col_days_inactive")}</th>
+    </tr></thead><tbody>
+    ${rows.map(({lead,daysSince}) => `<tr>
+      <td><span class="row-name-link" data-open-stale="${lead.id}">${escapeHtml(lead.name||"")}</span></td>
+      <td><span class="badge ${lead.status}">${t('status_'+lead.status)}</span></td>
+      <td style="color:var(--danger); font-weight:700;">${daysSince===null ? "—" : daysSince + " " + t("days_unit")}</td>
+    </tr>`).join("")}
+    </tbody></table></div>`;
 }
 
 function teamReportTable(rows, withValue){
@@ -2845,6 +3049,13 @@ function renderSettings(){
           <div class="timeline-icon">${ACT_ICONS[a.type]||ACT_ICONS.note}</div>
           <div><div class="timeline-text">${escapeHtml(a.text||"")}</div><div class="timeline-meta">${fmtDate(a.createdAt)}</div></div>
         </div>`).join("") : emptyState(t("empty_activities_title"), t("empty_activities_sub"))}
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>${t("lead_capture_link_title")}</h2></div>
+      <div style="font-size:12px; color:var(--slate); margin-bottom:14px; line-height:1.6;">${t("lead_capture_link_desc")}</div>
+      <div class="field" style="margin-top:0;"><label data-i18n="f_campaign">Campaign / Source Name (optional)</label><input type="text" id="leadFormCampaignInput" placeholder="instagram_bio"></div>
+      <button type="button" class="btn-gold" id="copyLeadFormLinkBtn" style="width:100%; margin-top:6px;">${t("copy_lead_form_link")}</button>
     </div>`;
 
   if (level >= 3) {
@@ -2930,6 +3141,18 @@ function renderSettings(){
   document.getElementById("followupSoundToggle").addEventListener("change", (e) => setFollowupAlertSound(e.target.checked));
   document.getElementById("weekStartSelect").addEventListener("change", (e) => setWeekStart(e.target.value));
   document.querySelectorAll("#content .lang-toggle-inline button").forEach(btn => btn.addEventListener("click", () => setLang(btn.dataset.lang)));
+
+  document.getElementById("copyLeadFormLinkBtn").addEventListener("click", () => {
+    const campaign = document.getElementById("leadFormCampaignInput").value.trim();
+    let url = window.location.origin + window.location.pathname + "?form=1&agent=" + encodeURIComponent(CURRENT_USER.uid);
+    if (campaign) url += "&campaign=" + encodeURIComponent(campaign);
+    const done = () => toast(t("toast_link_copied"));
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(done).catch(() => fallbackCopy(url, done));
+    } else {
+      fallbackCopy(url, done);
+    }
+  });
 
   if (level >= 3) {
     const logoInput = document.getElementById("companyLogoInput");
@@ -3434,6 +3657,32 @@ document.getElementById("employeeForm").addEventListener("submit", async (e) => 
    ========================================================= */
 let DETAIL_LEAD_ID = null;
 let DETAIL_TAGS = [];
+let DETAIL_DOCUMENTS = [];
+function renderDetailDocs(){
+  const wrap = document.getElementById("detailDocsPreview");
+  wrap.innerHTML = DETAIL_DOCUMENTS.map((src,i) => `
+    <div style="position:relative;">
+      <img src="${src}" style="cursor:pointer;" data-view-doc="${i}">
+      <button type="button" data-remove-doc="${i}" style="position:absolute; top:-6px; inset-inline-end:-6px; width:18px; height:18px; border-radius:50%; background:var(--danger); color:#fff; font-size:10px; line-height:1;">✕</button>
+    </div>`).join("");
+  wrap.querySelectorAll("[data-view-doc]").forEach(img => img.addEventListener("click", () => window.open(DETAIL_DOCUMENTS[parseInt(img.dataset.viewDoc)], "_blank")));
+  wrap.querySelectorAll("[data-remove-doc]").forEach(btn => btn.addEventListener("click", async () => {
+    DETAIL_DOCUMENTS.splice(parseInt(btn.dataset.removeDoc), 1);
+    renderDetailDocs();
+    await db.collection("leads").doc(DETAIL_LEAD_ID).update({ documents: DETAIL_DOCUMENTS });
+  }));
+}
+document.getElementById("detailDocsInput").addEventListener("change", async (e) => {
+  const files = Array.from(e.target.files || []);
+  for (const file of files) {
+    if (DETAIL_DOCUMENTS.length >= 5) { toast(t("resale_max_photos")); break; }
+    const base64 = await resizeImageFile(file, 900);
+    DETAIL_DOCUMENTS.push(base64);
+  }
+  renderDetailDocs();
+  await db.collection("leads").doc(DETAIL_LEAD_ID).update({ documents: DETAIL_DOCUMENTS });
+  e.target.value = "";
+});
 let timelineUnsub = null;
 
 const ACT_ICONS = {
@@ -3483,6 +3732,8 @@ function openLeadDetail(id){
   if (!lead) return;
   DETAIL_LEAD_ID = id;
   DETAIL_TAGS = Array.isArray(lead.tags) ? [...lead.tags] : [];
+  DETAIL_DOCUMENTS = Array.isArray(lead.documents) ? [...lead.documents] : [];
+  renderDetailDocs();
 
   document.getElementById("detailLeadName").textContent = lead.name || "—";
   document.getElementById("detailLeadId").value = id;
@@ -3537,14 +3788,19 @@ document.getElementById("quickMoveTo").addEventListener("change", (e) => toggleF
 
 function renderDetailOverview(lead){
   const agent = AGENTS.find(a => a.id === lead.assignedTo);
+  const creator = AGENTS.find(a => a.id === lead.agentId);
+  const score = computeLeadScore(lead);
+  const tier = leadScoreTier(score);
   const items = [
     [t("f_status"), `<span class="badge ${lead.status||'new'}">${t('status_'+(lead.status||'new'))}</span>`],
     [t("f_rating"), `<span class="badge ${lead.rating||'warm'}">${t('rating_'+(lead.rating||'warm'))}</span>`],
     [t("f_project"), escapeHtml(lead.project || "—")],
     [t("f_interest"), escapeHtml(lead.interest || "—")],
     [t("f_source"), t('source_'+(lead.source||'other'))],
-    [t("f_assigned"), agent ? escapeHtml(agent.name||agent.email) : t("unassigned")],
+    [t("created_by"), creator ? escapeHtml(creator.name||creator.email) : escapeHtml(lead.agentEmail || "—")],
+    [t("currently_with"), agent ? escapeHtml(agent.name||agent.email) : t("unassigned")],
   ];
+  if (score !== null) items.push([t("lead_score"), `${tier.emoji} ${score}/100 · ${t(tier.key)}`]);
   document.getElementById("detailOverview").innerHTML = items.map(([label,val]) => `
     <div class="ov-item"><div class="ov-label">${label}</div><div class="ov-value">${val}</div></div>
   `).join("");
