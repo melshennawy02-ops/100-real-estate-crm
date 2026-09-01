@@ -601,6 +601,16 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
             <option value="resale" data-i18n="requirement_resale">Resale</option>
           </select>
         </div>
+        <div class="field">
+          <label data-i18n="f_category">Category</label>
+          <select id="leadCategory">
+            <option value="" data-i18n="none">—</option>
+            <option value="commercial" data-i18n="category_commercial">Commercial</option>
+            <option value="investment" data-i18n="category_investment">Investment</option>
+            <option value="residential" data-i18n="category_residential">Residential</option>
+            <option value="other" data-i18n="category_other">Other</option>
+          </select>
+        </div>
         <div class="field"><label data-i18n="f_project">Project</label><input type="text" id="leadProject"></div>
         <div class="field"><label data-i18n="f_campaign">Campaign</label><input type="text" id="leadCampaign"></div>
         <div class="field">
@@ -692,6 +702,7 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
     </div>
     <p style="font-size:12.5px; color:var(--slate); line-height:1.6; margin-bottom:14px;" data-i18n="import_instructions"></p>
     <p style="font-size:11.5px; color:var(--danger); line-height:1.6; margin-bottom:14px;" data-i18n="import_quota_warning"></p>
+    <button type="button" class="btn-outline" id="downloadTemplateBtn" style="width:100%; margin-bottom:16px;" data-i18n="download_template_btn">Download Standard Template</button>
     <div class="field">
       <label data-i18n="import_file_label">Choose file</label>
       <input type="file" id="importFileInput" accept=".xlsx,.xls,.csv">
@@ -1357,6 +1368,14 @@ const I18N = {
     my_target_sub: "نسبة إنجازك من المستهدف بتاعك هذا الشهر", no_target_set: "لسه مفيش مستهدف محدد لك — كلّم مديرك يحدده",
     f_monthly_target: "المستهدف الشهري (عدد الصفقات)",
     col_target: "المستهدف", col_achievement: "نسبة الإنجاز",
+    download_template_btn: "تحميل نموذج شيت العملاء",
+    template_instructions_title: "تعليمات تعبئة الشيت — من فضلك استخدم القيم دي بالظبط في الأعمدة المطابقة",
+    template_status_values: "القيم المسموحة لعمود (الحالة):",
+    template_category_values: "القيم المسموحة لعمود (التصنيف):",
+    template_source_values: "القيم المسموحة لعمود (المصدر):",
+    f_category: "التصنيف",
+    category_commercial: "تجاري", category_investment: "استثماري",
+    category_residential: "سكني", category_other: "أخرى",
     col_days_inactive: "أيام بدون متابعة", days_unit: "يوم",
 
     documents_title: "المستندات (حتى 5 مستندات)",
@@ -1582,6 +1601,14 @@ const I18N = {
     my_target_sub: "Your achievement rate toward this month's target", no_target_set: "No target set for you yet — ask your manager to set one",
     f_monthly_target: "Monthly Target (Deals)",
     col_target: "Target", col_achievement: "Achievement",
+    download_template_btn: "Download Standard Leads Template",
+    template_instructions_title: "Sheet instructions — please use these exact values in the matching columns",
+    template_status_values: "Allowed values for the (Status) column:",
+    template_category_values: "Allowed values for the (Category) column:",
+    template_source_values: "Allowed values for the (Source) column:",
+    f_category: "Category",
+    category_commercial: "Commercial", category_investment: "Investment",
+    category_residential: "Residential", category_other: "Other",
     col_days_inactive: "Days Inactive", days_unit: "days",
 
     documents_title: "Documents (up to 5)",
@@ -2619,6 +2646,7 @@ function openLeadModal(id){
       document.getElementById("leadInterest").value = lead.interest||"";
       document.getElementById("leadSource").value = lead.source||"facebook";
       document.getElementById("leadRequirement").value = lead.requirement||"buy";
+      document.getElementById("leadCategory").value = lead.category||"";
       document.getElementById("leadProject").value = lead.project||"";
       document.getElementById("leadCampaign").value = lead.campaign||"";
       document.getElementById("leadUnitType").value = lead.unitType||"apartment";
@@ -2662,6 +2690,7 @@ document.getElementById("leadForm").addEventListener("submit", async (e) => {
     interest: document.getElementById("leadInterest").value.trim(),
     source: document.getElementById("leadSource").value,
     requirement: document.getElementById("leadRequirement").value,
+    category: document.getElementById("leadCategory").value,
     project: document.getElementById("leadProject").value.trim(),
     campaign: document.getElementById("leadCampaign").value.trim(),
     unitType: document.getElementById("leadUnitType").value,
@@ -2748,8 +2777,37 @@ const HEADER_MAP = {
   project: ["project","المشروع"],
   campaign: ["campaign","الحملة","اسم الحملة"],
   area: ["area","المنطقة"],
+  status: ["status","الحالة","المرحلة","حالة العميل"],
+  category: ["category","التصنيف","تصنيف العميل"],
   notes: ["notes","ملاحظات","note"],
 };
+
+function normalizeStatus(val){
+  if (!val) return "new";
+  const v = String(val).trim().toLowerCase();
+  const map = {
+    "new":"new","جديد":"new",
+    "qualified":"qualified","مؤهل":"qualified",
+    "matched":"matched","تطابق مشروع":"matched","project matched":"matched",
+    "meeting":"meeting","معاينة":"meeting","اجتماع":"meeting",
+    "offer":"offer","عرض سعر":"offer",
+    "negotiation":"negotiation","تفاوض":"negotiation",
+    "booking":"booking","حجز":"booking",
+    "contract":"contract","تعاقد":"contract",
+    "won":"won","مغلق فايز":"won","مغلق (فايز)":"won","closed won":"won",
+    "lost":"lost","خسارة":"lost",
+  };
+  return map[v] || "new";
+}
+function normalizeCategory(val){
+  if (!val) return "";
+  const v = String(val).trim().toLowerCase();
+  if (v.includes("تجار") || v.includes("commercial")) return "commercial";
+  if (v.includes("استثمار") || v.includes("invest")) return "investment";
+  if (v.includes("سكن") || v.includes("residential")) return "residential";
+  if (v.includes("أخرى") || v.includes("اخرى") || v.includes("other")) return "other";
+  return "";
+}
 
 function findHeaderKey(headers, candidates){
   for (const h of headers) {
@@ -2809,6 +2867,39 @@ function openImportModal(){
   document.getElementById("importModal").classList.add("show");
 }
 
+document.getElementById("downloadTemplateBtn").addEventListener("click", () => {
+  const lang = getLang();
+  const headers = lang === "ar"
+    ? ["الاسم","الهاتف","البريد الإلكتروني","الاهتمام","المصدر","المنطقة","الحالة (المرحلة)","التصنيف","الميزانية","المشروع","ملاحظات"]
+    : ["Name","Phone","Email","Interest","Source","Area","Status (Stage)","Category","Budget","Project","Notes"];
+  const example = lang === "ar"
+    ? ["محمد أحمد","01012345678","mohamed@example.com","شقة 3 غرف","فيسبوك","التجمع الخامس","جديد","سكني","3000000","اسم المشروع","اتصل مساءً"]
+    : ["Mohamed Ahmed","01012345678","mohamed@example.com","3-bed apartment","facebook","New Cairo","new","residential","3000000","Project Name","Call in the evening"];
+
+  const statusList = STATUSES.map(s => `${s} / ${t('status_'+s)}`);
+  const categoryList = ["commercial / تجاري","investment / استثماري","residential / سكني","other / أخرى"];
+  const sourceList = ["facebook","tiktok","whatsapp","website","referral","walkin","call","other"];
+
+  const wsData = XLSX.utils.aoa_to_sheet([headers, example]);
+  const wsInstructions = XLSX.utils.aoa_to_sheet([
+    [t("template_instructions_title")],
+    [""],
+    [t("template_status_values")],
+    ...statusList.map(v => [v]),
+    [""],
+    [t("template_category_values")],
+    ...categoryList.map(v => [v]),
+    [""],
+    [t("template_source_values")],
+    ...sourceList.map(v => [v]),
+  ]);
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, wsData, lang==="ar" ? "العملاء" : "Leads");
+  XLSX.utils.book_append_sheet(wb, wsInstructions, lang==="ar" ? "التعليمات" : "Instructions");
+  XLSX.writeFile(wb, "leads-template.xlsx");
+});
+
 document.getElementById("importFileInput").addEventListener("change", (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -2831,6 +2922,8 @@ document.getElementById("importFileInput").addEventListener("change", (e) => {
         project: findHeaderKey(headers, HEADER_MAP.project),
         campaign: findHeaderKey(headers, HEADER_MAP.campaign),
         area: findHeaderKey(headers, HEADER_MAP.area),
+        status: findHeaderKey(headers, HEADER_MAP.status),
+        category: findHeaderKey(headers, HEADER_MAP.category),
         notes: findHeaderKey(headers, HEADER_MAP.notes),
       };
 
@@ -2849,8 +2942,10 @@ document.getElementById("importFileInput").addEventListener("change", (e) => {
           campaign: map.campaign ? String(r[map.campaign]||"").trim() : "",
           area: map.area ? String(r[map.area]||"").trim() : "",
           source: normalizeSource(map.source ? r[map.source] : ""),
+          status: normalizeStatus(map.status ? r[map.status] : ""),
+          category: normalizeCategory(map.category ? r[map.category] : ""),
           notes: map.notes ? String(r[map.notes]||"").trim() : "",
-          status: "new", rating: "warm", requirement: "buy", unitType: "apartment", paymentMethod: "cash", nextAction: "call",
+          rating: "warm", requirement: "buy", unitType: "apartment", paymentMethod: "cash", nextAction: "call",
         };
       }).filter(Boolean);
 
@@ -4464,6 +4559,7 @@ function renderDetailOverview(lead){
     [t("f_rating"), `<span class="badge ${lead.rating||'warm'}">${t('rating_'+(lead.rating||'warm'))}</span>`],
     [t("f_project"), escapeHtml(lead.project || "—")],
     [t("f_interest"), escapeHtml(lead.interest || "—")],
+    [t("f_category"), lead.category ? t('category_'+lead.category) : "—"],
     [t("f_source"), t('source_'+(lead.source||'other'))],
     [t("created_by"), creator ? escapeHtml(creator.name||creator.email) : escapeHtml(lead.agentEmail || "—")],
     [t("currently_with"), agent ? escapeHtml(agent.name||agent.email) : t("unassigned")],
