@@ -3906,7 +3906,7 @@ const ROLE_KEYS = ["general_manager","company_admin","sales_manager","marketing_
 function isFullAdmin(){ return ADMIN_ROLES.includes(myRole()); }
 function visibleLeads(){ return isFullAdmin() ? LEADS : LEADS.filter(l => l.assignedTo === CURRENT_USER.uid || l.agentId === CURRENT_USER.uid); }
 function myAgentDoc(){ return AGENTS.find(a => a.id === (CURRENT_USER && CURRENT_USER.uid)); }
-function myRole(){ const a = myAgentDoc(); return a && a.role ? a.role : "general_manager"; }
+function myRole(){ const a = myAgentDoc(); return a && a.role ? a.role : "sales_agent"; }
 function permLevel(){ const r = myRole(); if (ADMIN_ROLES.includes(r)) return 3; if (MID_ROLES.includes(r)) return 2; return 1; }
 
 function applyPermissions(){
