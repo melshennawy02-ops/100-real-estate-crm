@@ -1121,6 +1121,71 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
   </div>
 </div>
 
+<!-- Modal: Deals List (per Account) -->
+<div class="modal-backdrop" id="dealsModal">
+  <div class="modal" style="max-width:720px;">
+    <div class="modal-head">
+      <h3 id="dealsModalTitle" data-i18n="col_deals">Deals</h3>
+      <button class="modal-close" data-close-modal="dealsModal">✕</button>
+    </div>
+    <div style="padding:0 2px 4px;">
+      <button type="button" class="btn-gold" id="btnAddDeal" style="margin-bottom:14px;">+ <span data-i18n="add_deal">Add Deal</span></button>
+      <div id="dealsSummaryWrap" style="margin-bottom:14px;"></div>
+      <div id="dealsListWrap"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Deal (Unit sale + commission & tax calculator) -->
+<div class="modal-backdrop" id="dealModal">
+  <div class="modal" style="max-width:640px;">
+    <div class="modal-head">
+      <h3 id="dealModalTitle" data-i18n="modal_add_deal">Add New Deal</h3>
+      <button class="modal-close" data-close-modal="dealModal">✕</button>
+    </div>
+    <form id="dealForm">
+      <input type="hidden" id="dealId">
+      <input type="hidden" id="dealAccountId">
+      <div class="field"><label data-i18n="f_unit_ref">Unit Name / Code</label><input type="text" id="dealUnitRef"></div>
+      <div class="field"><label data-i18n="f_unit_value">Unit Sale Value</label><input type="number" step="0.01" id="dealUnitValue" required></div>
+      <div class="field"><label data-i18n="f_company_commission">Total Commission Received from Company</label><input type="number" step="0.01" id="dealCompanyCommission" required></div>
+
+      <div style="margin:18px 0 8px; font-weight:800; color:var(--gold-bright); font-size:13px;" data-i18n="deal_tax_section">Taxes Due</div>
+      <div class="form-grid">
+        <div class="field"><label data-i18n="f_vat_rate">VAT Rate %</label><input type="number" step="0.01" id="dealVatRate" value="14"></div>
+        <div class="field"><label data-i18n="f_withholding_rate">Withholding Tax Rate %</label><input type="number" step="0.01" id="dealWithholdingRate" value="5"></div>
+      </div>
+      <div style="font-size:11.5px; color:var(--slate); margin:4px 0 4px; line-height:1.6;" data-i18n="deal_tax_disclaimer"></div>
+
+      <div style="margin:18px 0 8px; font-weight:800; color:var(--gold-bright); font-size:13px;" data-i18n="deal_commission_section">Commission Distribution</div>
+      <div class="field">
+        <label data-i18n="f_sales_commission">Sales Agent Commission</label>
+        <div style="display:flex; gap:8px; margin-bottom:6px;">
+          <button type="button" class="btn-outline" data-quick-rate="sales" data-per-million="5" style="padding:6px 12px; font-size:11.5px;" data-i18n="per_million_5">5 per million</button>
+          <button type="button" class="btn-outline" data-quick-rate="sales" data-per-million="6" style="padding:6px 12px; font-size:11.5px;" data-i18n="per_million_6">6 per million</button>
+        </div>
+        <input type="number" step="0.01" id="dealSalesCommission" placeholder="0">
+      </div>
+      <div class="field">
+        <label data-i18n="f_manager_commission">Sales Manager Commission</label>
+        <div style="display:flex; gap:8px; margin-bottom:6px;">
+          <button type="button" class="btn-outline" data-quick-rate="manager" data-per-million="2" style="padding:6px 12px; font-size:11.5px;" data-i18n="per_million_2">2 per million</button>
+        </div>
+        <input type="number" step="0.01" id="dealManagerCommission" placeholder="0">
+      </div>
+      <div class="field"><label data-i18n="f_marketing_commission">Marketing Commission</label><input type="number" step="0.01" id="dealMarketingCommission" placeholder="0"></div>
+      <div class="field"><label data-i18n="f_marketing_manager_commission">Marketing Manager Commission</label><input type="number" step="0.01" id="dealMarketingManagerCommission" placeholder="0"></div>
+
+      <div id="dealSummaryBox" style="background:rgba(165,121,58,.08); border:1px solid var(--gold-dim); border-radius:10px; padding:12px 14px; margin-top:16px; font-size:12.5px;"></div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-outline" data-close-modal="dealModal" data-i18n="cancel">Cancel</button>
+        <button type="submit" class="btn-gold" data-i18n="save">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Modal: Permission Detail -->
 <div class="modal-backdrop" id="permissionDetailModal">
   <div class="modal">
@@ -1469,6 +1534,23 @@ const I18N = {
     f_linked_account: "الحساب المرتبط (الشركة/الوسيط)", unlinked: "غير مرتبط",
     col_account_name: "الاسم", col_account_type: "النوع", col_account_contact: "مسؤول التواصل",
 
+    /* Deals / Commission & Tax Calculator */
+    col_deals: "الصفقات", btn_deals: "الصفقات", add_deal: "إضافة صفقة", modal_add_deal: "إضافة صفقة جديدة", modal_edit_deal: "تعديل الصفقة",
+    deals_for_account: "صفقات", empty_deals_title: "لا توجد صفقات بعد", empty_deals_sub: "أضف أول صفقة مباعة لهذا الحساب",
+    f_unit_ref: "اسم / كود الوحدة", f_unit_value: "قيمة الوحدة المباعة", f_company_commission: "إجمالي العمولة المستلمة من الشركة (المطور)",
+    deal_tax_section: "الضرائب المستحقة (حسب القانون المصري)", f_vat_rate: "نسبة ضريبة القيمة المضافة %", f_vat_amount: "قيمة ضريبة القيمة المضافة",
+    f_withholding_rate: "نسبة الخصم تحت حساب الضريبة %", f_withholding_amount: "قيمة الخصم تحت حساب الضريبة",
+    f_net_company_commission: "صافي عمولة الشركة بعد الضريبة",
+    deal_commission_section: "توزيع العمولات",
+    f_sales_commission: "عمولة السيلز", f_sales_rate_note: "اختر النسبة أو اكتبها يدويًا",
+    f_manager_commission: "عمولة مدير المبيعات", f_manager_rate_note: "٢ على المليون أو اكتبها يدويًا",
+    f_marketing_commission: "عمولة الماركتينج", f_marketing_manager_commission: "عمولة مدير التسويق",
+    f_net_profit: "صافي ربح الشركة من الصفقة",
+    per_million_5: "5 على المليون", per_million_6: "6 على المليون", per_million_2: "2 على المليون",
+    deal_tax_disclaimer: "النسب افتراضية وقابلة للتعديل، يُنصح بمراجعتها مع محاسب الشركة لمطابقتها لآخر تحديثات مصلحة الضرائب.",
+    deals_total_value: "إجمالي قيمة الوحدات", deals_total_commission: "إجمالي عمولة الشركة", deals_total_net: "إجمالي صافي ربح الشركة",
+    col_deal_unit: "الوحدة", col_deal_value: "القيمة", col_deal_commission: "عمولة الشركة", col_deal_net_profit: "صافي الربح",
+
     f_role: "الوظيفة",
     role_general_manager: "مدير عام الشركة",
     role_sales_manager: "مدير المبيعات",
@@ -1702,6 +1784,23 @@ const I18N = {
     f_linked_account: "Linked Account (Company/Broker)", unlinked: "Unlinked",
     col_account_name: "Name", col_account_type: "Type", col_account_contact: "Contact Person",
 
+    /* Deals / Commission & Tax Calculator */
+    col_deals: "Deals", btn_deals: "Deals", add_deal: "Add Deal", modal_add_deal: "Add New Deal", modal_edit_deal: "Edit Deal",
+    deals_for_account: "Deals for", empty_deals_title: "No deals yet", empty_deals_sub: "Add the first sold unit for this account",
+    f_unit_ref: "Unit Name / Code", f_unit_value: "Unit Sale Value", f_company_commission: "Total Commission Received from Company (Developer)",
+    deal_tax_section: "Taxes Due (per Egyptian Tax Law)", f_vat_rate: "VAT Rate %", f_vat_amount: "VAT Amount",
+    f_withholding_rate: "Withholding Tax Rate %", f_withholding_amount: "Withholding Tax Amount",
+    f_net_company_commission: "Net Company Commission After Tax",
+    deal_commission_section: "Commission Distribution",
+    f_sales_commission: "Sales Agent Commission", f_sales_rate_note: "Pick a rate or type it manually",
+    f_manager_commission: "Sales Manager Commission", f_manager_rate_note: "2 per million or type manually",
+    f_marketing_commission: "Marketing Commission", f_marketing_manager_commission: "Marketing Manager Commission",
+    f_net_profit: "Net Company Profit from Deal",
+    per_million_5: "5 per million", per_million_6: "6 per million", per_million_2: "2 per million",
+    deal_tax_disclaimer: "Default rates are editable — please confirm with your accountant against the latest tax authority updates.",
+    deals_total_value: "Total Unit Value", deals_total_commission: "Total Company Commission", deals_total_net: "Total Net Profit",
+    col_deal_unit: "Unit", col_deal_value: "Value", col_deal_commission: "Company Commission", col_deal_net_profit: "Net Profit",
+
     f_role: "Role",
     role_general_manager: "General Manager",
     role_sales_manager: "Sales Manager",
@@ -1792,7 +1891,7 @@ document.addEventListener("DOMContentLoaded", () => {
    App state & auth
    ========================================================= */
 let CURRENT_USER = null;
-let LEADS = [], TASKS = [], AGENTS = [], ACCOUNTS = [], ALL_ACTIVITIES = [], RESALE_UNITS = [], RENTAL_UNITS = [];
+let LEADS = [], TASKS = [], AGENTS = [], ACCOUNTS = [], ALL_ACTIVITIES = [], RESALE_UNITS = [], RENTAL_UNITS = [], DEALS = [];
 let RESALE_PENDING_IMAGES = [];
 let RESALE_CAROUSEL_TIMERS = [];
 let DASHBOARD_RESALE_TIMER = null;
@@ -2094,6 +2193,11 @@ function subscribeData(){
     renderView();
   }, err => console.error("accounts error", err));
 
+  db.collection("deals").orderBy("createdAt","desc").onSnapshot(snap => {
+    DEALS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    if (currentView === "accounts") renderView();
+  }, err => console.error("deals error", err));
+
   db.collectionGroup("activities").onSnapshot(snap => {
     ALL_ACTIVITIES = snap.docs.map(d => ({ ...d.data(), leadId: d.ref.parent.parent.id }));
     if (currentView === "dashboard") renderView();
@@ -2195,8 +2299,12 @@ function initRouter(){
 function handleRoute(){
   const hash = window.location.hash.replace("#","") || "dashboard";
   currentView = ["dashboard","leads","pipeline","tasks","reports","team","accounts","resale","rental","settings"].includes(hash) ? hash : "dashboard";
-  const restricted = { team:3, accounts:2 };
+  const restricted = { team:3 };
   if (restricted[currentView] && permLevel() < restricted[currentView]) {
+    currentView = "dashboard";
+    if (hash !== "dashboard") { window.location.hash = "#dashboard"; return; }
+  }
+  if (currentView === "accounts" && myRole() !== "general_manager") {
     currentView = "dashboard";
     if (hash !== "dashboard") { window.location.hash = "#dashboard"; return; }
   }
@@ -3807,7 +3915,7 @@ function applyPermissions(){
   const accountsNav = document.querySelector('.nav-item[data-view="accounts"]');
   const reportsNav = document.querySelector('.nav-item[data-view="reports"]');
   if (teamNav) teamNav.style.display = level >= 3 ? "flex" : "none";
-  if (accountsNav) accountsNav.style.display = level >= 2 ? "flex" : "none";
+  if (accountsNav) accountsNav.style.display = myRole() === "general_manager" ? "flex" : "none";
   if (reportsNav) reportsNav.style.display = "flex";
 
   const mine = myAgentDoc();
@@ -3818,8 +3926,11 @@ function applyPermissions(){
   document.getElementById("topHeaderUserName").textContent = displayName;
   document.getElementById("topHeaderAvatar").innerHTML = avatarHtml;
 
-  const restricted = { team:3, accounts:2 };
+  const restricted = { team:3 };
   if (restricted[currentView] && level < restricted[currentView]) {
+    window.location.hash = "#dashboard";
+  }
+  if (currentView === "accounts" && myRole() !== "general_manager") {
     window.location.hash = "#dashboard";
   }
 }
@@ -3841,6 +3952,7 @@ function accountsTable(list){
       <td>${escapeHtml(a.contact||"—")}</td>
       <td>${escapeHtml(a.phone||"—")}</td>
       <td class="row-actions">
+        <button class="icon-btn" data-deals-account="${a.id}" title="${t('col_deals')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></button>
         <button class="icon-btn" data-edit-account="${a.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
         <button class="icon-btn" data-delete-account="${a.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>
       </td>
@@ -3849,6 +3961,7 @@ function accountsTable(list){
 }
 function bindAccountRowEvents(){
   document.querySelectorAll("[data-edit-account]").forEach(btn => btn.addEventListener("click", () => openAccountModal(btn.dataset.editAccount)));
+  document.querySelectorAll("[data-deals-account]").forEach(btn => btn.addEventListener("click", () => openDealsModal(btn.dataset.dealsAccount)));
   document.querySelectorAll("[data-delete-account]").forEach(btn => btn.addEventListener("click", async () => {
     if (!confirm(t("confirm_delete"))) return;
     await db.collection("accounts").doc(btn.dataset.deleteAccount).delete();
@@ -3893,6 +4006,150 @@ document.getElementById("accountForm").addEventListener("submit", async (e) => {
       toast(t("toast_saved"));
     }
     closeModal("accountModal");
+  } catch (err) { console.error(err); alert(err.message); }
+});
+
+/* ---------- Deals (Unit sales, commissions & tax calculator) ---------- */
+let DEALS_ACCOUNT_ID = null;
+function fmtMoney(n){ n = Number(n)||0; return n.toLocaleString(getLang()==="ar"?"ar-EG":"en-GB", {maximumFractionDigits:2}); }
+
+function openDealsModal(accountId){
+  DEALS_ACCOUNT_ID = accountId;
+  const acc = ACCOUNTS.find(a => a.id===accountId);
+  document.getElementById("dealsModalTitle").textContent = `${t("deals_for_account")} ${acc ? (acc.name||"") : ""}`;
+  renderDealsList();
+  document.getElementById("dealsModal").classList.add("show");
+}
+function renderDealsList(){
+  const list = DEALS.filter(d => d.accountId === DEALS_ACCOUNT_ID);
+  const totalValue = list.reduce((s,d) => s + (Number(d.unitValue)||0), 0);
+  const totalCommission = list.reduce((s,d) => s + (Number(d.companyCommission)||0), 0);
+  const totalNet = list.reduce((s,d) => s + (Number(d.netProfit)||0), 0);
+  document.getElementById("dealsSummaryWrap").innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-card-v2"><div><div class="sc-label">${t("deals_total_value")}</div><div class="sc-value" style="font-size:18px;">${fmtMoney(totalValue)}</div></div></div>
+      <div class="stat-card-v2"><div><div class="sc-label">${t("deals_total_commission")}</div><div class="sc-value" style="font-size:18px;">${fmtMoney(totalCommission)}</div></div></div>
+      <div class="stat-card-v2"><div><div class="sc-label">${t("deals_total_net")}</div><div class="sc-value" style="font-size:18px;">${fmtMoney(totalNet)}</div></div></div>
+    </div>`;
+  document.getElementById("dealsListWrap").innerHTML = list.length ? `<div class="table-scroll"><table><thead><tr>
+    <th>${t("col_deal_unit")}</th><th>${t("col_deal_value")}</th><th>${t("col_deal_commission")}</th><th>${t("col_deal_net_profit")}</th><th>${t("col_actions")}</th>
+    </tr></thead><tbody>
+    ${list.map(d => `<tr>
+      <td>${escapeHtml(d.unitRef||"—")}</td>
+      <td>${fmtMoney(d.unitValue)}</td>
+      <td>${fmtMoney(d.companyCommission)}</td>
+      <td>${fmtMoney(d.netProfit)}</td>
+      <td class="row-actions">
+        <button class="icon-btn" data-edit-deal="${d.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+        <button class="icon-btn" data-delete-deal="${d.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>
+      </td>
+    </tr>`).join("")}
+    </tbody></table></div>` : emptyState(t("empty_deals_title"), t("empty_deals_sub"));
+  document.querySelectorAll("[data-edit-deal]").forEach(btn => btn.addEventListener("click", () => openDealModal(DEALS_ACCOUNT_ID, btn.dataset.editDeal)));
+  document.querySelectorAll("[data-delete-deal]").forEach(btn => btn.addEventListener("click", async () => {
+    if (!confirm(t("confirm_delete"))) return;
+    await db.collection("deals").doc(btn.dataset.deleteDeal).delete();
+    toast(t("toast_deleted"));
+    renderDealsList();
+  }));
+}
+document.getElementById("btnAddDeal").addEventListener("click", () => openDealModal(DEALS_ACCOUNT_ID, null));
+
+function dealNums(){
+  return {
+    unitValue: parseFloat(document.getElementById("dealUnitValue").value)||0,
+    companyCommission: parseFloat(document.getElementById("dealCompanyCommission").value)||0,
+    vatRate: parseFloat(document.getElementById("dealVatRate").value)||0,
+    withholdingRate: parseFloat(document.getElementById("dealWithholdingRate").value)||0,
+    salesCommission: parseFloat(document.getElementById("dealSalesCommission").value)||0,
+    managerCommission: parseFloat(document.getElementById("dealManagerCommission").value)||0,
+    marketingCommission: parseFloat(document.getElementById("dealMarketingCommission").value)||0,
+    marketingManagerCommission: parseFloat(document.getElementById("dealMarketingManagerCommission").value)||0,
+  };
+}
+function computeDeal(n){
+  const vatAmount = n.companyCommission * (n.vatRate/100);
+  const withholdingAmount = n.companyCommission * (n.withholdingRate/100);
+  const netCompanyCommission = n.companyCommission + vatAmount - withholdingAmount;
+  const totalPayouts = n.salesCommission + n.managerCommission + n.marketingCommission + n.marketingManagerCommission;
+  const netProfit = netCompanyCommission - totalPayouts;
+  return { vatAmount, withholdingAmount, netCompanyCommission, totalPayouts, netProfit };
+}
+function refreshDealSummary(){
+  const n = dealNums();
+  const c = computeDeal(n);
+  document.getElementById("dealSummaryBox").innerHTML = `
+    <div style="display:flex; justify-content:space-between; padding:3px 0;"><span>${t("f_vat_amount")}</span><strong>${fmtMoney(c.vatAmount)}</strong></div>
+    <div style="display:flex; justify-content:space-between; padding:3px 0;"><span>${t("f_withholding_amount")}</span><strong>-${fmtMoney(c.withholdingAmount)}</strong></div>
+    <div style="display:flex; justify-content:space-between; padding:3px 0; border-top:1px solid var(--navy-line); margin-top:4px; padding-top:6px;"><span>${t("f_net_company_commission")}</span><strong style="color:var(--gold-bright);">${fmtMoney(c.netCompanyCommission)}</strong></div>
+    <div style="display:flex; justify-content:space-between; padding:3px 0; border-top:1px solid var(--navy-line); margin-top:4px; padding-top:6px;"><span>${t("f_net_profit")}</span><strong style="color:var(--success);">${fmtMoney(c.netProfit)}</strong></div>`;
+}
+["dealUnitValue","dealCompanyCommission","dealVatRate","dealWithholdingRate","dealSalesCommission","dealManagerCommission","dealMarketingCommission","dealMarketingManagerCommission"]
+  .forEach(id => document.getElementById(id).addEventListener("input", refreshDealSummary));
+document.querySelectorAll("[data-quick-rate]").forEach(btn => btn.addEventListener("click", () => {
+  const perMillion = parseFloat(btn.dataset.perMillion)||0;
+  const unitValue = parseFloat(document.getElementById("dealUnitValue").value)||0;
+  const val = Math.round((unitValue/1000000)*perMillion*1000*100)/100;
+  const targetId = btn.dataset.quickRate === "sales" ? "dealSalesCommission" : "dealManagerCommission";
+  document.getElementById(targetId).value = val;
+  refreshDealSummary();
+}));
+
+function openDealModal(accountId, id){
+  const form = document.getElementById("dealForm");
+  form.reset();
+  document.getElementById("dealAccountId").value = accountId;
+  document.getElementById("dealId").value = id || "";
+  document.getElementById("dealModalTitle").textContent = id ? t("modal_edit_deal") : t("modal_add_deal");
+  document.getElementById("dealVatRate").value = 14;
+  document.getElementById("dealWithholdingRate").value = 5;
+  if (id) {
+    const d = DEALS.find(x => x.id===id);
+    if (d) {
+      document.getElementById("dealUnitRef").value = d.unitRef||"";
+      document.getElementById("dealUnitValue").value = d.unitValue||"";
+      document.getElementById("dealCompanyCommission").value = d.companyCommission||"";
+      document.getElementById("dealVatRate").value = d.vatRate ?? 14;
+      document.getElementById("dealWithholdingRate").value = d.withholdingRate ?? 5;
+      document.getElementById("dealSalesCommission").value = d.salesCommission||"";
+      document.getElementById("dealManagerCommission").value = d.managerCommission||"";
+      document.getElementById("dealMarketingCommission").value = d.marketingCommission||"";
+      document.getElementById("dealMarketingManagerCommission").value = d.marketingManagerCommission||"";
+    }
+  }
+  refreshDealSummary();
+  document.getElementById("dealModal").classList.add("show");
+}
+document.getElementById("dealForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const id = document.getElementById("dealId").value;
+  const accountId = document.getElementById("dealAccountId").value;
+  const n = dealNums();
+  const c = computeDeal(n);
+  const data = {
+    accountId,
+    unitRef: document.getElementById("dealUnitRef").value.trim(),
+    unitValue: n.unitValue,
+    companyCommission: n.companyCommission,
+    vatRate: n.vatRate, vatAmount: c.vatAmount,
+    withholdingRate: n.withholdingRate, withholdingAmount: c.withholdingAmount,
+    netCompanyCommission: c.netCompanyCommission,
+    salesCommission: n.salesCommission,
+    managerCommission: n.managerCommission,
+    marketingCommission: n.marketingCommission,
+    marketingManagerCommission: n.marketingManagerCommission,
+    netProfit: c.netProfit,
+  };
+  try {
+    if (id) { await db.collection("deals").doc(id).update(data); toast(t("toast_updated")); }
+    else {
+      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      data.agentId = CURRENT_USER.uid;
+      await db.collection("deals").add(data);
+      toast(t("toast_saved"));
+    }
+    closeModal("dealModal");
+    renderDealsList();
   } catch (err) { console.error(err); alert(err.message); }
 });
 
