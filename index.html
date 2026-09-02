@@ -2295,22 +2295,23 @@ function escapeHtml(str){ const div=document.createElement("div"); div.textConte
 
 /* ---------- Dashboard ---------- */
 function renderDashboard(){
-  const totalLeads = LEADS.length;
-  const openDeals = LEADS.filter(l => !["won","lost"].includes(l.status)).length;
+  const dashLeads = visibleLeads();
+  const totalLeads = dashLeads.length;
+  const openDeals = dashLeads.filter(l => !["won","lost"].includes(l.status)).length;
   const now = new Date();
-  const wonMonth = LEADS.filter(l => {
+  const wonMonth = dashLeads.filter(l => {
     if (l.status !== "won" || !l.createdAt) return false;
     const d = l.createdAt.seconds ? new Date(l.createdAt.seconds*1000) : new Date(l.createdAt);
     return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
   }).length;
-  const newMonth = LEADS.filter(l => {
+  const newMonth = dashLeads.filter(l => {
     const d = leadDate(l);
     return d && d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
   }).length;
   const todaysFollowupTasks = TASKS.filter(tk => isToday(tk.due) && !tk.done);
   const followupLeadIds = new Set(todaysFollowupTasks.map(tk => tk.leadId).filter(Boolean));
   const followupsToday = followupLeadIds.size;
-  const recent = LEADS.slice(0,5);
+  const recent = dashLeads.slice(0,5);
   const todaysTasks = TASKS.filter(tk => !tk.done).slice(0,5);
   const allTodayTasks = TASKS.filter(tk => isToday(tk.due));
   const doneTodayTasks = allTodayTasks.filter(tk => tk.done);
@@ -2320,18 +2321,18 @@ function renderDashboard(){
     playAlertBeep();
     sessionStorage.setItem("overdue_beeped", "1");
   }
-  const convRate = totalLeads ? Math.round((LEADS.filter(l=>l.status==="won").length/totalLeads)*100) : 0;
+  const convRate = totalLeads ? Math.round((dashLeads.filter(l=>l.status==="won").length/totalLeads)*100) : 0;
   const recentActivities = ALL_ACTIVITIES.slice().sort((a,b)=>{
     const da = a.createdAt&&a.createdAt.seconds?a.createdAt.seconds:0, db=b.createdAt&&b.createdAt.seconds?b.createdAt.seconds:0;
     return db-da;
   }).slice(0,5);
 
   const stageCounts = {};
-  STATUSES.forEach(s => stageCounts[s] = LEADS.filter(l => l.status===s).length);
+  STATUSES.forEach(s => stageCounts[s] = dashLeads.filter(l => l.status===s).length);
 
   const lb = computeLeaderboard();
   const isAdminTier = permLevel() >= 3;
-  const scopedLeads = isAdminTier ? LEADS : LEADS.filter(l => l.assignedTo === CURRENT_USER.uid || l.agentId === CURRENT_USER.uid);
+  const scopedLeads = dashLeads;
   const topOpportunities = scopedLeads
     .map(l => ({ lead:l, score: computeLeadScore(l) }))
     .filter(x => x.score !== null)
@@ -2554,7 +2555,7 @@ function renderLeads(){
         ${AGENTS.map(a => `<button type="button" class="agent-filter-btn" data-agent="${a.id}">${escapeHtml(a.name||a.email)}</button>`).join("")}
       </div>
       <div id="bulkBar" style="display:none;"></div>
-      <div id="leadsTableWrap" style="margin-top:16px;">${LEADS.length ? leadsTable(LEADS) : emptyState(t("empty_leads_title"), t("empty_leads_sub"))}</div>
+      <div id="leadsTableWrap" style="margin-top:16px;">${visibleLeads().length ? leadsTable(visibleLeads()) : emptyState(t("empty_leads_title"), t("empty_leads_sub"))}</div>
     </div>`;
   document.getElementById("leadSearch").addEventListener("input", filterLeadsView);
   document.getElementById("leadFilter").addEventListener("change", filterLeadsView);
@@ -2585,7 +2586,7 @@ let SELECTED_FILTER_AGENTS = new Set();
 function filterLeadsView(){
   const q = document.getElementById("leadSearch").value.trim().toLowerCase();
   const status = document.getElementById("leadFilter").value;
-  const filtered = LEADS.filter(l =>
+  const filtered = visibleLeads().filter(l =>
     (!q || (l.name||"").toLowerCase().includes(q) || (l.phone||"").includes(q)) &&
     (status==="all"||l.status===status) &&
     (SELECTED_FILTER_AGENTS.size===0 || SELECTED_FILTER_AGENTS.has(l.assignedTo))
@@ -3015,8 +3016,9 @@ document.getElementById("importStartBtn").addEventListener("click", async () => 
 
 /* ---------- Pipeline ---------- */
 function renderPipeline(){
+  const pipeLeads = visibleLeads();
   const cols = PIPELINE_STATUSES.map(status => {
-    const items = LEADS.filter(l => l.status===status);
+    const items = pipeLeads.filter(l => l.status===status);
     return `<div class="pipe-col" data-status="${status}">
       <div class="pipe-col-head"><span>${t('status_'+status)}</span><span class="count">${items.length}</span></div>
       <div>${items.map(l => `<div class="pipe-card" draggable="true" data-id="${l.id}">
@@ -3078,7 +3080,7 @@ function bindTaskEvents(){
 }
 function openTaskModal(){
   const select = document.getElementById("taskLead");
-  select.innerHTML = LEADS.map(l => `<option value="${l.id}">${escapeHtml(l.name)}</option>`).join("");
+  select.innerHTML = visibleLeads().map(l => `<option value="${l.id}">${escapeHtml(l.name)}</option>`).join("");
   document.getElementById("taskForm").reset();
   document.getElementById("taskDue").value = localDatetimeNow();
   document.getElementById("taskModal").classList.add("show");
@@ -3793,6 +3795,8 @@ document.getElementById("profileForm").addEventListener("submit", async (e) => {
 const ADMIN_ROLES = ["general_manager","company_admin"];
 const MID_ROLES = ["sales_manager","marketing_manager","sales_team_leader","marketing_team_leader","sales_supervisor","marketing_supervisor"];
 const ROLE_KEYS = ["general_manager","company_admin","sales_manager","marketing_manager","sales_team_leader","marketing_team_leader","sales_supervisor","marketing_supervisor","sales_agent","marketing_agent"];
+function isFullAdmin(){ return ADMIN_ROLES.includes(myRole()); }
+function visibleLeads(){ return isFullAdmin() ? LEADS : LEADS.filter(l => l.assignedTo === CURRENT_USER.uid || l.agentId === CURRENT_USER.uid); }
 function myAgentDoc(){ return AGENTS.find(a => a.id === (CURRENT_USER && CURRENT_USER.uid)); }
 function myRole(){ const a = myAgentDoc(); return a && a.role ? a.role : "general_manager"; }
 function permLevel(){ const r = myRole(); if (ADMIN_ROLES.includes(r)) return 3; if (MID_ROLES.includes(r)) return 2; return 1; }
