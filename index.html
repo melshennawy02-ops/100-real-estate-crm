@@ -203,6 +203,7 @@ tbody tr:last-child td{ border-bottom:none; }
 
 .badge{ display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; }
 .badge.new{ background:rgba(143,160,194,.15); color:var(--slate); }
+.badge.no_response{ background:rgba(166,57,44,.10); color:#B65C4A; }
 .badge.contacted{ background:rgba(201,162,75,.15); color:var(--gold-bright); }
 .badge.qualified{ background:rgba(78,156,130,.15); color:var(--success); }
 .badge.matched{ background:rgba(201,162,75,.15); color:var(--gold-bright); }
@@ -639,6 +640,7 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
           <label data-i18n="f_status">Status</label>
           <select id="leadStatus">
             <option value="new" data-i18n="status_new">New</option>
+            <option value="no_response" data-i18n="status_no_response">No Response</option>
             <option value="qualified" data-i18n="status_qualified">Qualified</option>
             <option value="matched" data-i18n="status_matched">Project Matched</option>
             <option value="meeting" data-i18n="status_meeting">Meeting/Viewing</option>
@@ -778,6 +780,7 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
             <label data-i18n="f_status">Status</label>
             <select id="detailStatus">
               <option value="new" data-i18n="status_new">New</option>
+              <option value="no_response" data-i18n="status_no_response">No Response</option>
               <option value="qualified" data-i18n="status_qualified">Qualified</option>
               <option value="matched" data-i18n="status_matched">Project Matched</option>
               <option value="meeting" data-i18n="status_meeting">Meeting/Viewing</option>
@@ -1287,7 +1290,7 @@ const I18N = {
     col_name: "الاسم", col_phone: "الهاتف", col_interest: "الاهتمام", col_status: "الحالة",
     col_rating: "التقييم", col_actions: "إجراءات",
     empty_leads_title: "لا يوجد عملاء محتملين بعد", empty_leads_sub: "ابدأ بإضافة أول عميل محتمل لمتابعته",
-    status_new: "جديد", status_contacted: "تم التواصل", status_qualified: "مؤهل",
+    status_new: "جديد", status_no_response: "لم يتم الرد", status_contacted: "تم التواصل", status_qualified: "مؤهل",
     status_matched: "تطابق مشروع", status_meeting: "معاينة", status_offer: "عرض سعر",
     status_negotiation: "تفاوض", status_booking: "حجز", status_contract: "تعاقد",
     status_won: "مُغلق (فايز)", status_lost: "خسارة",
@@ -1520,7 +1523,7 @@ const I18N = {
     col_name: "Name", col_phone: "Phone", col_interest: "Interest", col_status: "Status",
     col_rating: "Rating", col_actions: "Actions",
     empty_leads_title: "No leads yet", empty_leads_sub: "Start by adding your first lead to follow up on",
-    status_new: "New", status_contacted: "Contacted", status_qualified: "Qualified",
+    status_new: "New", status_no_response: "No Response", status_contacted: "Contacted", status_qualified: "Qualified",
     status_matched: "Project Matched", status_meeting: "Meeting/Viewing", status_offer: "Offer",
     status_negotiation: "Negotiation", status_booking: "Booking", status_contract: "Contract",
     status_won: "Closed Won", status_lost: "Lost",
@@ -1808,8 +1811,8 @@ function canEditDeleteResale(){
 let COMPANY_SETTINGS = {};
 let currentView = "dashboard";
 
-const STATUSES = ["new","qualified","matched","meeting","offer","negotiation","booking","contract","won","lost"];
-const PIPELINE_STATUSES = ["new","qualified","matched","meeting","offer","negotiation","booking","contract","won"];
+const STATUSES = ["new","no_response","qualified","matched","meeting","offer","negotiation","booking","contract","won","lost"];
+const PIPELINE_STATUSES = ["new","no_response","qualified","matched","meeting","offer","negotiation","booking","contract","won"];
 
 /* ---------- Image helper: resize & compress to base64 ---------- */
 function resizeImageFile(file, maxSize){
