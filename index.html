@@ -1550,6 +1550,7 @@ const I18N = {
     deal_tax_disclaimer: "النسب افتراضية وقابلة للتعديل، يُنصح بمراجعتها مع محاسب الشركة لمطابقتها لآخر تحديثات مصلحة الضرائب.",
     deals_total_value: "إجمالي قيمة الوحدات", deals_total_commission: "إجمالي عمولة الشركة", deals_total_net: "إجمالي صافي ربح الشركة",
     col_deal_unit: "الوحدة", col_deal_value: "القيمة", col_deal_commission: "عمولة الشركة", col_deal_net_profit: "صافي الربح",
+    phone_hidden: "الرقم مخفي",
 
     f_role: "الوظيفة",
     role_general_manager: "مدير عام الشركة",
@@ -1800,6 +1801,7 @@ const I18N = {
     deal_tax_disclaimer: "Default rates are editable — please confirm with your accountant against the latest tax authority updates.",
     deals_total_value: "Total Unit Value", deals_total_commission: "Total Company Commission", deals_total_net: "Total Net Profit",
     col_deal_unit: "Unit", col_deal_value: "Value", col_deal_commission: "Company Commission", col_deal_net_profit: "Net Profit",
+    phone_hidden: "Number hidden",
 
     f_role: "Role",
     role_general_manager: "General Manager",
@@ -3905,6 +3907,7 @@ const MID_ROLES = ["sales_manager","marketing_manager","sales_team_leader","mark
 const ROLE_KEYS = ["general_manager","company_admin","sales_manager","marketing_manager","sales_team_leader","marketing_team_leader","sales_supervisor","marketing_supervisor","sales_agent","marketing_agent"];
 function isFullAdmin(){ return ADMIN_ROLES.includes(myRole()); }
 function visibleLeads(){ return isFullAdmin() ? LEADS : LEADS.filter(l => l.assignedTo === CURRENT_USER.uid || l.agentId === CURRENT_USER.uid); }
+function canSeeLeadPhone(lead){ return isFullAdmin() || lead.assignedTo === CURRENT_USER.uid || lead.agentId === CURRENT_USER.uid; }
 function myAgentDoc(){ return AGENTS.find(a => a.id === (CURRENT_USER && CURRENT_USER.uid)); }
 function myRole(){ const a = myAgentDoc(); return a && a.role ? a.role : "sales_agent"; }
 function permLevel(){ const r = myRole(); if (ADMIN_ROLES.includes(r)) return 3; if (MID_ROLES.includes(r)) return 2; return 1; }
@@ -4842,7 +4845,7 @@ function renderDetailOverview(lead){
   `).join("");
 
   const extraWrap = document.getElementById("detailExtraPhones");
-  if (Array.isArray(lead.extraPhones) && lead.extraPhones.length) {
+  if (canSeeLeadPhone(lead) && Array.isArray(lead.extraPhones) && lead.extraPhones.length) {
     extraWrap.style.display = "block";
     extraWrap.innerHTML = `<div class="ov-label" style="margin-bottom:6px;">${t("f_extra_phones")}</div>` + lead.extraPhones.map(p => `
       <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(36,64,111,.08); font-size:12.5px;">
@@ -4876,17 +4879,21 @@ function applyProfileTabPermissions(){
 }
 
 function renderDetailQuickContact(lead){
-  const phone = lead.phone || "";
+  const canSeePhone = canSeeLeadPhone(lead);
+  const phone = canSeePhone ? (lead.phone || "") : "";
+  const displayPhone = canSeePhone ? escapeHtml(phone||"—") : `🔒 ${t("phone_hidden")}`;
   document.getElementById("detailQuickContact").innerHTML = `
-    <button type="button" class="quick-contact-btn call" data-qc-call>${ACT_ICONS.call}</button>
-    <button type="button" class="quick-contact-btn sms" data-qc-sms>${ACT_ICONS.sms}</button>
-    <button type="button" class="quick-contact-btn whatsapp" data-qc-whatsapp>${ACT_ICONS.whatsapp}</button>
-    <div class="quick-contact-label"><div class="num">${escapeHtml(phone||"—")}</div><div class="lbl">${escapeHtml(lead.interest||"")}</div></div>
+    <button type="button" class="quick-contact-btn call" data-qc-call ${canSeePhone?"":"disabled"}>${ACT_ICONS.call}</button>
+    <button type="button" class="quick-contact-btn sms" data-qc-sms ${canSeePhone?"":"disabled"}>${ACT_ICONS.sms}</button>
+    <button type="button" class="quick-contact-btn whatsapp" data-qc-whatsapp ${canSeePhone?"":"disabled"}>${ACT_ICONS.whatsapp}</button>
+    <div class="quick-contact-label"><div class="num">${displayPhone}</div><div class="lbl">${escapeHtml(lead.interest||"")}</div></div>
   `;
   const qc = document.getElementById("detailQuickContact");
-  qc.querySelector("[data-qc-call]").addEventListener("click", () => doCall(phone, DETAIL_LEAD_ID));
-  qc.querySelector("[data-qc-sms]").addEventListener("click", () => doSms(phone, DETAIL_LEAD_ID));
-  qc.querySelector("[data-qc-whatsapp]").addEventListener("click", () => doWhatsapp(phone, DETAIL_LEAD_ID));
+  if (canSeePhone) {
+    qc.querySelector("[data-qc-call]").addEventListener("click", () => doCall(phone, DETAIL_LEAD_ID));
+    qc.querySelector("[data-qc-sms]").addEventListener("click", () => doSms(phone, DETAIL_LEAD_ID));
+    qc.querySelector("[data-qc-whatsapp]").addEventListener("click", () => doWhatsapp(phone, DETAIL_LEAD_ID));
+  }
 }
 
 function renderDetailTags(){
