@@ -4863,8 +4863,15 @@ function renderDetailOverview(lead){
   }
 }
 
+function hasProfileTabAccess(){
+  if (permLevel() >= 3) return true;
+  const mine = myAgentDoc();
+  const name = ((mine && mine.name) || "").trim().toLowerCase();
+  return name === "heba";
+}
 function applyProfileTabPermissions(){
   const editable = permLevel() >= 3;
+  const canViewProfileTab = hasProfileTabAccess();
   const form = document.getElementById("detailForm");
   form.querySelectorAll("input, select, textarea").forEach(el => {
     if (el.id === "detailLeadId") return;
@@ -4875,7 +4882,7 @@ function applyProfileTabPermissions(){
   document.querySelectorAll("#detailTagList [data-remove-tag]").forEach(btn => btn.disabled = !editable);
   document.getElementById("detailSaveBtn").style.display = editable ? "inline-flex" : "none";
   document.getElementById("profileReadonlyNotice").style.display = editable ? "none" : "block";
-  document.getElementById("profileTabBtn").style.display = editable ? "inline-flex" : "none";
+  document.getElementById("profileTabBtn").style.display = canViewProfileTab ? "inline-flex" : "none";
 }
 
 function renderDetailQuickContact(lead){
@@ -4914,7 +4921,7 @@ document.getElementById("detailTagAddBtn").addEventListener("click", () => {
 
 document.querySelectorAll(".tab-btn").forEach(btn => btn.addEventListener("click", () => switchDetailTab(btn.dataset.tab)));
 function switchDetailTab(tab){
-  if (tab === "profile" && permLevel() < 3) tab = "timeline";
+  if (tab === "profile" && !hasProfileTabAccess()) tab = "timeline";
   document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab===tab));
   document.getElementById("tabProfile").classList.toggle("active", tab==="profile");
   document.getElementById("tabTimeline").classList.toggle("active", tab==="timeline");
