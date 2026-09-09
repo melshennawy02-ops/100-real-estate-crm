@@ -213,6 +213,8 @@ tbody tr:last-child td{ border-bottom:none; }
 .badge.booking{ background:rgba(165,121,58,.22); color:var(--gold-bright); }
 .badge.contract{ background:rgba(39,107,78,.2); color:var(--success); }
 .badge.won{ background:rgba(39,107,78,.15); color:var(--success); }
+.badge.rental{ background:rgba(58,110,165,.14); color:#3A6EA5; }
+.badge.resale{ background:rgba(139,101,181,.14); color:#8B65B5; }
 .badge.lost{ background:rgba(166,57,44,.12); color:var(--danger); }
 .badge.hot{ background:rgba(166,57,44,.12); color:var(--danger); }
 .badge.warm{ background:rgba(201,162,75,.18); color:var(--gold-bright); }
@@ -649,6 +651,8 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
             <option value="booking" data-i18n="status_booking">Booking</option>
             <option value="contract" data-i18n="status_contract">Contract</option>
             <option value="won" data-i18n="status_won">Closed Won</option>
+            <option value="rental" data-i18n="status_rental">Rental</option>
+            <option value="resale" data-i18n="status_resale">Resale</option>
             <option value="lost" data-i18n="status_lost">Lost</option>
           </select>
         </div>
@@ -789,6 +793,8 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
               <option value="booking" data-i18n="status_booking">Booking</option>
               <option value="contract" data-i18n="status_contract">Contract</option>
               <option value="won" data-i18n="status_won">Closed Won</option>
+              <option value="rental" data-i18n="status_rental">Rental</option>
+              <option value="resale" data-i18n="status_resale">Resale</option>
               <option value="lost" data-i18n="status_lost">Lost</option>
             </select>
           </div>
@@ -1358,7 +1364,7 @@ const I18N = {
     status_new: "جديد", status_no_response: "لم يتم الرد", status_contacted: "تم التواصل", status_qualified: "مؤهل",
     status_matched: "تطابق مشروع", status_meeting: "معاينة", status_offer: "عرض سعر",
     status_negotiation: "تفاوض", status_booking: "حجز", status_contract: "تعاقد",
-    status_won: "مُغلق (فايز)", status_lost: "خسارة",
+    status_won: "مُغلق (فايز)", status_rental: "إيجار", status_resale: "ريسيل", status_lost: "خسارة",
     rating_hot: "ساخن", rating_warm: "دافئ", rating_cold: "بارد",
     modal_add_lead: "إضافة عميل محتمل", modal_edit_lead: "تعديل بيانات العميل",
     f_name: "الاسم الكامل", f_phone: "رقم الهاتف", f_email: "البريد الإلكتروني",
@@ -1609,7 +1615,7 @@ const I18N = {
     status_new: "New", status_no_response: "No Response", status_contacted: "Contacted", status_qualified: "Qualified",
     status_matched: "Project Matched", status_meeting: "Meeting/Viewing", status_offer: "Offer",
     status_negotiation: "Negotiation", status_booking: "Booking", status_contract: "Contract",
-    status_won: "Closed Won", status_lost: "Lost",
+    status_won: "Closed Won", status_rental: "Rental", status_resale: "Resale", status_lost: "Lost",
     rating_hot: "Hot", rating_warm: "Warm", rating_cold: "Cold",
     modal_add_lead: "Add Lead", modal_edit_lead: "Edit Lead",
     f_name: "Full Name", f_phone: "Phone Number", f_email: "Email",
@@ -1912,8 +1918,8 @@ function canEditDeleteResale(){
 let COMPANY_SETTINGS = {};
 let currentView = "dashboard";
 
-const STATUSES = ["new","no_response","qualified","matched","meeting","offer","negotiation","booking","contract","won","lost"];
-const PIPELINE_STATUSES = ["new","no_response","qualified","matched","meeting","offer","negotiation","booking","contract","won"];
+const STATUSES = ["new","no_response","qualified","matched","meeting","offer","negotiation","booking","contract","won","rental","resale","lost"];
+const PIPELINE_STATUSES = ["new","no_response","qualified","matched","meeting","offer","negotiation","booking","contract","won","rental","resale"];
 
 /* ---------- Image helper: resize & compress to base64 ---------- */
 function resizeImageFile(file, maxSize){
@@ -2407,7 +2413,7 @@ function escapeHtml(str){ const div=document.createElement("div"); div.textConte
 function renderDashboard(){
   const dashLeads = visibleLeads();
   const totalLeads = dashLeads.length;
-  const openDeals = dashLeads.filter(l => !["won","lost"].includes(l.status)).length;
+  const openDeals = dashLeads.filter(l => !["won","rental","resale","lost"].includes(l.status)).length;
   const now = new Date();
   const wonMonth = dashLeads.filter(l => {
     if (l.status !== "won" || !l.createdAt) return false;
@@ -2586,7 +2592,7 @@ function goToLeadsFiltered(status){
   window.location.hash = "#leads";
 }
 function computeLeadScore(lead){
-  if (["won","lost"].includes(lead.status)) return null;
+  if (["won","rental","resale","lost"].includes(lead.status)) return null;
   const acts = ALL_ACTIVITIES.filter(a => a.leadId === lead.id);
   const now = Date.now();
 
@@ -3307,7 +3313,7 @@ function renderMyPerformanceReport(){
   const target = (mine && mine.monthlyTarget) || 0;
   const targetPct = target ? Math.min(100, Math.round((wonThis/target)*100)) : 0;
 
-  const statusSegments = STATUSES.filter(s=>!["won","lost"].includes(s)).map((s,i) => ({
+  const statusSegments = STATUSES.filter(s=>!["won","rental","resale","lost"].includes(s)).map((s,i) => ({
     label: t('status_'+s), value: myLeads.filter(l=>l.status===s).length, color: DONUT_COLORS[i%DONUT_COLORS.length],
   }));
 
@@ -3383,7 +3389,7 @@ function renderAggregateReports(){
     .sort((a,b) => new Date(a.due) - new Date(b.due));
 
   const STALE_DAYS = 5;
-  const staleLeads = LEADS.filter(l => !["won","lost"].includes(l.status)).map(l => {
+  const staleLeads = LEADS.filter(l => !["won","rental","resale","lost"].includes(l.status)).map(l => {
     const acts = ALL_ACTIVITIES.filter(a => a.leadId === l.id);
     let lastMs = 0;
     acts.forEach(a => { const t = a.createdAt&&a.createdAt.seconds?a.createdAt.seconds*1000:0; if (t>lastMs) lastMs=t; });
