@@ -1359,7 +1359,7 @@ const I18N = {
     filter_by_agent: "تصفية حسب الموظف",
     add_phone: "إضافة رقم", f_extra_phones: "أرقام إضافية",
     col_name: "الاسم", col_phone: "الهاتف", col_interest: "الاهتمام", col_status: "الحالة",
-    col_rating: "التقييم", col_actions: "إجراءات",
+    col_rating: "التقييم", col_actions: "إجراءات", col_created_at: "تاريخ الإنشاء",
     empty_leads_title: "لا يوجد عملاء محتملين بعد", empty_leads_sub: "ابدأ بإضافة أول عميل محتمل لمتابعته",
     status_new: "جديد", status_no_response: "لم يتم الرد", status_contacted: "تم التواصل", status_qualified: "مؤهل",
     status_matched: "تطابق مشروع", status_meeting: "معاينة", status_offer: "عرض سعر",
@@ -1610,7 +1610,7 @@ const I18N = {
     filter_by_agent: "Filter by Agent",
     add_phone: "Add Phone", f_extra_phones: "Extra Phone Numbers",
     col_name: "Name", col_phone: "Phone", col_interest: "Interest", col_status: "Status",
-    col_rating: "Rating", col_actions: "Actions",
+    col_rating: "Rating", col_actions: "Actions", col_created_at: "Created At",
     empty_leads_title: "No leads yet", empty_leads_sub: "Start by adding your first lead to follow up on",
     status_new: "New", status_no_response: "No Response", status_contacted: "Contacted", status_qualified: "Qualified",
     status_matched: "Project Matched", status_meeting: "Meeting/Viewing", status_offer: "Offer",
@@ -2718,7 +2718,7 @@ function leadsTable(list, compact){
     <th>${t("col_name")}</th><th>${t("col_phone")}</th>
     ${compact?"":`<th>${t("col_interest")}</th>`}
     <th>${t("col_status")}</th><th>${t("col_rating")}</th>
-    ${compact?"":`<th>${t("col_actions")}</th>`}
+    ${compact?"":`<th>${t("col_created_at")}</th><th>${t("col_actions")}</th>`}
     </tr></thead><tbody>
     ${list.map(l => `<tr>
       ${canBulk?`<td><input type="checkbox" class="lead-select-cb" value="${l.id}" ${SELECTED_LEAD_IDS.has(l.id)?"checked":""}></td>`:""}
@@ -2726,7 +2726,7 @@ function leadsTable(list, compact){
       ${compact?"":`<td>${escapeHtml(l.interest||"—")}</td>`}
       <td><span class="badge ${l.status}">${t('status_'+l.status)}</span></td>
       <td><span class="badge ${l.rating}">${t('rating_'+l.rating)}</span></td>
-      ${compact?"":`<td class="row-actions">
+      ${compact?"":`<td>${fmtDate(l.createdAt)}</td><td class="row-actions">
         <div class="mini-contact">
           <button class="icon-btn call" data-call="${escapeHtml(l.phone||"")}" data-call-id="${l.id}" title="${t('call')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.34 1.79.65 2.65a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.43-1.42a2 2 0 0 1 2.11-.45c.86.31 1.75.53 2.65.65A2 2 0 0 1 22 16.92z"/></svg></button>
           <button class="icon-btn whatsapp" data-whatsapp="${escapeHtml(l.phone||"")}" data-whatsapp-id="${l.id}" title="${t('whatsapp')}"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.6-.8-1.9-.9-.2-.1-.4-.1-.6.1-.2.3-.7.9-.8 1-.2.2-.3.2-.5.1-.3-.1-1.2-.4-2.2-1.4-.8-.7-1.4-1.6-1.6-1.9-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.1.2-.3.2-.4.1-.2 0-.3 0-.5-.1-.1-.6-1.5-.8-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s1 2.5 1.1 2.7c.1.2 2 3 4.8 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.6-.7 1.9-1.3.2-.6.2-1.1.2-1.3-.1-.1-.3-.2-.6-.3z"/><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.5A10 10 0 1 0 12 2z"/></svg></button>
