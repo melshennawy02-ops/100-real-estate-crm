@@ -781,6 +781,10 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
         <input type="hidden" id="detailLeadId">
         <div class="form-grid">
           <div class="field">
+            <label data-i18n="f_name">Client Name</label>
+            <input type="text" id="detailName">
+          </div>
+          <div class="field">
             <label data-i18n="f_status">Status</label>
             <select id="detailStatus">
               <option value="new" data-i18n="status_new">New</option>
@@ -4780,6 +4784,7 @@ function openLeadDetail(id){
   renderDetailDocs();
 
   document.getElementById("detailLeadName").textContent = lead.name || "—";
+  document.getElementById("detailName").value = lead.name || "";
   document.getElementById("detailLeadId").value = id;
   document.getElementById("detailStatus").value = lead.status || "new";
   document.getElementById("detailRating").value = lead.rating || "warm";
@@ -5029,6 +5034,7 @@ document.getElementById("detailForm").addEventListener("submit", async (e) => {
   const statusChanged = lead.status !== newStatus;
 
   const data = {
+    name: document.getElementById("detailName").value.trim(),
     status: newStatus,
     rating: document.getElementById("detailRating").value,
     interest: document.getElementById("detailInterest").value.trim(),
