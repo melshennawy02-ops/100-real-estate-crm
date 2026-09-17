@@ -2214,21 +2214,87 @@ document.addEventListener("click", (e) => {
 });
 
 /* ---------- Firestore subscriptions ---------- */
-function subscribeData(){
-  db.collection("leads").orderBy("createdAt","desc").onSnapshot(snap => {
-    LEADS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
-    renderView();
-  }, err => console.error("leads error", err));
+let leadsUnsubA = null, leadsUnsubB = null, leadsUnsubAdmin = null;
+let tasksUnsubOwn = null, tasksUnsubAdmin = null;
+let activitiesUnsub = null;
+let LEADS_A = {}, LEADS_B = {};
+let LAST_ADMIN_STATE = null;
 
-  db.collection("tasks").orderBy("due","asc").onSnapshot(snap => {
-    TASKS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+function mergeAndSetLeads(){
+  const merged = { ...LEADS_A, ...LEADS_B };
+  LEADS = Object.values(merged).sort((a,b) => {
+    const da = a.createdAt&&a.createdAt.seconds?a.createdAt.seconds:0, db2=b.createdAt&&b.createdAt.seconds?b.createdAt.seconds:0;
+    return db2-da;
+  });
+  renderView();
+}
+
+function attachLeadsListeners(){
+  if (leadsUnsubA) { leadsUnsubA(); leadsUnsubA = null; }
+  if (leadsUnsubB) { leadsUnsubB(); leadsUnsubB = null; }
+  if (leadsUnsubAdmin) { leadsUnsubAdmin(); leadsUnsubAdmin = null; }
+  LEADS_A = {}; LEADS_B = {};
+
+  if (isFullAdmin()) {
+    leadsUnsubAdmin = db.collection("leads").orderBy("createdAt","desc").onSnapshot(snap => {
+      LEADS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      renderView();
+    }, err => console.error("leads error", err));
+    return;
+  }
+  leadsUnsubA = db.collection("leads").where("assignedTo","==",CURRENT_USER.uid).onSnapshot(snap => {
+    LEADS_A = {}; snap.forEach(d => LEADS_A[d.id] = { id:d.id, ...d.data() });
+    mergeAndSetLeads();
+  }, err => console.error("leads(assigned) error", err));
+  leadsUnsubB = db.collection("leads").where("agentId","==",CURRENT_USER.uid).onSnapshot(snap => {
+    LEADS_B = {}; snap.forEach(d => LEADS_B[d.id] = { id:d.id, ...d.data() });
+    mergeAndSetLeads();
+  }, err => console.error("leads(created) error", err));
+}
+
+function attachTasksListeners(){
+  if (tasksUnsubOwn) { tasksUnsubOwn(); tasksUnsubOwn = null; }
+  if (tasksUnsubAdmin) { tasksUnsubAdmin(); tasksUnsubAdmin = null; }
+
+  if (isFullAdmin()) {
+    tasksUnsubAdmin = db.collection("tasks").orderBy("due","asc").onSnapshot(snap => {
+      TASKS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      checkFollowupAlerts();
+      renderView();
+    }, err => console.error("tasks error", err));
+    return;
+  }
+  tasksUnsubOwn = db.collection("tasks").where("agentId","==",CURRENT_USER.uid).onSnapshot(snap => {
+    TASKS = snap.docs.map(d => ({ id:d.id, ...d.data() })).sort((a,b) => (a.due||"").localeCompare(b.due||""));
     checkFollowupAlerts();
     renderView();
   }, err => console.error("tasks error", err));
+}
+
+function attachActivitiesListener(){
+  if (activitiesUnsub) { activitiesUnsub(); activitiesUnsub = null; }
+  if (!isFullAdmin()) { ALL_ACTIVITIES = []; return; }
+  activitiesUnsub = db.collectionGroup("activities").onSnapshot(snap => {
+    ALL_ACTIVITIES = snap.docs.map(d => ({ ...d.data(), leadId: d.ref.parent.parent.id }));
+    if (currentView === "dashboard") renderView();
+  }, err => console.error("activities collection group error", err));
+}
+
+function subscribeData(){
+  attachLeadsListeners();
+  attachTasksListeners();
+  attachActivitiesListener();
 
   db.collection("agents").orderBy("createdAt","desc").onSnapshot(snap => {
     AGENTS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
     applyPermissions();
+    const nowAdmin = isFullAdmin();
+    if (nowAdmin !== LAST_ADMIN_STATE) {
+      LAST_ADMIN_STATE = nowAdmin;
+      attachLeadsListeners();
+      attachTasksListeners();
+      attachActivitiesListener();
+    }
     renderView();
   }, err => console.error("agents error", err));
 
@@ -2241,11 +2307,6 @@ function subscribeData(){
     DEALS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
     if (currentView === "accounts") renderView();
   }, err => console.error("deals error", err));
-
-  db.collectionGroup("activities").onSnapshot(snap => {
-    ALL_ACTIVITIES = snap.docs.map(d => ({ ...d.data(), leadId: d.ref.parent.parent.id }));
-    if (currentView === "dashboard") renderView();
-  }, err => console.error("activities collection group error", err));
 
   db.collection("resale_units").orderBy("createdAt","desc").onSnapshot(snap => {
     RESALE_UNITS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
