@@ -240,6 +240,24 @@ tbody tr:last-child td{ border-bottom:none; }
 .pipe-card-meta{ font-size:11.5px; color:var(--slate); margin-top:4px; }
 .pipe-card-value{ font-size:13px; font-weight:800; color:var(--gold-bright); margin-top:8px; }
 .pipe-col.drag-over{ border-color:var(--gold); background:rgba(201,162,75,.08); }
+.pipe-view-toggle{ display:flex; gap:6px; }
+.pipe-view-toggle button{ padding:8px 16px; border-radius:8px; font-size:12.5px; font-weight:700; border:1px solid var(--navy-line); color:var(--slate); background:transparent; cursor:pointer; }
+.pipe-view-toggle button.active{ background:var(--gold); color:#fff; border-color:var(--gold); }
+.pipe-filter-bar{ display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; margin-bottom:14px; }
+.pipe-filter-field{ display:flex; flex-direction:column; gap:4px; }
+.pipe-filter-field label{ font-size:11px; font-weight:700; color:var(--slate); }
+.pipe-filter-field input, .pipe-filter-field select{ background:var(--navy); border:1px solid var(--navy-line); color:var(--ivory); padding:9px 12px; border-radius:8px; font-size:12.5px; outline:none; }
+.pipe-chip-row{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+.pipe-chip{ padding:6px 13px; border-radius:14px; font-size:11.5px; font-weight:700; border:1px solid var(--navy-line); color:var(--slate); background:transparent; cursor:pointer; }
+.pipe-chip.active{ background:var(--gold); color:#fff; border-color:var(--gold); }
+.pipe-pagination{ display:flex; align-items:center; justify-content:center; gap:16px; margin-top:18px; padding:14px 0; }
+.pipe-page-arrow{ width:46px; height:46px; border-radius:50%; border:1px solid var(--gold-dim); background:var(--navy-panel); color:var(--gold-bright); font-size:22px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background .12s; }
+.pipe-page-arrow:hover:not(:disabled){ background:rgba(201,162,75,.15); }
+.pipe-page-arrow:disabled{ opacity:.3; cursor:not-allowed; }
+.pipe-page-info{ font-size:13px; font-weight:700; color:var(--ivory); min-width:120px; text-align:center; }
+.pipe-results-summary{ font-size:12px; color:var(--slate); margin-bottom:10px; }
+.sortable-th{ cursor:pointer; user-select:none; }
+.sortable-th:hover{ color:var(--gold-bright); }
 
 .modal-backdrop{ position:fixed; inset:0; background:rgba(2,6,16,.85); backdrop-filter:blur(6px); display:none; align-items:center; justify-content:center; z-index:100; padding:16px; }
 .modal-backdrop.show{ display:flex; }
@@ -1378,7 +1396,7 @@ const I18N = {
     source_walkin: "زيارة مباشرة", source_call: "مكالمة", source_other: "أخرى",
     source_tiktok: "تيك توك", source_whatsapp: "واتساب",
     import_leads: "استيراد شيت", modal_import: "استيراد عملاء من ملف Excel",
-    export_leads: "تصدير كل العملاء",
+    export_leads: "تصدير كل العملاء", export_pipeline: "تصدير النتائج",
     import_instructions: "الملف لازم يكون Excel (.xlsx) أو CSV، وفيه عمود اسمه \"الاسم\" أو \"Name\" على الأقل. الأعمدة المدعومة: الاسم، الهاتف، البريد الإلكتروني، الاهتمام، الميزانية، المصدر، ملاحظات.",
     import_file_label: "اختر الملف",
     import_start: "ابدأ الاستيراد",
@@ -1561,6 +1579,13 @@ const I18N = {
     deals_total_value: "إجمالي قيمة الوحدات", deals_total_commission: "إجمالي عمولة الشركة", deals_total_net: "إجمالي صافي ربح الشركة",
     col_deal_unit: "الوحدة", col_deal_value: "القيمة", col_deal_commission: "عمولة الشركة", col_deal_net_profit: "صافي الربح",
     phone_hidden: "الرقم مخفي",
+    pipe_view_list: "عرض القائمة", pipe_view_kanban: "عرض المسارات", pipe_filter_stage: "المسار", pipe_filter_agent: "المستخدم",
+    pipe_filter_from: "من تاريخ", pipe_filter_to: "إلى تاريخ", pipe_page_size: "عدد المعروض", pipe_all_stages: "كل المسارات", pipe_all_agents: "كل المستخدمين",
+    pipe_clear_filters: "مسح الفلاتر", pipe_showing: "عرض", pipe_of: "من", pipe_results: "نتيجة", pipe_page: "صفحة", pipe_prev: "السابق", pipe_next: "التالي",
+    pipe_saved_views: "عروض محفوظة", pipe_select_view: "-- اختر عرض --", pipe_save_view: "حفظ العرض الحالي", pipe_delete_view: "حذف العرض",
+    pipe_view_name_prompt: "اكتب اسم للعرض المحفوظ:", pipe_alert_settings: "إعدادات التنبيهات", pipe_alert_settings_desc: "حدد أقصى عدد عملاء مسموح بيه في كل مرحلة، لو العدد زاد هيظهر تنبيه في الرئيسية.",
+    pipe_no_limit: "بدون حد", pipe_threshold_limit: "الحد الأقصى", pipe_threshold_alert_title: "⚠️ تنبيه: عدد العملاء في بعض المراحل تجاوز الحد المسموح به",
+    col_agent: "المستخدم",
 
     f_role: "الوظيفة",
     role_general_manager: "مدير عام الشركة",
@@ -1629,7 +1654,7 @@ const I18N = {
     source_walkin: "Walk-in", source_call: "Phone Call", source_other: "Other",
     source_tiktok: "TikTok", source_whatsapp: "WhatsApp",
     import_leads: "Import Sheet", modal_import: "Import Leads from Excel",
-    export_leads: "Export All Leads",
+    export_leads: "Export All Leads", export_pipeline: "Export Results",
     import_instructions: "The file must be Excel (.xlsx) or CSV, with at least a \"Name\" column. Supported columns: Name, Phone, Email, Interest, Budget, Source, Notes.",
     import_file_label: "Choose file",
     import_start: "Start Import",
@@ -1812,6 +1837,13 @@ const I18N = {
     deals_total_value: "Total Unit Value", deals_total_commission: "Total Company Commission", deals_total_net: "Total Net Profit",
     col_deal_unit: "Unit", col_deal_value: "Value", col_deal_commission: "Company Commission", col_deal_net_profit: "Net Profit",
     phone_hidden: "Number hidden",
+    pipe_view_list: "List View", pipe_view_kanban: "Kanban View", pipe_filter_stage: "Stage", pipe_filter_agent: "User",
+    pipe_filter_from: "From Date", pipe_filter_to: "To Date", pipe_page_size: "Rows per page", pipe_all_stages: "All Stages", pipe_all_agents: "All Users",
+    pipe_clear_filters: "Clear Filters", pipe_showing: "Showing", pipe_of: "of", pipe_results: "results", pipe_page: "Page", pipe_prev: "Previous", pipe_next: "Next",
+    pipe_saved_views: "Saved Views", pipe_select_view: "-- Select a view --", pipe_save_view: "Save Current View", pipe_delete_view: "Delete View",
+    pipe_view_name_prompt: "Name this saved view:", pipe_alert_settings: "Alert Settings", pipe_alert_settings_desc: "Set a max lead count per stage; an alert shows on the dashboard when exceeded.",
+    pipe_no_limit: "No limit", pipe_threshold_limit: "Limit", pipe_threshold_alert_title: "⚠️ Alert: some stages exceeded their lead count limit",
+    col_agent: "User",
 
     f_role: "Role",
     role_general_manager: "General Manager",
@@ -2564,7 +2596,8 @@ function renderDashboard(){
   const order = DASHBOARD_ORDER.filter(k => sectionsMap[k]);
   Object.keys(sectionsMap).forEach(k => { if (!order.includes(k)) order.push(k); });
 
-  document.getElementById("content").innerHTML = welcomeBannerHtml + order.map(k => sectionsMap[k]).join("");
+  document.getElementById("content").innerHTML = checkStageThresholds() + welcomeBannerHtml + order.map(k => sectionsMap[k]).join("");
+  bindPipeAlertDismiss();
   bindLeadRowEvents();
   startDashboardResaleSpotlight();
   startDashboardRentalSpotlight();
@@ -3135,21 +3168,402 @@ document.getElementById("importStartBtn").addEventListener("click", async () => 
 });
 
 /* ---------- Pipeline ---------- */
-function renderPipeline(){
-  const pipeLeads = visibleLeads();
-  const cols = PIPELINE_STATUSES.map(status => {
-    const items = pipeLeads.filter(l => l.status===status);
-    return `<div class="pipe-col" data-status="${status}">
-      <div class="pipe-col-head"><span>${t('status_'+status)}</span><span class="count">${items.length}</span></div>
-      <div>${items.map(l => `<div class="pipe-card" draggable="true" data-id="${l.id}">
-        <div class="pipe-card-name row-name-link" data-open="${l.id}">${escapeHtml(l.name||"")}</div>
-        <div class="pipe-card-meta">${escapeHtml(l.interest||"—")} · ${escapeHtml(l.phone||"")}</div>
-        <div class="pipe-card-value">${escapeHtml(l.budget||"—")}</div>
-      </div>`).join("")}</div></div>`;
+let PIPE_VIEW_MODE = "list";
+let PIPE_FILTER_STATUSES = new Set();
+let PIPE_FILTER_AGENTS = new Set();
+let PIPE_FILTER_FROM = "";
+let PIPE_FILTER_TO = "";
+let PIPE_PAGE_SIZE = 15;
+let PIPE_CURRENT_PAGE = 1;
+let PIPE_SORT_FIELD = "createdAt";
+let PIPE_SORT_DIR = "desc";
+let PIPE_SEARCH_QUERY = "";
+let PIPE_SAVED_VIEWS = [];
+
+function loadPipeFilters(){
+  try {
+    const raw = localStorage.getItem("pipeFiltersV1");
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    PIPE_VIEW_MODE = saved.viewMode || "list";
+    PIPE_FILTER_STATUSES = new Set(saved.statuses || []);
+    PIPE_FILTER_AGENTS = new Set(saved.agents || []);
+    PIPE_FILTER_FROM = saved.from || "";
+    PIPE_FILTER_TO = saved.to || "";
+    PIPE_PAGE_SIZE = saved.pageSize || 15;
+    PIPE_SORT_FIELD = saved.sortField || "createdAt";
+    PIPE_SORT_DIR = saved.sortDir || "desc";
+  } catch(e) { /* ignore */ }
+}
+function savePipeFilters(){
+  try {
+    localStorage.setItem("pipeFiltersV1", JSON.stringify({
+      viewMode: PIPE_VIEW_MODE,
+      statuses: [...PIPE_FILTER_STATUSES],
+      agents: [...PIPE_FILTER_AGENTS],
+      from: PIPE_FILTER_FROM,
+      to: PIPE_FILTER_TO,
+      pageSize: PIPE_PAGE_SIZE,
+      sortField: PIPE_SORT_FIELD,
+      sortDir: PIPE_SORT_DIR,
+    }));
+  } catch(e) { /* ignore */ }
+}
+loadPipeFilters();
+
+function loadSavedViews(){
+  try {
+    const raw = localStorage.getItem("pipeSavedViewsV1");
+    PIPE_SAVED_VIEWS = raw ? JSON.parse(raw) : [];
+  } catch(e) { PIPE_SAVED_VIEWS = []; }
+}
+function persistSavedViews(){
+  try { localStorage.setItem("pipeSavedViewsV1", JSON.stringify(PIPE_SAVED_VIEWS)); } catch(e) { /* ignore */ }
+}
+loadSavedViews();
+function applySavedView(name){
+  const v = PIPE_SAVED_VIEWS.find(x => x.name === name);
+  if (!v) return;
+  PIPE_FILTER_STATUSES = new Set(v.statuses||[]);
+  PIPE_FILTER_AGENTS = new Set(v.agents||[]);
+  PIPE_FILTER_FROM = v.from||"";
+  PIPE_FILTER_TO = v.to||"";
+  PIPE_PAGE_SIZE = v.pageSize||15;
+  PIPE_SORT_FIELD = v.sortField||"createdAt";
+  PIPE_SORT_DIR = v.sortDir||"desc";
+  PIPE_CURRENT_PAGE = 1;
+  savePipeFilters();
+  renderPipeline();
+}
+
+function loadStageThresholds(){
+  try {
+    const raw = localStorage.getItem("pipeStageThresholdsV1");
+    return raw ? JSON.parse(raw) : {};
+  } catch(e) { return {}; }
+}
+function saveStageThresholds(obj){
+  try { localStorage.setItem("pipeStageThresholdsV1", JSON.stringify(obj)); } catch(e) { /* ignore */ }
+}
+function checkStageThresholds(){
+  if (!isFullAdmin()) return "";
+  const thresholds = loadStageThresholds();
+  const keys = Object.keys(thresholds);
+  if (!keys.length) return "";
+  const today = new Date().toISOString().slice(0,10);
+  let dismissed = [];
+  try { dismissed = JSON.parse(sessionStorage.getItem("pipeAlertDismissed_"+today) || "[]"); } catch(e) { /* ignore */ }
+  const exceeded = keys.filter(s => {
+    if (dismissed.includes(s)) return false;
+    const count = LEADS.filter(l => l.status === s).length;
+    return count > thresholds[s];
+  });
+  if (!exceeded.length) return "";
+  const lines = exceeded.map(s => {
+    const count = LEADS.filter(l => l.status === s).length;
+    return `<div>⚠️ <strong>${t('status_'+s)}</strong>: ${count} (${t("pipe_threshold_limit")}: ${thresholds[s]})</div>`;
   }).join("");
-  document.getElementById("content").innerHTML = `<div class="pipeline-board">${cols}</div>`;
-  bindPipelineDrag();
-  document.querySelectorAll("[data-open]").forEach(el => el.addEventListener("click", () => openLeadDetail(el.dataset.open)));
+  return `<div class="panel" id="pipeAlertBanner" style="border-color:var(--danger); background:rgba(166,57,44,.08); margin-bottom:16px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div style="font-size:13px; line-height:1.9;">
+        <div style="font-weight:800; color:var(--danger); margin-bottom:4px;">${t("pipe_threshold_alert_title")}</div>
+        ${lines}
+      </div>
+      <button type="button" id="pipeAlertDismiss" style="background:none; border:none; color:var(--slate); font-size:18px; cursor:pointer;">✕</button>
+    </div>
+  </div>`;
+}
+function bindPipeAlertDismiss(){
+  const btn = document.getElementById("pipeAlertDismiss");
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    const thresholds = loadStageThresholds();
+    const today = new Date().toISOString().slice(0,10);
+    const exceeded = Object.keys(thresholds).filter(s => LEADS.filter(l=>l.status===s).length > thresholds[s]);
+    sessionStorage.setItem("pipeAlertDismissed_"+today, JSON.stringify(exceeded));
+    document.getElementById("pipeAlertBanner").remove();
+  });
+}
+
+function pipelineFilteredLeads(){
+
+  const filtered = visibleLeads().filter(l => {
+    if (PIPE_FILTER_STATUSES.size && !PIPE_FILTER_STATUSES.has(l.status)) return false;
+    if (PIPE_FILTER_AGENTS.size && !PIPE_FILTER_AGENTS.has(l.assignedTo)) return false;
+    if (PIPE_FILTER_FROM || PIPE_FILTER_TO) {
+      const d = leadDate(l);
+      if (!d) return false;
+      if (PIPE_FILTER_FROM && d < new Date(PIPE_FILTER_FROM)) return false;
+      if (PIPE_FILTER_TO && d > new Date(PIPE_FILTER_TO + "T23:59:59")) return false;
+    }
+    if (PIPE_SEARCH_QUERY) {
+      const q = PIPE_SEARCH_QUERY.toLowerCase();
+      if (!(l.name||"").toLowerCase().includes(q) && !(l.phone||"").includes(q)) return false;
+    }
+    return true;
+  });
+  const dir = PIPE_SORT_DIR === "asc" ? 1 : -1;
+  filtered.sort((a,b) => {
+    let av, bv;
+    if (PIPE_SORT_FIELD === "name") { av = (a.name||"").toLowerCase(); bv = (b.name||"").toLowerCase(); return av<bv?-1*dir:av>bv?1*dir:0; }
+    if (PIPE_SORT_FIELD === "status") { av = a.status||""; bv = b.status||""; return av<bv?-1*dir:av>bv?1*dir:0; }
+    if (PIPE_SORT_FIELD === "agent") {
+      av = ((AGENTS.find(x=>x.id===a.assignedTo)||{}).name||"").toLowerCase();
+      bv = ((AGENTS.find(x=>x.id===b.assignedTo)||{}).name||"").toLowerCase();
+      return av<bv?-1*dir:av>bv?1*dir:0;
+    }
+    av = a.createdAt&&a.createdAt.seconds?a.createdAt.seconds:0;
+    bv = b.createdAt&&b.createdAt.seconds?b.createdAt.seconds:0;
+    return (av-bv)*dir;
+  });
+  return filtered;
+}
+
+function exportPipelineResults(){
+  if (!isFullAdmin()) return;
+  const rows = pipelineFilteredLeads().map(l => {
+    const ag = AGENTS.find(a => a.id===l.assignedTo);
+    return {
+      [t("f_name")]: l.name || "",
+      [t("f_phone")]: l.phone || "",
+      [t("f_status")]: t('status_'+(l.status||"new")),
+      [t("col_agent")]: (ag && (ag.name||ag.email)) || "",
+      [t("col_created_at")]: fmtDate(l.createdAt),
+    };
+  });
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Pipeline");
+  const dateStr = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `pipeline-export-${dateStr}.xlsx`);
+}
+
+function renderPipeline(){
+  PIPE_CURRENT_PAGE = 1;
+  document.getElementById("content").innerHTML = `
+    <div class="panel">
+      <div class="panel-head" style="justify-content:space-between;">
+        <h2>${t("nav_pipeline")}</h2>
+        <div class="pipe-view-toggle">
+          <button type="button" id="pipeViewList" class="${PIPE_VIEW_MODE==='list'?'active':''}">${t("pipe_view_list")}</button>
+          <button type="button" id="pipeViewKanban" class="${PIPE_VIEW_MODE==='kanban'?'active':''}">${t("pipe_view_kanban")}</button>
+        </div>
+      </div>
+
+      <div class="pipe-filter-bar" style="margin-bottom:4px;">
+        <div class="pipe-filter-field" style="flex:1; min-width:200px;">
+          <label>${t("search_placeholder")}</label>
+          <input type="text" id="pipeSearch" placeholder="${t('search_placeholder')}" value="${escapeHtml(PIPE_SEARCH_QUERY)}">
+        </div>
+        <div class="pipe-filter-field">
+          <label>${t("pipe_saved_views")}</label>
+          <select id="pipeSavedViewSelect">
+            <option value="">${t("pipe_select_view")}</option>
+            ${PIPE_SAVED_VIEWS.map(v => `<option value="${escapeHtml(v.name)}">${escapeHtml(v.name)}</option>`).join("")}
+          </select>
+        </div>
+        <button type="button" class="btn-outline" id="pipeSaveViewBtn" style="height:38px;">💾 ${t("pipe_save_view")}</button>
+        <button type="button" class="btn-outline" id="pipeDeleteViewBtn" style="height:38px; display:none;">🗑 ${t("pipe_delete_view")}</button>
+      </div>
+
+      <div style="margin:14px 0 6px; font-size:11px; font-weight:700; color:var(--slate);">${t("pipe_filter_stage")}</div>
+      <div class="pipe-chip-row" id="pipeStageChips">
+        ${PIPELINE_STATUSES.map(s => `<button type="button" class="pipe-chip ${PIPE_FILTER_STATUSES.has(s)?'active':''}" data-stage-chip="${s}">${t('status_'+s)}</button>`).join("")}
+      </div>
+      <div style="margin:10px 0 6px; font-size:11px; font-weight:700; color:var(--slate);">${t("pipe_filter_agent")}</div>
+      <div class="pipe-chip-row" id="pipeAgentChips">
+        ${AGENTS.map(a => `<button type="button" class="pipe-chip ${PIPE_FILTER_AGENTS.has(a.id)?'active':''}" data-agent-chip="${a.id}">${escapeHtml(a.name||a.email)}</button>`).join("")}
+      </div>
+      <div class="pipe-filter-bar">
+        <div class="pipe-filter-field">
+          <label>${t("pipe_filter_from")}</label>
+          <input type="date" id="pipeDateFrom" value="${PIPE_FILTER_FROM}">
+        </div>
+        <div class="pipe-filter-field">
+          <label>${t("pipe_filter_to")}</label>
+          <input type="date" id="pipeDateTo" value="${PIPE_FILTER_TO}">
+        </div>
+        <div class="pipe-filter-field">
+          <label>${t("pipe_page_size")}</label>
+          <select id="pipePageSize">
+            ${[10,15,25,50,100,200].map(n => `<option value="${n}" ${PIPE_PAGE_SIZE===n?'selected':''}>${n}</option>`).join("")}
+          </select>
+        </div>
+        <button type="button" class="btn-outline" id="pipeClearFilters" style="height:38px;">${t("pipe_clear_filters")}</button>
+        ${isFullAdmin()?`<button type="button" class="btn-gold" id="pipeExportBtn" style="height:38px;">⬇ ${t("export_pipeline")}</button>`:""}
+        ${isFullAdmin()?`<button type="button" class="btn-outline" id="pipeAlertSettingsBtn" style="height:38px;">🔔 ${t("pipe_alert_settings")}</button>`:""}
+      </div>
+      <div id="pipeAlertSettingsWrap" style="display:none;"></div>
+
+      <div id="pipeResultsWrap"></div>
+    </div>`;
+
+  document.getElementById("pipeViewList").addEventListener("click", () => { PIPE_VIEW_MODE="list"; savePipeFilters(); renderPipeline(); });
+  document.getElementById("pipeViewKanban").addEventListener("click", () => { PIPE_VIEW_MODE="kanban"; savePipeFilters(); renderPipeline(); });
+  document.getElementById("pipeSearch").addEventListener("input", (e) => { PIPE_SEARCH_QUERY = e.target.value; PIPE_CURRENT_PAGE=1; renderPipeResults(); });
+  document.querySelectorAll("[data-stage-chip]").forEach(btn => btn.addEventListener("click", () => {
+    const s = btn.dataset.stageChip;
+    if (PIPE_FILTER_STATUSES.has(s)) PIPE_FILTER_STATUSES.delete(s); else PIPE_FILTER_STATUSES.add(s);
+    btn.classList.toggle("active");
+    PIPE_CURRENT_PAGE = 1;
+    savePipeFilters();
+    renderPipeResults();
+  }));
+  document.querySelectorAll("[data-agent-chip]").forEach(btn => btn.addEventListener("click", () => {
+    const a = btn.dataset.agentChip;
+    if (PIPE_FILTER_AGENTS.has(a)) PIPE_FILTER_AGENTS.delete(a); else PIPE_FILTER_AGENTS.add(a);
+    btn.classList.toggle("active");
+    PIPE_CURRENT_PAGE = 1;
+    savePipeFilters();
+    renderPipeResults();
+  }));
+  document.getElementById("pipeDateFrom").addEventListener("change", (e) => { PIPE_FILTER_FROM = e.target.value; PIPE_CURRENT_PAGE=1; savePipeFilters(); renderPipeResults(); });
+  document.getElementById("pipeDateTo").addEventListener("change", (e) => { PIPE_FILTER_TO = e.target.value; PIPE_CURRENT_PAGE=1; savePipeFilters(); renderPipeResults(); });
+  document.getElementById("pipePageSize").addEventListener("change", (e) => { PIPE_PAGE_SIZE = parseInt(e.target.value)||15; PIPE_CURRENT_PAGE=1; savePipeFilters(); renderPipeResults(); });
+  document.getElementById("pipeClearFilters").addEventListener("click", () => {
+    PIPE_FILTER_STATUSES = new Set(); PIPE_FILTER_AGENTS = new Set(); PIPE_FILTER_FROM = ""; PIPE_FILTER_TO = ""; PIPE_SEARCH_QUERY = "";
+    savePipeFilters();
+    renderPipeline();
+  });
+  const exportBtn = document.getElementById("pipeExportBtn");
+  if (exportBtn) exportBtn.addEventListener("click", exportPipelineResults);
+
+  const savedSelect = document.getElementById("pipeSavedViewSelect");
+  const deleteViewBtn = document.getElementById("pipeDeleteViewBtn");
+  savedSelect.addEventListener("change", () => {
+    if (savedSelect.value) { applySavedView(savedSelect.value); }
+    else { deleteViewBtn.style.display = "none"; }
+  });
+  if (savedSelect.value) deleteViewBtn.style.display = "inline-flex";
+  document.getElementById("pipeSaveViewBtn").addEventListener("click", () => {
+    const name = prompt(t("pipe_view_name_prompt"));
+    if (!name) return;
+    PIPE_SAVED_VIEWS = PIPE_SAVED_VIEWS.filter(v => v.name !== name);
+    PIPE_SAVED_VIEWS.push({
+      name,
+      statuses: [...PIPE_FILTER_STATUSES],
+      agents: [...PIPE_FILTER_AGENTS],
+      from: PIPE_FILTER_FROM, to: PIPE_FILTER_TO,
+      pageSize: PIPE_PAGE_SIZE, sortField: PIPE_SORT_FIELD, sortDir: PIPE_SORT_DIR,
+    });
+    persistSavedViews();
+    toast(t("toast_saved"));
+    renderPipeline();
+  });
+  deleteViewBtn.addEventListener("click", () => {
+    if (!savedSelect.value) return;
+    if (!confirm(t("confirm_delete"))) return;
+    PIPE_SAVED_VIEWS = PIPE_SAVED_VIEWS.filter(v => v.name !== savedSelect.value);
+    persistSavedViews();
+    toast(t("toast_deleted"));
+    renderPipeline();
+  });
+
+  const alertBtn = document.getElementById("pipeAlertSettingsBtn");
+  if (alertBtn) alertBtn.addEventListener("click", () => {
+    const w = document.getElementById("pipeAlertSettingsWrap");
+    if (w.style.display === "none") { w.style.display = "block"; renderAlertSettings(); }
+    else w.style.display = "none";
+  });
+
+  renderPipeResults();
+}
+
+function renderAlertSettings(){
+  const thresholds = loadStageThresholds();
+  const w = document.getElementById("pipeAlertSettingsWrap");
+  w.innerHTML = `
+    <div style="background:rgba(165,121,58,.08); border:1px solid var(--gold-dim); border-radius:10px; padding:14px; margin:10px 0 16px;">
+      <div style="font-weight:800; color:var(--gold-bright); font-size:13px; margin-bottom:10px;">${t("pipe_alert_settings")}</div>
+      <div style="font-size:11.5px; color:var(--slate); margin-bottom:12px;">${t("pipe_alert_settings_desc")}</div>
+      <div class="form-grid">
+        ${PIPELINE_STATUSES.map(s => `
+          <div class="field">
+            <label>${t('status_'+s)}</label>
+            <input type="number" min="0" data-threshold-stage="${s}" value="${thresholds[s]||''}" placeholder="${t('pipe_no_limit')}">
+          </div>`).join("")}
+      </div>
+      <button type="button" class="btn-gold" id="pipeSaveThresholdsBtn" style="margin-top:8px;">${t("save")}</button>
+    </div>`;
+  document.getElementById("pipeSaveThresholdsBtn").addEventListener("click", () => {
+    const newThresholds = {};
+    document.querySelectorAll("[data-threshold-stage]").forEach(inp => {
+      const v = parseInt(inp.value);
+      if (v > 0) newThresholds[inp.dataset.thresholdStage] = v;
+    });
+    saveStageThresholds(newThresholds);
+    toast(t("toast_saved"));
+  });
+}
+
+function renderPipeResults(){
+  const all = pipelineFilteredLeads();
+  const wrap = document.getElementById("pipeResultsWrap");
+  if (PIPE_VIEW_MODE === "kanban") {
+    const cols = PIPELINE_STATUSES.map(status => {
+      const items = all.filter(l => l.status===status);
+      return `<div class="pipe-col" data-status="${status}">
+        <div class="pipe-col-head"><span>${t('status_'+status)}</span><span class="count">${items.length}</span></div>
+        <div>${items.map(l => `<div class="pipe-card" draggable="true" data-id="${l.id}">
+          <div class="pipe-card-name row-name-link" data-open="${l.id}">${escapeHtml(l.name||"")}</div>
+          <div class="pipe-card-meta">${escapeHtml(l.interest||"—")} · ${canSeeLeadPhone(l)?escapeHtml(l.phone||""):`🔒 ${t("phone_hidden")}`}</div>
+          <div class="pipe-card-value">${escapeHtml(l.budget||"—")}</div>
+        </div>`).join("")}</div></div>`;
+    }).join("");
+    wrap.innerHTML = `<div class="pipeline-board">${cols}</div>`;
+    bindPipelineDrag();
+    document.querySelectorAll("[data-open]").forEach(el => el.addEventListener("click", () => openLeadDetail(el.dataset.open)));
+    return;
+  }
+
+  const totalPages = Math.max(1, Math.ceil(all.length / PIPE_PAGE_SIZE));
+  if (PIPE_CURRENT_PAGE > totalPages) PIPE_CURRENT_PAGE = totalPages;
+  const startIdx = (PIPE_CURRENT_PAGE-1)*PIPE_PAGE_SIZE;
+  const pageItems = all.slice(startIdx, startIdx+PIPE_PAGE_SIZE);
+
+  wrap.innerHTML = `
+    <div class="pipe-results-summary">${t("pipe_showing")} ${all.length?(startIdx+1):0}–${Math.min(startIdx+PIPE_PAGE_SIZE, all.length)} ${t("pipe_of")} ${all.length} ${t("pipe_results")}</div>
+    ${pageItems.length ? `<div class="table-scroll"><table><thead><tr>
+      <th class="sortable-th" data-sort-field="name">${t("col_name")} ${sortArrow("name")}</th>
+      <th>${t("col_phone")}</th>
+      <th class="sortable-th" data-sort-field="status">${t("col_status")} ${sortArrow("status")}</th>
+      <th class="sortable-th" data-sort-field="agent">${t("col_agent")} ${sortArrow("agent")}</th>
+      <th class="sortable-th" data-sort-field="createdAt">${t("col_created_at")} ${sortArrow("createdAt")}</th>
+      </tr></thead><tbody>
+      ${pageItems.map(l => {
+        const ag = AGENTS.find(a => a.id===l.assignedTo);
+        return `<tr>
+          <td><span class="row-name-link" data-open-pipe="${l.id}">${escapeHtml(l.name||"")}</span></td>
+          <td>${canSeeLeadPhone(l)?escapeHtml(l.phone||"—"):`🔒 ${t("phone_hidden")}`}</td>
+          <td><span class="badge ${l.status}">${t('status_'+l.status)}</span></td>
+          <td>${escapeHtml((ag&&(ag.name||ag.email))||"—")}</td>
+          <td>${fmtDate(l.createdAt)}</td>
+        </tr>`;
+      }).join("")}
+      </tbody></table></div>` : emptyState(t("empty_leads_title"), t("empty_leads_sub"))}
+    <div class="pipe-pagination">
+      <button type="button" class="pipe-page-arrow" id="pipePrevPage" ${PIPE_CURRENT_PAGE<=1?"disabled":""}>›</button>
+      <div class="pipe-page-info">${t("pipe_page")} ${PIPE_CURRENT_PAGE} / ${totalPages}</div>
+      <button type="button" class="pipe-page-arrow" id="pipeNextPage" ${PIPE_CURRENT_PAGE>=totalPages?"disabled":""}>‹</button>
+    </div>
+  `;
+  document.querySelectorAll("[data-open-pipe]").forEach(el => el.addEventListener("click", () => openLeadDetail(el.dataset.openPipe)));
+  document.querySelectorAll("[data-sort-field]").forEach(th => th.addEventListener("click", () => {
+    const f = th.dataset.sortField;
+    if (PIPE_SORT_FIELD === f) PIPE_SORT_DIR = PIPE_SORT_DIR === "asc" ? "desc" : "asc";
+    else { PIPE_SORT_FIELD = f; PIPE_SORT_DIR = "asc"; }
+    PIPE_CURRENT_PAGE = 1;
+    savePipeFilters();
+    renderPipeResults();
+  }));
+  const prevBtn = document.getElementById("pipePrevPage");
+  const nextBtn = document.getElementById("pipeNextPage");
+  if (prevBtn) prevBtn.addEventListener("click", () => { if (PIPE_CURRENT_PAGE>1) { PIPE_CURRENT_PAGE--; renderPipeResults(); } });
+  if (nextBtn) nextBtn.addEventListener("click", () => { if (PIPE_CURRENT_PAGE<totalPages) { PIPE_CURRENT_PAGE++; renderPipeResults(); } });
+}
+function sortArrow(field){
+  if (PIPE_SORT_FIELD !== field) return `<span style="opacity:.3;">↕</span>`;
+  return PIPE_SORT_DIR === "asc" ? `<span style="color:var(--gold-bright);">↑</span>` : `<span style="color:var(--gold-bright);">↓</span>`;
 }
 function bindPipelineDrag(){
   let draggedId = null;
