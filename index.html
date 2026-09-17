@@ -2273,7 +2273,6 @@ function attachTasksListeners(){
 
 function attachActivitiesListener(){
   if (activitiesUnsub) { activitiesUnsub(); activitiesUnsub = null; }
-  if (!isFullAdmin()) { ALL_ACTIVITIES = []; return; }
   activitiesUnsub = db.collectionGroup("activities").onSnapshot(snap => {
     ALL_ACTIVITIES = snap.docs.map(d => ({ ...d.data(), leadId: d.ref.parent.parent.id }));
     if (currentView === "dashboard") renderView();
