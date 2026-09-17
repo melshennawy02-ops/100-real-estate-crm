@@ -1214,6 +1214,17 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
   </div>
 </div>
 
+<!-- Modal: WhatsApp Template Picker -->
+<div class="modal-backdrop" id="templatePickerModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-head">
+      <h3 data-i18n="tpl_picker_title">Choose a message</h3>
+      <button class="modal-close" data-close-modal="templatePickerModal">✕</button>
+    </div>
+    <div id="templatePickerList" style="padding:4px 2px;"></div>
+  </div>
+</div>
+
 <!-- Modal: Permission Detail -->
 <div class="modal-backdrop" id="permissionDetailModal">
   <div class="modal">
@@ -1514,6 +1525,20 @@ const I18N = {
     alert_at_time: "في نفس الموعد", alert_1d_before: "قبلها بيوم",
     settings_followup_sound: "تنبيه صوتي قبل موعد المتابعة",
     settings_followup_sound_sub: "صوت تنبيه في الوقت اللي تحدده قبل ميعاد المتابعة مع العميل",
+    settings_browser_notif: "إشعارات المتصفح", settings_browser_notif_sub: "إشعار حقيقي من المتصفح حتى لو التطبيق شغال في الخلفية",
+    settings_browser_notif_denied: "لازم توافق على إذن الإشعارات من المتصفح عشان تفعّل الخاصية دي",
+    dup_phone_warning: "⚠️ هذا الرقم مسجل بالفعل مع الموظف: {agent}\nهل تريد المتابعة وإضافته كعميل جديد؟",
+    rr_settings_title: "التوزيع التلقائي للعملاء", rr_settings_desc: "تحكم في توزيع العملاء الجدد تلقائيًا على فريق المبيعات بالتساوي.",
+    rr_enable: "تفعيل التوزيع التلقائي", rr_agent_pool: "السيلز المشمولين في التوزيع", rr_no_agents: "لا يوجد موظفين سيلز مسجلين بعد",
+    rr_pool_hint: "لو مفيش حد متحدد، التوزيع هيشمل كل السيلز تلقائيًا.",
+    rr_window_from: "من الساعة", rr_window_to: "إلى الساعة", rr_outside_window: "خارج الوقت المحدد",
+    rr_assign_anyway: "وزّع فورًا بغض النظر عن الوقت", rr_skip: "لا توزع، اتركه بدون تخصيص",
+    rr_rule_note: "ملاحظة: التوزيع التلقائي بيشتغل بس على العملاء اللي بيضيفهم فريق التسويق أو الأدمن. أما لو سيلز ضاف عميل بنفسه، العميل بيفضل عنده ومش بيتوزع تلقائيًا — إلا لو مديره أو المدير العام أو الأدمن حوّله يدويًا.",
+    tpl_picker_title: "اختر رسالة جاهزة", tpl_send_blank: "إرسال بدون قالب (رسالة فاضية)",
+    tpl_settings_title: "قوالب الرسائل الجاهزة", tpl_settings_desc: "قوالب رسائل واتساب سريعة تظهر عند التواصل مع أي عميل، لتوفير وقت الكتابة المتكرر.",
+    tpl_add: "إضافة قالب", tpl_empty_title: "لا توجد قوالب بعد", tpl_empty_sub: "أضف أول قالب رسالة جاهزة",
+    tpl_name: "اسم القالب", tpl_body: "نص الرسالة", tpl_body_placeholder: "أهلاً {name}، معاك {agent} من 100% Real Estate...",
+    tpl_placeholders_hint: "تقدر تستخدم: {name} اسم العميل، {agent} اسمك، {interest} الاهتمام، {project} المشروع",
     toast_followup_alert: "تذكير بموعد متابعة",
 
     selected_count: "محدد", assign_to_agent: "تعيين لموظف...", apply_assign: "تطبيق",
@@ -1772,6 +1797,20 @@ const I18N = {
     alert_at_time: "At the exact time", alert_1d_before: "1 day before",
     settings_followup_sound: "Sound Alert Before Follow-up",
     settings_followup_sound_sub: "Play a sound at the time you set before a follow-up appointment",
+    settings_browser_notif: "Browser Notifications", settings_browser_notif_sub: "Real browser notification even while the app runs in the background",
+    settings_browser_notif_denied: "Please allow notification permission in your browser to enable this",
+    dup_phone_warning: "⚠️ This number is already registered with: {agent}\nContinue and add as a new lead anyway?",
+    rr_settings_title: "Auto Lead Distribution", rr_settings_desc: "Control how new leads are automatically distributed evenly across the sales team.",
+    rr_enable: "Enable auto-distribution", rr_agent_pool: "Sales agents included", rr_no_agents: "No sales agents registered yet",
+    rr_pool_hint: "If none are selected, distribution includes all sales agents automatically.",
+    rr_window_from: "From", rr_window_to: "To", rr_outside_window: "Outside the time window",
+    rr_assign_anyway: "Assign immediately regardless of time", rr_skip: "Don't assign, leave unassigned",
+    rr_rule_note: "Note: auto-distribution only applies to leads added by the marketing team or admin. If a sales agent adds a lead themselves, it stays with them and is not auto-distributed — unless their manager, the GM, or admin reassigns it manually.",
+    tpl_picker_title: "Choose a message", tpl_send_blank: "Send without a template (blank message)",
+    tpl_settings_title: "Message Templates", tpl_settings_desc: "Quick WhatsApp templates shown when contacting any lead, to save repetitive typing.",
+    tpl_add: "Add Template", tpl_empty_title: "No templates yet", tpl_empty_sub: "Add your first message template",
+    tpl_name: "Template Name", tpl_body: "Message Body", tpl_body_placeholder: "Hi {name}, this is {agent} from 100% Real Estate...",
+    tpl_placeholders_hint: "You can use: {name} lead's name, {agent} your name, {interest} interest, {project} project",
     toast_followup_alert: "Follow-up reminder",
 
     selected_count: "selected", assign_to_agent: "Assign to agent...", apply_assign: "Apply",
@@ -1888,6 +1927,23 @@ function getNotifSound(){ return localStorage.getItem("crm_notif_sound") === "1"
 function setNotifSound(v){ localStorage.setItem("crm_notif_sound", v ? "1" : "0"); }
 function getFollowupAlertSound(){ return localStorage.getItem("crm_followup_alert_sound") !== "0"; }
 function setFollowupAlertSound(v){ localStorage.setItem("crm_followup_alert_sound", v ? "1" : "0"); }
+function getBrowserNotif(){ return localStorage.getItem("crm_browser_notif") === "1"; }
+function setBrowserNotif(v){ localStorage.setItem("crm_browser_notif", v ? "1" : "0"); }
+async function requestBrowserNotifPermission(){
+  if (!("Notification" in window)) return false;
+  if (Notification.permission === "granted") return true;
+  if (Notification.permission === "denied") return false;
+  const perm = await Notification.requestPermission();
+  return perm === "granted";
+}
+function fireBrowserNotification(title, body){
+  if (!getBrowserNotif()) return;
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  try {
+    const n = new Notification(title, { body, icon: "🔔" });
+    n.onclick = () => { window.focus(); n.close(); };
+  } catch(e) { /* ignore */ }
+}
 function checkFollowupAlerts(){
   if (!getFollowupAlertSound()) return;
   const now = new Date();
@@ -1900,6 +1956,7 @@ function checkFollowupAlerts(){
     if (now >= alertTime && now < dueDate && !sessionStorage.getItem(key)) {
       playAlertBeep();
       toast(t("toast_followup_alert") + (tk.title ? ": " + tk.title : ""));
+      fireBrowserNotification(t("toast_followup_alert"), tk.title || "");
       sessionStorage.setItem(key, "1");
     }
   });
@@ -1944,6 +2001,9 @@ const DEFAULT_BULK_ROLES = ["general_manager","company_admin","sales_manager","m
 const DEFAULT_RESALE_EDIT_ROLES = ["general_manager","company_admin"];
 const DEFAULT_RESALE_PHONE_ROLES = ["general_manager","company_admin"];
 let PERMISSIONS_CONFIG = { bulk_reassign: DEFAULT_BULK_ROLES, resale_edit_delete: DEFAULT_RESALE_EDIT_ROLES, resale_view_phone: DEFAULT_RESALE_PHONE_ROLES };
+let ROUND_ROBIN_CONFIG = { enabled: true, agentPool: [], windowFrom: "", windowTo: "", outsideAction: "assign_anyway", lastAgentId: null };
+let MESSAGE_TEMPLATES = [];
+const ROUND_ROBIN_TRIGGER_ROLES = ["marketing_agent","marketing_manager","marketing_team_leader","marketing_supervisor","company_admin","general_manager"];
 
 function canBulkReassign(){
   return PERMISSIONS_CONFIG.bulk_reassign.includes(myRole());
@@ -2322,6 +2382,24 @@ function subscribeData(){
     renderView();
   }, err => console.error("permissions settings error", err));
 
+  db.collection("settings").doc("roundRobin").onSnapshot(doc => {
+    if (doc.exists) {
+      const d = doc.data();
+      ROUND_ROBIN_CONFIG.enabled = d.enabled !== false;
+      ROUND_ROBIN_CONFIG.agentPool = Array.isArray(d.agentPool) ? d.agentPool : [];
+      ROUND_ROBIN_CONFIG.windowFrom = d.windowFrom || "";
+      ROUND_ROBIN_CONFIG.windowTo = d.windowTo || "";
+      ROUND_ROBIN_CONFIG.outsideAction = d.outsideAction || "assign_anyway";
+      ROUND_ROBIN_CONFIG.lastAgentId = d.lastAgentId || null;
+    }
+    if (currentView === "settings") renderView();
+  }, err => console.error("round robin settings error", err));
+
+  db.collection("settings").doc("messageTemplates").onSnapshot(doc => {
+    MESSAGE_TEMPLATES = (doc.exists && Array.isArray(doc.data().templates)) ? doc.data().templates : [];
+    if (currentView === "settings") renderView();
+  }, err => console.error("message templates error", err));
+
   db.collection("rental_units").orderBy("createdAt","desc").onSnapshot(snap => {
     RENTAL_UNITS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
     renderView();
@@ -2531,6 +2609,7 @@ function renderDashboard(){
   const overdueCount = TASKS.filter(tk => !tk.done && tk.due && new Date(tk.due) < new Date()).length;
   if (overdueCount > 0 && getNotifSound() && !sessionStorage.getItem("overdue_beeped")) {
     playAlertBeep();
+    fireBrowserNotification(t("qs_overdue"), overdueCount + " " + t("col_due_date"));
     sessionStorage.setItem("overdue_beeped", "1");
   }
   const convRate = totalLeads ? Math.round((dashLeads.filter(l=>l.status==="won").length/totalLeads)*100) : 0;
@@ -2839,7 +2918,7 @@ function bindLeadRowEvents(){
   document.querySelectorAll("[data-delete]").forEach(btn => btn.addEventListener("click", () => deleteLead(btn.dataset.delete)));
   document.querySelectorAll("[data-open]").forEach(el => el.addEventListener("click", () => openLeadDetail(el.dataset.open)));
   document.querySelectorAll("[data-call]").forEach(btn => btn.addEventListener("click", (e) => { e.stopPropagation(); doCall(btn.dataset.call, btn.dataset.callId); }));
-  document.querySelectorAll("[data-whatsapp]").forEach(btn => btn.addEventListener("click", (e) => { e.stopPropagation(); doWhatsapp(btn.dataset.whatsapp, btn.dataset.whatsappId); }));
+  document.querySelectorAll("[data-whatsapp]").forEach(btn => btn.addEventListener("click", (e) => { e.stopPropagation(); openTemplatePicker(btn.dataset.whatsapp, btn.dataset.whatsappId); }));
   document.querySelectorAll(".lead-select-cb").forEach(cb => cb.addEventListener("click", (e) => e.stopPropagation()));
   document.querySelectorAll(".lead-select-cb").forEach(cb => cb.addEventListener("change", (e) => {
     if (e.target.checked) SELECTED_LEAD_IDS.add(e.target.value); else SELECTED_LEAD_IDS.delete(e.target.value);
@@ -2935,15 +3014,85 @@ document.getElementById("leadForm").addEventListener("submit", async (e) => {
   try {
     if (id) { await db.collection("leads").doc(id).update(data); toast(t("toast_updated")); }
     else {
+      if (data.phone) {
+        const dup = await checkDuplicatePhone(data.phone);
+        if (dup) {
+          const proceed = confirm(t("dup_phone_warning").replace("{agent}", dup.agentName || "—"));
+          if (!proceed) return;
+        }
+      }
+      if (ROUND_ROBIN_TRIGGER_ROLES.includes(myRole())) {
+        const nextAgent = await getNextRoundRobinAgent();
+        if (nextAgent) data.assignedTo = nextAgent.id;
+      } else {
+        // Lead added by a sales-side user: stays with them; only a manager/GM/admin can reassign later
+        data.assignedTo = CURRENT_USER.uid;
+      }
       data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       data.tags = [];
       const ref = await db.collection("leads").add(data);
       await logActivity(ref.id, "created", t("act_created"));
+      if (data.phone) registerPhoneIndex(data.phone, ref.id);
       toast(t("toast_saved"));
     }
     closeModal("leadModal");
   } catch (err) { console.error(err); alert(err.message); }
 });
+
+/* ---------- Duplicate detection & round-robin auto-assignment ---------- */
+function normalizePhone(p){ return (p||"").replace(/[^\d]/g,""); }
+async function checkDuplicatePhone(phone){
+  const norm = normalizePhone(phone);
+  if (!norm) return null;
+  try {
+    const doc = await db.collection("phone_index").doc(norm).get();
+    if (doc.exists) return doc.data();
+  } catch(e) { console.error("dup check failed", e); }
+  return null;
+}
+async function registerPhoneIndex(phone, leadId){
+  const norm = normalizePhone(phone);
+  if (!norm) return;
+  try {
+    await db.collection("phone_index").doc(norm).set({
+      leadId, agentId: CURRENT_USER.uid,
+      agentName: (myAgentDoc()&&myAgentDoc().name) || CURRENT_USER.email,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+  } catch(e) { console.error("phone index write failed", e); }
+}
+function isWithinAssignWindow(){
+  if (!ROUND_ROBIN_CONFIG.windowFrom || !ROUND_ROBIN_CONFIG.windowTo) return true;
+  const now = new Date();
+  const nowMinutes = now.getHours()*60 + now.getMinutes();
+  const [fh,fm] = ROUND_ROBIN_CONFIG.windowFrom.split(":").map(Number);
+  const [th,tm] = ROUND_ROBIN_CONFIG.windowTo.split(":").map(Number);
+  const fromMinutes = fh*60+fm, toMinutes = th*60+tm;
+  if (fromMinutes <= toMinutes) return nowMinutes >= fromMinutes && nowMinutes <= toMinutes;
+  return nowMinutes >= fromMinutes || nowMinutes <= toMinutes; // window crosses midnight
+}
+async function getNextRoundRobinAgent(){
+  if (!ROUND_ROBIN_CONFIG.enabled) return null;
+  if (!isWithinAssignWindow() && ROUND_ROBIN_CONFIG.outsideAction === "skip") return null;
+  const poolIds = ROUND_ROBIN_CONFIG.agentPool && ROUND_ROBIN_CONFIG.agentPool.length ? ROUND_ROBIN_CONFIG.agentPool : null;
+  const pool = AGENTS.filter(a => a.role === "sales_agent" && (!poolIds || poolIds.includes(a.id)))
+    .sort((a,b) => (a.id||"").localeCompare(b.id||""));
+  if (!pool.length) return null;
+  let lastId = null;
+  try {
+    const doc = await db.collection("settings").doc("roundRobin").get();
+    if (doc.exists) lastId = doc.data().lastAgentId;
+  } catch(e) { /* ignore */ }
+  let nextIdx = 0;
+  if (lastId) {
+    const idx = pool.findIndex(a => a.id === lastId);
+    if (idx >= 0) nextIdx = (idx + 1) % pool.length;
+  }
+  const nextAgent = pool[nextIdx];
+  try { await db.collection("settings").doc("roundRobin").set({ lastAgentId: nextAgent.id }, { merge:true }); } catch(e) { /* ignore */ }
+  return nextAgent;
+}
+
 async function deleteLead(id){
   if (myRole() !== "general_manager") return;
   if (!confirm(t("confirm_delete"))) return;
@@ -3186,6 +3335,26 @@ document.getElementById("importFileInput").addEventListener("change", (e) => {
   reader.readAsArrayBuffer(file);
 });
 
+async function computeRoundRobinBatch(count){
+  if (!ROUND_ROBIN_CONFIG.enabled) return new Array(count).fill(null);
+  if (!isWithinAssignWindow() && ROUND_ROBIN_CONFIG.outsideAction === "skip") return new Array(count).fill(null);
+  const poolIds = ROUND_ROBIN_CONFIG.agentPool && ROUND_ROBIN_CONFIG.agentPool.length ? ROUND_ROBIN_CONFIG.agentPool : null;
+  const pool = AGENTS.filter(a => a.role === "sales_agent" && (!poolIds || poolIds.includes(a.id)))
+    .sort((a,b) => (a.id||"").localeCompare(b.id||""));
+  if (!pool.length) return new Array(count).fill(null);
+  let lastId = null;
+  try {
+    const doc = await db.collection("settings").doc("roundRobin").get();
+    if (doc.exists) lastId = doc.data().lastAgentId;
+  } catch(e) { /* ignore */ }
+  let idx = 0;
+  if (lastId) { const i = pool.findIndex(a => a.id === lastId); if (i >= 0) idx = (i+1) % pool.length; }
+  const assignments = [];
+  for (let k=0; k<count; k++) { assignments.push(pool[idx].id); idx = (idx+1) % pool.length; }
+  try { await db.collection("settings").doc("roundRobin").set({ lastAgentId: assignments[assignments.length-1] }, { merge:true }); } catch(e) { /* ignore */ }
+  return assignments;
+}
+
 document.getElementById("importStartBtn").addEventListener("click", async () => {
   if (!IMPORT_ROWS.length) return;
   const btn = document.getElementById("importStartBtn");
@@ -3196,14 +3365,23 @@ document.getElementById("importStartBtn").addEventListener("click", async () => 
   let done = 0;
   const total = IMPORT_ROWS.length;
 
+  let importAssignments;
+  if (ROUND_ROBIN_TRIGGER_ROLES.includes(myRole())) {
+    importAssignments = await computeRoundRobinBatch(total);
+  } else {
+    importAssignments = new Array(total).fill(CURRENT_USER.uid);
+  }
+
   for (let i = 0; i < total; i += CHUNK) {
     const chunk = IMPORT_ROWS.slice(i, i + CHUNK);
     const batch = db.batch();
-    chunk.forEach(row => {
+    chunk.forEach((row, offset) => {
       const ref = db.collection("leads").doc();
+      const assignedTo = row.assignedTo || importAssignments[i+offset] || null;
       batch.set(ref, {
         ...row,
         tags: [],
+        assignedTo,
         agentId: CURRENT_USER.uid,
         agentEmail: CURRENT_USER.email,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -4002,6 +4180,7 @@ function barList(pairs){
 
 /* ---------- Team ---------- */
 let PENDING_NAV_ORDER = null;
+let PENDING_RR_POOL = null;
 function navOrderListHtml(){
   if (!PENDING_NAV_ORDER) PENDING_NAV_ORDER = [...NAV_ORDER];
   return PENDING_NAV_ORDER.filter(k => NAV_ITEMS[k]).map((k,i,arr) => `
@@ -4032,6 +4211,7 @@ function renderSettings(){
   const level = permLevel();
   PENDING_NAV_ORDER = [...NAV_ORDER];
   PENDING_DASHBOARD_ORDER = [...DASHBOARD_ORDER];
+  PENDING_RR_POOL = new Set(ROUND_ROBIN_CONFIG.agentPool || []);
   const mine = myAgentDoc();
   const myActivities = ALL_ACTIVITIES.filter(a => a.agentEmail === CURRENT_USER.email)
     .slice().sort((a,b) => {
@@ -4083,6 +4263,10 @@ function renderSettings(){
         <div><div class="sr-label">${t("settings_followup_sound")}</div><div class="sr-sub">${t("settings_followup_sound_sub")}</div></div>
         <label class="toggle-switch"><input type="checkbox" id="followupSoundToggle" ${getFollowupAlertSound()?"checked":""}><span class="ts-slider"></span></label>
       </div>
+      <div class="settings-row">
+        <div><div class="sr-label">${t("settings_browser_notif")}</div><div class="sr-sub">${t("settings_browser_notif_sub")}</div></div>
+        <label class="toggle-switch"><input type="checkbox" id="browserNotifToggle" ${getBrowserNotif()?"checked":""}><span class="ts-slider"></span></label>
+      </div>
       <div class="field" style="margin-top:14px;">
         <label>${t("settings_week_start")}</label>
         <select id="weekStartSelect">
@@ -4108,6 +4292,68 @@ function renderSettings(){
       <div class="field" style="margin-top:0;"><label data-i18n="f_campaign">Campaign / Source Name (optional)</label><input type="text" id="leadFormCampaignInput" placeholder="instagram_bio"></div>
       <button type="button" class="btn-gold" id="copyLeadFormLinkBtn" style="width:100%; margin-top:6px;">${t("copy_lead_form_link")}</button>
     </div>`;
+
+  if (level >= 3 || isManager()) {
+    const salesAgents = AGENTS.filter(a => a.role === "sales_agent");
+    const pool = PENDING_RR_POOL;
+    html += `<div class="panel">
+      <div class="panel-head"><h2>${t("rr_settings_title")}</h2></div>
+      <div style="font-size:12px; color:var(--slate); margin-bottom:14px; line-height:1.6;">${t("rr_settings_desc")}</div>
+      <div class="settings-row">
+        <div><div class="sr-label">${t("rr_enable")}</div></div>
+        <label class="toggle-switch"><input type="checkbox" id="rrEnableToggle" ${ROUND_ROBIN_CONFIG.enabled?"checked":""}><span class="ts-slider"></span></label>
+      </div>
+      <div style="margin:14px 0 6px; font-size:11px; font-weight:700; color:var(--slate);">${t("rr_agent_pool")}</div>
+      <div class="pipe-chip-row" id="rrAgentChips">
+        ${salesAgents.length ? salesAgents.map(a => `<button type="button" class="pipe-chip ${pool.has(a.id)?'active':''}" data-rr-agent="${a.id}">${escapeHtml(a.name||a.email)}</button>`).join("") : `<span style="font-size:11.5px; color:var(--slate);">${t("rr_no_agents")}</span>`}
+      </div>
+      <div style="font-size:11px; color:var(--slate); margin-bottom:14px;">${t("rr_pool_hint")}</div>
+      <div class="form-grid">
+        <div class="field"><label>${t("rr_window_from")}</label><input type="time" id="rrWindowFrom" value="${ROUND_ROBIN_CONFIG.windowFrom||''}"></div>
+        <div class="field"><label>${t("rr_window_to")}</label><input type="time" id="rrWindowTo" value="${ROUND_ROBIN_CONFIG.windowTo||''}"></div>
+      </div>
+      <div class="field">
+        <label>${t("rr_outside_window")}</label>
+        <select id="rrOutsideAction">
+          <option value="assign_anyway" ${ROUND_ROBIN_CONFIG.outsideAction==='assign_anyway'?'selected':''}>${t("rr_assign_anyway")}</option>
+          <option value="skip" ${ROUND_ROBIN_CONFIG.outsideAction==='skip'?'selected':''}>${t("rr_skip")}</option>
+        </select>
+      </div>
+      <div style="font-size:11px; color:var(--slate); margin:6px 0 14px; line-height:1.6;">${t("rr_rule_note")}</div>
+      <div class="modal-actions"><button type="button" class="btn-gold" id="rrSaveBtn" data-i18n="save">Save</button></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head" style="justify-content:space-between;">
+        <h2>${t("tpl_settings_title")}</h2>
+        <button type="button" class="btn-outline" id="tplAddBtn">+ ${t("tpl_add")}</button>
+      </div>
+      <div style="font-size:12px; color:var(--slate); margin-bottom:14px; line-height:1.6;">${t("tpl_settings_desc")}</div>
+      <div id="tplListWrap">
+        ${MESSAGE_TEMPLATES.length ? MESSAGE_TEMPLATES.map((tpl,i) => `
+          <div class="settings-row" data-tpl-row="${i}">
+            <div style="flex:1;">
+              <div class="sr-label">${escapeHtml(tpl.name)}</div>
+              <div class="sr-sub">${escapeHtml((tpl.body||"").slice(0,80))}${(tpl.body||"").length>80?"…":""}</div>
+            </div>
+            <div class="row-actions">
+              <button class="icon-btn" data-tpl-edit="${i}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+              <button class="icon-btn" data-tpl-delete="${i}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>
+            </div>
+          </div>`).join("") : emptyState(t("tpl_empty_title"), t("tpl_empty_sub"))}
+      </div>
+      <div id="tplFormWrap" style="display:none; margin-top:16px; border-top:1px solid var(--navy-line); padding-top:16px;">
+        <input type="hidden" id="tplEditIdx">
+        <div class="field" style="margin-top:0;"><label>${t("tpl_name")}</label><input type="text" id="tplNameInput"></div>
+        <div class="field"><label>${t("tpl_body")}</label><textarea id="tplBodyInput" rows="4" placeholder="${t('tpl_body_placeholder')}"></textarea></div>
+        <div style="font-size:11px; color:var(--slate); margin-bottom:10px;">${t("tpl_placeholders_hint")}</div>
+        <div class="modal-actions">
+          <button type="button" class="btn-outline" id="tplCancelBtn">${t("cancel")}</button>
+          <button type="button" class="btn-gold" id="tplSaveBtn">${t("save")}</button>
+        </div>
+      </div>
+    </div>`;
+  }
 
   if (level >= 3) {
     const c = COMPANY_SETTINGS || {};
@@ -4161,6 +4407,56 @@ function renderSettings(){
 
   document.getElementById("content").innerHTML = html;
 
+  if (level >= 3 || isManager()) {
+    document.querySelectorAll("[data-rr-agent]").forEach(btn => btn.addEventListener("click", () => {
+      const id = btn.dataset.rrAgent;
+      if (PENDING_RR_POOL.has(id)) PENDING_RR_POOL.delete(id); else PENDING_RR_POOL.add(id);
+      btn.classList.toggle("active");
+    }));
+    const rrSaveBtn = document.getElementById("rrSaveBtn");
+    if (rrSaveBtn) rrSaveBtn.addEventListener("click", async () => {
+      await db.collection("settings").doc("roundRobin").set({
+        enabled: document.getElementById("rrEnableToggle").checked,
+        agentPool: [...PENDING_RR_POOL],
+        windowFrom: document.getElementById("rrWindowFrom").value || "",
+        windowTo: document.getElementById("rrWindowTo").value || "",
+        outsideAction: document.getElementById("rrOutsideAction").value,
+      }, { merge: true });
+      toast(t("toast_saved"));
+    });
+
+    const tplFormWrap = document.getElementById("tplFormWrap");
+    const showTplForm = (idx) => {
+      document.getElementById("tplEditIdx").value = idx == null ? "" : idx;
+      const tpl = idx != null ? MESSAGE_TEMPLATES[idx] : { name:"", body:"" };
+      document.getElementById("tplNameInput").value = tpl.name || "";
+      document.getElementById("tplBodyInput").value = tpl.body || "";
+      tplFormWrap.style.display = "block";
+    };
+    document.getElementById("tplAddBtn").addEventListener("click", () => showTplForm(null));
+    document.querySelectorAll("[data-tpl-edit]").forEach(btn => btn.addEventListener("click", () => showTplForm(parseInt(btn.dataset.tplEdit))));
+    document.getElementById("tplCancelBtn").addEventListener("click", () => tplFormWrap.style.display = "none");
+    document.querySelectorAll("[data-tpl-delete]").forEach(btn => btn.addEventListener("click", async () => {
+      if (!confirm(t("confirm_delete"))) return;
+      const idx = parseInt(btn.dataset.tplDelete);
+      const updated = MESSAGE_TEMPLATES.filter((_,i) => i !== idx);
+      await db.collection("settings").doc("messageTemplates").set({ templates: updated }, { merge: true });
+      toast(t("toast_deleted"));
+    }));
+    document.getElementById("tplSaveBtn").addEventListener("click", async () => {
+      const name = document.getElementById("tplNameInput").value.trim();
+      const body = document.getElementById("tplBodyInput").value.trim();
+      if (!name || !body) return;
+      const idxRaw = document.getElementById("tplEditIdx").value;
+      const updated = [...MESSAGE_TEMPLATES];
+      if (idxRaw !== "") updated[parseInt(idxRaw)] = { name, body };
+      else updated.push({ name, body });
+      await db.collection("settings").doc("messageTemplates").set({ templates: updated }, { merge: true });
+      toast(t("toast_saved"));
+      tplFormWrap.style.display = "none";
+    });
+  }
+
   document.getElementById("settingsAvatarInput").addEventListener("change", async (e) => {
     const file = e.target.files[0]; if (!file) return;
     const base64 = await resizeImageFile(file, 200);
@@ -4206,6 +4502,13 @@ function renderSettings(){
   }));
   document.getElementById("notifSoundToggle").addEventListener("change", (e) => setNotifSound(e.target.checked));
   document.getElementById("followupSoundToggle").addEventListener("change", (e) => setFollowupAlertSound(e.target.checked));
+  document.getElementById("browserNotifToggle").addEventListener("change", async (e) => {
+    if (e.target.checked) {
+      const granted = await requestBrowserNotifPermission();
+      if (!granted) { e.target.checked = false; alert(t("settings_browser_notif_denied")); return; }
+    }
+    setBrowserNotif(e.target.checked);
+  });
   document.getElementById("weekStartSelect").addEventListener("change", (e) => setWeekStart(e.target.value));
   document.querySelectorAll("#content .lang-toggle-inline button").forEach(btn => btn.addEventListener("click", () => setLang(btn.dataset.lang)));
 
@@ -4390,6 +4693,7 @@ const ADMIN_ROLES = ["general_manager","company_admin"];
 const MID_ROLES = ["sales_manager","marketing_manager","sales_team_leader","marketing_team_leader","sales_supervisor","marketing_supervisor"];
 const ROLE_KEYS = ["general_manager","company_admin","sales_manager","marketing_manager","sales_team_leader","marketing_team_leader","sales_supervisor","marketing_supervisor","sales_agent","marketing_agent"];
 function isFullAdmin(){ return ADMIN_ROLES.includes(myRole()); }
+function isManager(){ return myRole() === "sales_manager" || myRole() === "marketing_manager"; }
 function visibleLeads(){ return isFullAdmin() ? LEADS : LEADS.filter(l => l.assignedTo === CURRENT_USER.uid || l.agentId === CURRENT_USER.uid); }
 function canSeeLeadPhone(lead){ return isFullAdmin() || lead.assignedTo === CURRENT_USER.uid || lead.agentId === CURRENT_USER.uid; }
 function myAgentDoc(){ return AGENTS.find(a => a.id === (CURRENT_USER && CURRENT_USER.uid)); }
@@ -5238,15 +5542,46 @@ function doCall(phone, leadId){
   window.location.href = "tel:" + cleanPhone(phone);
   if (leadId) logActivity(leadId, "call", t("act_call"));
 }
-function doWhatsapp(phone, leadId){
+function doWhatsapp(phone, leadId, message){
   if (!phone) return;
-  window.open("https://wa.me/" + waPhone(phone), "_blank");
+  let url = "https://wa.me/" + waPhone(phone);
+  if (message) url += "?text=" + encodeURIComponent(message);
+  window.open(url, "_blank");
   if (leadId) logActivity(leadId, "whatsapp", t("act_whatsapp"));
 }
 function doSms(phone, leadId){
   if (!phone) return;
   window.location.href = "sms:" + cleanPhone(phone);
   if (leadId) logActivity(leadId, "sms", t("act_sms"));
+}
+
+function fillTemplate(body, lead){
+  const agentName = (myAgentDoc() && myAgentDoc().name) || CURRENT_USER.email;
+  return (body||"")
+    .replace(/\{name\}/g, lead.name || "")
+    .replace(/\{agent\}/g, agentName)
+    .replace(/\{interest\}/g, lead.interest || "")
+    .replace(/\{project\}/g, lead.project || "");
+}
+function openTemplatePicker(phone, leadId){
+  const lead = LEADS.find(l => l.id===leadId) || {};
+  if (!MESSAGE_TEMPLATES.length) { doWhatsapp(phone, leadId); return; }
+  document.getElementById("templatePickerList").innerHTML = MESSAGE_TEMPLATES.map((tpl,i) => `
+    <button type="button" class="pipe-chip" data-tpl-idx="${i}" style="display:block; width:100%; text-align:${getLang()==='ar'?'right':'left'}; margin-bottom:6px; padding:10px 14px;">
+      <strong>${escapeHtml(tpl.name)}</strong><br><span style="font-size:11px; color:var(--slate);">${escapeHtml((tpl.body||"").slice(0,60))}${(tpl.body||"").length>60?"…":""}</span>
+    </button>`).join("") + `<button type="button" class="pipe-chip" id="tplNoneBtn" style="display:block; width:100%; text-align:center; margin-top:6px;">${t("tpl_send_blank")}</button>`;
+  document.getElementById("templatePickerModal").dataset.phone = phone;
+  document.getElementById("templatePickerModal").dataset.leadId = leadId;
+  document.getElementById("templatePickerModal").classList.add("show");
+  document.querySelectorAll("[data-tpl-idx]").forEach(btn => btn.addEventListener("click", () => {
+    const tpl = MESSAGE_TEMPLATES[parseInt(btn.dataset.tplIdx)];
+    doWhatsapp(phone, leadId, fillTemplate(tpl.body, lead));
+    closeModal("templatePickerModal");
+  }));
+  document.getElementById("tplNoneBtn").addEventListener("click", () => {
+    doWhatsapp(phone, leadId);
+    closeModal("templatePickerModal");
+  });
 }
 
 function openLeadDetail(id){
@@ -5341,7 +5676,7 @@ function renderDetailOverview(lead){
         </div>
       </div>`).join("");
     extraWrap.querySelectorAll("[data-extra-call]").forEach(btn => btn.addEventListener("click", () => doCall(btn.dataset.extraCall, DETAIL_LEAD_ID)));
-    extraWrap.querySelectorAll("[data-extra-whatsapp]").forEach(btn => btn.addEventListener("click", () => doWhatsapp(btn.dataset.extraWhatsapp, DETAIL_LEAD_ID)));
+    extraWrap.querySelectorAll("[data-extra-whatsapp]").forEach(btn => btn.addEventListener("click", () => openTemplatePicker(btn.dataset.extraWhatsapp, DETAIL_LEAD_ID)));
   } else {
     extraWrap.style.display = "none";
     extraWrap.innerHTML = "";
@@ -5384,7 +5719,7 @@ function renderDetailQuickContact(lead){
   if (canSeePhone) {
     qc.querySelector("[data-qc-call]").addEventListener("click", () => doCall(phone, DETAIL_LEAD_ID));
     qc.querySelector("[data-qc-sms]").addEventListener("click", () => doSms(phone, DETAIL_LEAD_ID));
-    qc.querySelector("[data-qc-whatsapp]").addEventListener("click", () => doWhatsapp(phone, DETAIL_LEAD_ID));
+    qc.querySelector("[data-qc-whatsapp]").addEventListener("click", () => openTemplatePicker(phone, DETAIL_LEAD_ID));
   }
 }
 
