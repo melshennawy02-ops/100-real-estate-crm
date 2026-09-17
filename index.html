@@ -750,7 +750,10 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
   <div class="modal">
     <div class="modal-head">
       <h3 id="detailLeadName">—</h3>
-      <button class="modal-close" data-close-modal="leadDetailModal">✕</button>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button type="button" id="detailDeleteLeadBtn" style="display:none; background:none; border:1px solid var(--danger); color:var(--danger); border-radius:8px; padding:6px 12px; font-size:11.5px; font-weight:700; cursor:pointer;">🗑 <span data-i18n="delete_lead_btn">Delete Client</span></button>
+        <button class="modal-close" data-close-modal="leadDetailModal">✕</button>
+      </div>
     </div>
 
     <div class="lead-overview" id="detailOverview"></div>
@@ -1572,6 +1575,7 @@ const I18N = {
     reports_title: "التقارير", reports_sub: "أداء المبيعات والفريق",
     by_status: "توزيع العملاء حسب الحالة", by_source: "توزيع العملاء حسب المصدر", by_agent: "أداء الموظفين",
     confirm_delete: "هل أنت متأكد من الحذف؟", toast_saved: "تم الحفظ بنجاح", toast_deleted: "تم الحذف", toast_updated: "تم التحديث",
+    delete_lead_btn: "حذف العميل",
     team_title: "الفريق", team_sub: "إدارة حسابات الموظفين", add_employee: "إضافة موظف",
     modal_add_employee: "إضافة موظف جديد", f_employee_name: "اسم الموظف",
     f_employee_email: "البريد الإلكتروني", f_employee_password: "كلمة المرور",
@@ -1844,6 +1848,7 @@ const I18N = {
     reports_title: "Reports", reports_sub: "Sales & team performance",
     by_status: "Leads by Status", by_source: "Leads by Source", by_agent: "Agent Performance",
     confirm_delete: "Are you sure you want to delete this?", toast_saved: "Saved successfully", toast_deleted: "Deleted", toast_updated: "Updated",
+    delete_lead_btn: "Delete Client",
     team_title: "Team", team_sub: "Manage employee accounts", add_employee: "Add Employee",
     modal_add_employee: "Add New Employee", f_employee_name: "Employee Name",
     f_employee_email: "Email", f_employee_password: "Password",
@@ -4466,7 +4471,14 @@ function renderSettings(){
   document.getElementById("settingsSaveProfileBtn").addEventListener("click", async () => {
     const pending = document.getElementById("settingsAvatarPreview").dataset.pending;
     const data = { name: document.getElementById("settingsNameInput").value.trim(), email: CURRENT_USER.email };
-    if (!mine) { data.role = "general_manager"; data.createdAt = firebase.firestore.FieldValue.serverTimestamp(); }
+    const existingDoc = await db.collection("agents").doc(CURRENT_USER.uid).get();
+    if (!existingDoc.exists) {
+      // Only a truly brand-new system (zero agents ever created) may self-provision as General Manager.
+      // Everyone else defaults to the lowest-privilege role; an actual admin must promote them via the Team page.
+      const anyAgents = await db.collection("agents").limit(1).get();
+      data.role = anyAgents.empty ? "general_manager" : "sales_agent";
+      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+    }
     if (pending) data.avatarBase64 = pending;
     await db.collection("agents").doc(CURRENT_USER.uid).set(data, { merge: true });
     toast(t("toast_profile_saved"));
@@ -5593,6 +5605,14 @@ function openLeadDetail(id){
   renderDetailDocs();
 
   document.getElementById("detailLeadName").textContent = lead.name || "—";
+  const deleteBtn = document.getElementById("detailDeleteLeadBtn");
+  deleteBtn.style.display = myRole() === "general_manager" ? "inline-flex" : "none";
+  deleteBtn.onclick = async () => {
+    if (!confirm(t("confirm_delete"))) return;
+    await db.collection("leads").doc(id).delete();
+    toast(t("toast_deleted"));
+    closeModal("leadDetailModal");
+  };
   document.getElementById("detailName").value = lead.name || "";
   document.getElementById("detailLeadId").value = id;
   document.getElementById("detailStatus").value = lead.status || "new";
