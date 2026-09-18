@@ -1401,7 +1401,7 @@ const I18N = {
     recent_leads: "أحدث العملاء المحتملين", today_tasks: "مهام اليوم", view_all: "عرض الكل",
     leads_title: "العملاء المحتملين", leads_sub: "إدارة جهات الاتصال والعملاء المحتملين",
     add_lead: "إضافة عميل محتمل", search_placeholder: "ابحث بالاسم أو رقم الهاتف...", filter_all: "الكل",
-    filter_by_agent: "تصفية حسب الموظف",
+    filter_by_agent: "تصفية حسب الموظف", unassigned_leads: "غير مخصص",
     add_phone: "إضافة رقم", f_extra_phones: "أرقام إضافية",
     col_name: "الاسم", col_phone: "الهاتف", col_interest: "الاهتمام", col_status: "الحالة",
     col_rating: "التقييم", col_actions: "إجراءات", col_created_at: "تاريخ الإنشاء",
@@ -1674,7 +1674,7 @@ const I18N = {
     recent_leads: "Recent Leads", today_tasks: "Today's Tasks", view_all: "View all",
     leads_title: "Leads", leads_sub: "Manage contacts and leads",
     add_lead: "Add Lead", search_placeholder: "Search by name or phone...", filter_all: "All",
-    filter_by_agent: "Filter by Agent",
+    filter_by_agent: "Filter by Agent", unassigned_leads: "Unassigned",
     add_phone: "Add Phone", f_extra_phones: "Extra Phone Numbers",
     col_name: "Name", col_phone: "Phone", col_interest: "Interest", col_status: "Status",
     col_rating: "Rating", col_actions: "Actions", col_created_at: "Created At",
@@ -2847,6 +2847,7 @@ function emptyState(title,sub){ return `<div class="empty-state"><span class="ri
 
 /* ---------- Leads ---------- */
 function renderLeads(){
+  const unassignedCount = isFullAdmin() ? LEADS.filter(l => !l.assignedTo).length : 0;
   document.getElementById("content").innerHTML = `
     <div class="panel">
       <div class="panel-head">
@@ -2856,6 +2857,7 @@ function renderLeads(){
           ${STATUSES.map(s => `<option value="${s}">${t('status_'+s)}</option>`).join("")}
         </select>
         <span class="agent-filter-toggle" id="agentFilterToggle">${t("filter_by_agent")} <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></span>
+        ${isFullAdmin() ? `<button type="button" class="btn-outline" id="btnUnassignedFilter" style="border-color:${unassignedCount?'var(--danger)':'var(--navy-line)'}; color:${unassignedCount?'var(--danger)':'var(--slate)'};">⚠ ${t("unassigned_leads")} (${unassignedCount})</button>` : ""}
       </div>
       <div class="agent-filter-row" id="agentFilterRow" style="display:none;">
         ${AGENTS.map(a => `<button type="button" class="agent-filter-btn" data-agent="${a.id}">${escapeHtml(a.name||a.email)}</button>`).join("")}
@@ -2868,6 +2870,12 @@ function renderLeads(){
   document.getElementById("agentFilterToggle").addEventListener("click", () => {
     const row = document.getElementById("agentFilterRow");
     row.style.display = row.style.display === "none" ? "flex" : "none";
+  });
+  const unassignedBtn = document.getElementById("btnUnassignedFilter");
+  if (unassignedBtn) unassignedBtn.addEventListener("click", () => {
+    SHOW_UNASSIGNED_ONLY = !SHOW_UNASSIGNED_ONLY;
+    unassignedBtn.classList.toggle("active", SHOW_UNASSIGNED_ONLY);
+    filterLeadsView();
   });
   document.querySelectorAll(".agent-filter-btn").forEach(btn => {
     btn.classList.toggle("active", SELECTED_FILTER_AGENTS.has(btn.dataset.agent));
@@ -2889,13 +2897,15 @@ function renderLeads(){
   }
 }
 let SELECTED_FILTER_AGENTS = new Set();
+let SHOW_UNASSIGNED_ONLY = false;
 function filterLeadsView(){
   const q = document.getElementById("leadSearch").value.trim().toLowerCase();
   const status = document.getElementById("leadFilter").value;
   const filtered = visibleLeads().filter(l =>
     (!q || (l.name||"").toLowerCase().includes(q) || (l.phone||"").includes(q)) &&
     (status==="all"||l.status===status) &&
-    (SELECTED_FILTER_AGENTS.size===0 || SELECTED_FILTER_AGENTS.has(l.assignedTo))
+    (SELECTED_FILTER_AGENTS.size===0 || SELECTED_FILTER_AGENTS.has(l.assignedTo)) &&
+    (!SHOW_UNASSIGNED_ONLY || !l.assignedTo)
   );
   document.getElementById("leadsTableWrap").innerHTML = filtered.length ? leadsTable(filtered) : emptyState(t("empty_leads_title"), t("empty_leads_sub"));
   bindLeadRowEvents();
