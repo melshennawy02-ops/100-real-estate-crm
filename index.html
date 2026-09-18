@@ -1546,6 +1546,8 @@ const I18N = {
     rr_window_from: "من الساعة", rr_window_to: "إلى الساعة", rr_outside_window: "خارج الوقت المحدد",
     rr_assign_anyway: "وزّع فورًا بغض النظر عن الوقت", rr_skip: "لا توزع، اتركه بدون تخصيص",
     rr_rule_note: "ملاحظة: التوزيع التلقائي بيشتغل بس على العملاء اللي بيضيفهم فريق التسويق أو الأدمن. أما لو سيلز ضاف عميل بنفسه، العميل بيفضل عنده ومش بيتوزع تلقائيًا — إلا لو مديره أو المدير العام أو الأدمن حوّله يدويًا.",
+    rr_sla_enable: "سحب العميل تلقائيًا لو محدش رد", rr_sla_enable_sub: "لو السيلز ماكلمش/ماتواصلش مع العميل خلال المدة المحددة، يتسحب منه ويتوزع على السيلز التالي تلقائيًا",
+    rr_sla_minutes: "المدة بالدقايق", rr_sla_note: "الخاصية دي بتشتغل بس وقت ما حد فاتح البرنامج (مفيش سيرفر خلفي)، فكل ما حد يفتح التطبيق (خصوصًا المدير العام) بيتم فحص العملاء المتأخرين وسحبهم تلقائيًا.",
     tpl_picker_title: "اختر رسالة جاهزة", tpl_send_blank: "إرسال بدون قالب (رسالة فاضية)",
     tpl_settings_title: "قوالب الرسائل الجاهزة", tpl_settings_desc: "قوالب رسائل واتساب سريعة تظهر عند التواصل مع أي عميل، لتوفير وقت الكتابة المتكرر.",
     tpl_add: "إضافة قالب", tpl_empty_title: "لا توجد قوالب بعد", tpl_empty_sub: "أضف أول قالب رسالة جاهزة",
@@ -1647,7 +1649,7 @@ const I18N = {
     f_tag_add_placeholder: "مثال: VIP أو يفضل_المساء", f_add_note_placeholder: "اكتب ملاحظة...",
     f_tags_hint: "استخدمها لتمييز العميل بعلامة سريعة تسهّل البحث والفرز لاحقًا — مثال: #VIP، #يفضل_التواصل_مساءً، #من_معرض_الساحل",
     add: "إضافة", new_task: "+ مهمة جديدة", unassigned: "غير معيّن", none: "—",
-    act_created: "تم إنشاء العميل", act_call: "تم تسجيل مكالمة",
+    act_created: "تم إنشاء العميل", act_call: "تم تسجيل مكالمة", act_auto_reassigned: "سُحب تلقائيًا لعدم الرد وأُعيد توزيعه من",
     act_whatsapp: "تم فتح واتساب", act_sms: "تم فتح رسالة نصية",
     act_status: "تم تغيير الحالة إلى", act_updated: "تم تحديث بيانات العميل",
     call: "اتصال", whatsapp: "واتساب", sms: "رسالة",
@@ -1819,6 +1821,8 @@ const I18N = {
     rr_window_from: "From", rr_window_to: "To", rr_outside_window: "Outside the time window",
     rr_assign_anyway: "Assign immediately regardless of time", rr_skip: "Don't assign, leave unassigned",
     rr_rule_note: "Note: auto-distribution only applies to leads added by the marketing team or admin. If a sales agent adds a lead themselves, it stays with them and is not auto-distributed — unless their manager, the GM, or admin reassigns it manually.",
+    rr_sla_enable: "Auto-reclaim if no response", rr_sla_enable_sub: "If the agent hasn't contacted the lead within the set time, it's pulled back and auto-assigned to the next agent",
+    rr_sla_minutes: "Minutes", rr_sla_note: "This only runs while someone has the app open (no backend server) — every time the app is opened (especially by the GM), overdue leads are checked and reclaimed automatically.",
     tpl_picker_title: "Choose a message", tpl_send_blank: "Send without a template (blank message)",
     tpl_settings_title: "Message Templates", tpl_settings_desc: "Quick WhatsApp templates shown when contacting any lead, to save repetitive typing.",
     tpl_add: "Add Template", tpl_empty_title: "No templates yet", tpl_empty_sub: "Add your first message template",
@@ -1920,7 +1924,7 @@ const I18N = {
     f_tag_add_placeholder: "e.g. VIP or Prefers_Evening", f_add_note_placeholder: "Add a note...",
     f_tags_hint: "Use it to flag a lead for quick searching and filtering later — e.g. #VIP, #Prefers_Evening_Calls, #From_Coast_Exhibition",
     add: "Add", new_task: "+ New Task", unassigned: "Unassigned", none: "—",
-    act_created: "Lead created", act_call: "Call logged",
+    act_created: "Lead created", act_call: "Call logged", act_auto_reassigned: "Auto-reclaimed for no response and reassigned from",
     act_whatsapp: "WhatsApp opened", act_sms: "SMS opened",
     act_status: "Status changed to", act_updated: "Lead details updated",
     call: "Call", whatsapp: "WhatsApp", sms: "SMS",
@@ -1976,6 +1980,47 @@ function checkFollowupAlerts(){
   });
 }
 setInterval(checkFollowupAlerts, 30000);
+setInterval(checkSlaEscalations, 60000);
+let SLA_PROCESSING = new Set();
+async function checkSlaEscalations(){
+  if (!isFullAdmin()) return; // only a full-visibility session can safely sweep every lead
+  if (!ROUND_ROBIN_CONFIG.enabled || !ROUND_ROBIN_CONFIG.slaEnabled) return;
+  const slaMs = (ROUND_ROBIN_CONFIG.slaMinutes || 30) * 60000;
+  const now = Date.now();
+  const overdue = LEADS.filter(l => {
+    if (!l.assignedTo || l.firstContactAt || l.status !== "new") return false;
+    if (SLA_PROCESSING.has(l.id)) return false;
+    const assignedAt = l.assignedAt && l.assignedAt.seconds ? l.assignedAt.seconds*1000 : (l.createdAt && l.createdAt.seconds ? l.createdAt.seconds*1000 : null);
+    if (!assignedAt) return false;
+    return (now - assignedAt) > slaMs;
+  });
+  for (const lead of overdue) {
+    SLA_PROCESSING.add(lead.id);
+    try {
+      const poolIds = ROUND_ROBIN_CONFIG.agentPool && ROUND_ROBIN_CONFIG.agentPool.length ? ROUND_ROBIN_CONFIG.agentPool : null;
+      const pool = AGENTS.filter(a => a.role === "sales_agent" && (!poolIds || poolIds.includes(a.id)) && a.id !== lead.assignedTo)
+        .sort((a,b) => (a.id||"").localeCompare(b.id||""));
+      if (!pool.length) continue;
+      let lastId = null;
+      try {
+        const doc = await db.collection("settings").doc("roundRobin").get();
+        if (doc.exists) lastId = doc.data().lastAgentId;
+      } catch(e) { /* ignore */ }
+      let idx = 0;
+      if (lastId) { const i = pool.findIndex(a => a.id === lastId); if (i >= 0) idx = (i+1) % pool.length; }
+      const nextAgent = pool[idx];
+      const prevAgent = AGENTS.find(a => a.id === lead.assignedTo);
+      await db.collection("leads").doc(lead.id).update({
+        assignedTo: nextAgent.id,
+        assignedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+      await db.collection("settings").doc("roundRobin").set({ lastAgentId: nextAgent.id }, { merge:true });
+      await logActivity(lead.id, "auto_reassigned", `${t("act_auto_reassigned")} ${(prevAgent&&(prevAgent.name||prevAgent.email))||"—"} → ${nextAgent.name||nextAgent.email}`);
+      toast(`⏱ ${lead.name||""}: ${t("act_auto_reassigned")}`);
+    } catch(err) { console.error("sla escalation error", err); }
+    finally { SLA_PROCESSING.delete(lead.id); }
+  }
+}
 function playAlertBeep(){
   try {
     const ctx = new (window.AudioContext||window.webkitAudioContext)();
@@ -2015,7 +2060,7 @@ const DEFAULT_BULK_ROLES = ["general_manager","company_admin","sales_manager","m
 const DEFAULT_RESALE_EDIT_ROLES = ["general_manager","company_admin"];
 const DEFAULT_RESALE_PHONE_ROLES = ["general_manager","company_admin"];
 let PERMISSIONS_CONFIG = { bulk_reassign: DEFAULT_BULK_ROLES, resale_edit_delete: DEFAULT_RESALE_EDIT_ROLES, resale_view_phone: DEFAULT_RESALE_PHONE_ROLES };
-let ROUND_ROBIN_CONFIG = { enabled: true, agentPool: [], windowFrom: "", windowTo: "", outsideAction: "assign_anyway", lastAgentId: null };
+let ROUND_ROBIN_CONFIG = { enabled: true, agentPool: [], windowFrom: "", windowTo: "", outsideAction: "assign_anyway", lastAgentId: null, slaEnabled: false, slaMinutes: 30 };
 let MESSAGE_TEMPLATES = [];
 const ROUND_ROBIN_TRIGGER_ROLES = ["marketing_agent","marketing_manager","marketing_team_leader","marketing_supervisor","company_admin","general_manager"];
 
@@ -2405,6 +2450,8 @@ function subscribeData(){
       ROUND_ROBIN_CONFIG.windowTo = d.windowTo || "";
       ROUND_ROBIN_CONFIG.outsideAction = d.outsideAction || "assign_anyway";
       ROUND_ROBIN_CONFIG.lastAgentId = d.lastAgentId || null;
+      ROUND_ROBIN_CONFIG.slaEnabled = d.slaEnabled === true;
+      ROUND_ROBIN_CONFIG.slaMinutes = d.slaMinutes || 30;
     }
     if (currentView === "settings") renderView();
   }, err => console.error("round robin settings error", err));
@@ -3047,10 +3094,11 @@ document.getElementById("leadForm").addEventListener("submit", async (e) => {
       }
       if (ROUND_ROBIN_TRIGGER_ROLES.includes(myRole())) {
         const nextAgent = await getNextRoundRobinAgent();
-        if (nextAgent) data.assignedTo = nextAgent.id;
+        if (nextAgent) { data.assignedTo = nextAgent.id; data.assignedAt = firebase.firestore.FieldValue.serverTimestamp(); }
       } else {
         // Lead added by a sales-side user: stays with them; only a manager/GM/admin can reassign later
         data.assignedTo = CURRENT_USER.uid;
+        data.assignedAt = firebase.firestore.FieldValue.serverTimestamp();
       }
       data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       data.tags = [];
@@ -3150,7 +3198,7 @@ function renderBulkBar(){
     btn.disabled = true;
     try {
       const batch = db.batch();
-      SELECTED_LEAD_IDS.forEach(id => batch.update(db.collection("leads").doc(id), { assignedTo: agentId }));
+      SELECTED_LEAD_IDS.forEach(id => batch.update(db.collection("leads").doc(id), { assignedTo: agentId, assignedAt: firebase.firestore.FieldValue.serverTimestamp() }));
       await batch.commit();
       toast(t("toast_bulk_assigned"));
       SELECTED_LEAD_IDS.clear();
@@ -3406,6 +3454,7 @@ document.getElementById("importStartBtn").addEventListener("click", async () => 
         ...row,
         tags: [],
         assignedTo,
+        assignedAt: assignedTo ? firebase.firestore.FieldValue.serverTimestamp() : null,
         agentId: CURRENT_USER.uid,
         agentEmail: CURRENT_USER.email,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -4390,6 +4439,16 @@ function renderSettings(){
         </select>
       </div>
       <div style="font-size:11px; color:var(--slate); margin:6px 0 14px; line-height:1.6;">${t("rr_rule_note")}</div>
+
+      <div style="border-top:1px solid var(--navy-line); margin:18px 0 16px; padding-top:16px;">
+        <div class="settings-row">
+          <div><div class="sr-label">${t("rr_sla_enable")}</div><div class="sr-sub">${t("rr_sla_enable_sub")}</div></div>
+          <label class="toggle-switch"><input type="checkbox" id="rrSlaEnableToggle" ${ROUND_ROBIN_CONFIG.slaEnabled?"checked":""}><span class="ts-slider"></span></label>
+        </div>
+        <div class="field"><label>${t("rr_sla_minutes")}</label><input type="number" min="5" step="5" id="rrSlaMinutes" value="${ROUND_ROBIN_CONFIG.slaMinutes||30}"></div>
+        <div style="font-size:11px; color:var(--slate); line-height:1.6;">${t("rr_sla_note")}</div>
+      </div>
+
       <div class="modal-actions"><button type="button" class="btn-gold" id="rrSaveBtn" data-i18n="save">Save</button></div>
     </div>
 
@@ -4491,6 +4550,8 @@ function renderSettings(){
         windowFrom: document.getElementById("rrWindowFrom").value || "",
         windowTo: document.getElementById("rrWindowTo").value || "",
         outsideAction: document.getElementById("rrOutsideAction").value,
+        slaEnabled: document.getElementById("rrSlaEnableToggle").checked,
+        slaMinutes: parseInt(document.getElementById("rrSlaMinutes").value) || 30,
       }, { merge: true });
       toast(t("toast_saved"));
     });
@@ -5597,6 +5658,7 @@ const ACT_ICONS = {
   note: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>',
   task: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
   updated: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+  auto_reassigned: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>',
 };
 
 function cleanPhone(p){ return (p||"").replace(/[^\d+]/g,""); }
@@ -5612,6 +5674,12 @@ async function logActivity(leadId, type, text){
       agentEmail: CURRENT_USER ? CURRENT_USER.email : "",
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     });
+    if (["call","whatsapp","sms"].includes(type)) {
+      const lead = LEADS.find(l => l.id === leadId);
+      if (lead && !lead.firstContactAt) {
+        await db.collection("leads").doc(leadId).update({ firstContactAt: firebase.firestore.FieldValue.serverTimestamp() });
+      }
+    }
   } catch(err){ console.error("activity log error", err); }
 }
 function doCall(phone, leadId){
@@ -5926,6 +5994,8 @@ document.getElementById("detailForm").addEventListener("submit", async (e) => {
   const lead = LEADS.find(l => l.id===id) || {};
   const newStatus = document.getElementById("detailStatus").value;
   const statusChanged = lead.status !== newStatus;
+  const newAssignedTo = document.getElementById("detailAssigned").value || null;
+  const assignedToChanged = lead.assignedTo !== newAssignedTo;
 
   const data = {
     name: document.getElementById("detailName").value.trim(),
@@ -5945,11 +6015,12 @@ document.getElementById("detailForm").addEventListener("submit", async (e) => {
     expectedClosing: document.getElementById("detailExpectedClosing").value,
     dealValue: document.getElementById("detailDealValue").value.trim(),
     lostReason: document.getElementById("detailLostReason").value,
-    assignedTo: document.getElementById("detailAssigned").value || null,
+    assignedTo: newAssignedTo,
     accountId: document.getElementById("detailAccount").value || null,
     notes: document.getElementById("detailNotes").value.trim(),
     tags: DETAIL_TAGS,
   };
+  if (assignedToChanged) data.assignedAt = firebase.firestore.FieldValue.serverTimestamp();
   try {
     await db.collection("leads").doc(id).update(data);
     if (statusChanged) {
