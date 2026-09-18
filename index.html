@@ -2067,8 +2067,9 @@ const ROUND_ROBIN_TRIGGER_ROLES = ["marketing_agent","marketing_manager","market
 function canBulkReassign(){
   return PERMISSIONS_CONFIG.bulk_reassign.includes(myRole());
 }
-function canEditDeleteResale(){
-  return PERMISSIONS_CONFIG.resale_edit_delete.includes(myRole());
+function canEditDeleteResale(unit){
+  if (PERMISSIONS_CONFIG.resale_edit_delete.includes(myRole())) return true;
+  return !!(unit && unit.agentId === CURRENT_USER.uid);
 }
 let COMPANY_SETTINGS = {};
 let currentView = "dashboard";
@@ -5240,7 +5241,8 @@ document.getElementById("resalePhotosInput").addEventListener("change", async (e
 document.getElementById("resaleForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const id = document.getElementById("resaleId").value;
-  if (id && !canEditDeleteResale()) return;
+  const existingResaleUnit = id ? RESALE_UNITS.find(u => u.id===id) : null;
+  if (id && !canEditDeleteResale(existingResaleUnit)) return;
   const data = {
     unitCode: document.getElementById("resaleUnitCode").value,
     ownerName: document.getElementById("resaleOwnerName").value.trim(),
@@ -5290,7 +5292,7 @@ function openResaleDetail(id){
   document.getElementById("resaleDetailBody").innerHTML = gallery + rows.map(([l,v]) => `
     <div class="resale-detail-row"><span>${l}</span><span>${escapeHtml(String(v))}</span></div>
   `).join("");
-  const canEdit = canEditDeleteResale();
+  const canEdit = canEditDeleteResale(u);
   const canDelete = permLevel() >= 3;
   const editBtn = document.getElementById("resaleDetailEditBtn");
   const deleteBtn = document.getElementById("resaleDetailDeleteBtn");
@@ -5478,7 +5480,8 @@ document.getElementById("rentalPhotosInput").addEventListener("change", async (e
 document.getElementById("rentalForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const id = document.getElementById("rentalId").value;
-  if (id && !canEditDeleteResale()) return;
+  const existingRentalUnit = id ? RENTAL_UNITS.find(u => u.id===id) : null;
+  if (id && !canEditDeleteResale(existingRentalUnit)) return;
   const data = {
     unitCode: document.getElementById("rentalUnitCode").value,
     ownerName: document.getElementById("rentalOwnerName").value.trim(),
@@ -5530,7 +5533,7 @@ function openRentalDetail(id){
   document.getElementById("rentalDetailBody").innerHTML = gallery + rows.map(([l,v]) => `
     <div class="resale-detail-row"><span>${l}</span><span>${escapeHtml(String(v))}</span></div>
   `).join("");
-  const canEdit = canEditDeleteResale();
+  const canEdit = canEditDeleteResale(u);
   const canDelete = permLevel() >= 3;
   const editBtn = document.getElementById("rentalDetailEditBtn");
   const deleteBtn = document.getElementById("rentalDetailDeleteBtn");
