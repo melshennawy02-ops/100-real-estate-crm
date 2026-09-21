@@ -1433,7 +1433,7 @@ const I18N = {
     dash_title: "الرئيسية", dash_sub: "نظرة عامة على أداء اليوم",
     stat_total_leads: "إجمالي العملاء", stat_open_deals: "صفقات مفتوحة",
     stat_won_month: "صفقات مغلقة هذا الشهر", stat_followups_today: "متابعات اليوم",
-    recent_leads: "أحدث العملاء المحتملين", today_tasks: "مهام اليوم", view_all: "عرض الكل",
+    recent_leads: "أحدث العملاء المحتملين", today_tasks: "المهام المعلقة", today_tasks_real: "مهام اليوم", view_all: "عرض الكل",
     leads_title: "العملاء المحتملين", leads_sub: "إدارة جهات الاتصال والعملاء المحتملين",
     add_lead: "إضافة عميل محتمل", search_placeholder: "ابحث بالاسم أو رقم الهاتف...", filter_all: "الكل",
     filter_by_agent: "تصفية حسب الموظف", unassigned_leads: "غير مخصص",
@@ -1505,7 +1505,7 @@ const I18N = {
     dash_sec_quickstats: "إحصائيات سريعة", dash_sec_leaderboard: "أعلى سيلز",
     dash_sec_stages: "مراحل العملاء", dash_sec_opportunities: "أفضل الفرص",
     dash_sec_resale: "وحدات ريسيل مميزة", dash_sec_rental: "وحدات إيجار مميزة",
-    dash_sec_activities: "آخر النشاطات", dash_sec_recentleads: "أحدث العملاء", dash_sec_todaytasks: "مهام اليوم",
+    dash_sec_activities: "آخر النشاطات", dash_sec_recentleads: "أحدث العملاء", dash_sec_todaystoday: "مهام اليوم", dash_sec_todaytasks: "المهام المعلقة",
     top_opportunities: "أفضل الفرص", score_hot: "فرصة قوية", score_warm: "فرصة متوسطة", score_cold: "فرصة ضعيفة",
     lead_score: "نقطة العميل",
     created_by: "أضافه", currently_with: "العميل حاليًا عند",
@@ -1712,7 +1712,7 @@ const I18N = {
     dash_title: "Dashboard", dash_sub: "Today's performance overview",
     stat_total_leads: "Total Customers", stat_open_deals: "Open Deals",
     stat_won_month: "Closed This Month", stat_followups_today: "Follow-ups Today",
-    recent_leads: "Recent Leads", today_tasks: "Today's Tasks", view_all: "View all",
+    recent_leads: "Recent Leads", today_tasks: "Pending Tasks", today_tasks_real: "Today's Tasks", view_all: "View all",
     leads_title: "Leads", leads_sub: "Manage contacts and leads",
     add_lead: "Add Lead", search_placeholder: "Search by name or phone...", filter_all: "All",
     filter_by_agent: "Filter by Agent", unassigned_leads: "Unassigned",
@@ -1784,7 +1784,7 @@ const I18N = {
     dash_sec_quickstats: "Quick Stats", dash_sec_leaderboard: "Top Sellers",
     dash_sec_stages: "Lead Stages", dash_sec_opportunities: "Top Opportunities",
     dash_sec_resale: "Featured Resale Units", dash_sec_rental: "Featured Rental Units",
-    dash_sec_activities: "Recent Activities", dash_sec_recentleads: "Recent Leads", dash_sec_todaytasks: "Today's Tasks",
+    dash_sec_activities: "Recent Activities", dash_sec_recentleads: "Recent Leads", dash_sec_todaystoday: "Today's Tasks", dash_sec_todaytasks: "Pending Tasks",
     top_opportunities: "Top Opportunities", score_hot: "Strong Opportunity", score_warm: "Moderate Opportunity", score_cold: "Weak Opportunity",
     lead_score: "Lead Score",
     created_by: "Added By", currently_with: "Currently Assigned To",
@@ -2555,9 +2555,9 @@ const DASHBOARD_SECTION_LABELS = {
   stats: "dash_sec_stats", performance: "dash_sec_performance", quickstats: "dash_sec_quickstats",
   leaderboard: "dash_sec_leaderboard", stages: "dash_sec_stages", opportunities: "dash_sec_opportunities",
   resale: "dash_sec_resale", rental: "dash_sec_rental", activities: "dash_sec_activities",
-  recentleads: "dash_sec_recentleads", todaytasks: "dash_sec_todaytasks",
+  recentleads: "dash_sec_recentleads", todaystoday: "dash_sec_todaystoday", todaytasks: "dash_sec_todaytasks",
 };
-const DEFAULT_DASHBOARD_ORDER = ["stats","performance","quickstats","leaderboard","stages","opportunities","resale","rental","activities","recentleads","todaytasks"];
+const DEFAULT_DASHBOARD_ORDER = ["stats","performance","quickstats","leaderboard","stages","opportunities","resale","rental","activities","recentleads","todaystoday","todaytasks"];
 let DASHBOARD_ORDER = [...DEFAULT_DASHBOARD_ORDER];
 function renderSidebarNav(){
   const nav = document.getElementById("sidebarNav");
@@ -2708,7 +2708,8 @@ function renderDashboard(){
   const followupLeadIds = new Set(todaysFollowupTasks.map(tk => tk.leadId).filter(Boolean));
   const followupsToday = followupLeadIds.size;
   const recent = dashLeads.slice(0,5);
-  const todaysTasks = TASKS.filter(tk => !tk.done).slice(0,5);
+  const todaysTasks = [...TASKS].filter(tk => !tk.done).sort((a,b) => new Date(a.due) - new Date(b.due)).slice(0,5);
+  const realTodaysTasks = TASKS.filter(tk => !tk.done && isToday(tk.due)).sort((a,b) => new Date(a.due) - new Date(b.due)).slice(0,5);
   const allTodayTasks = TASKS.filter(tk => isToday(tk.due));
   const doneTodayTasks = allTodayTasks.filter(tk => tk.done);
   const perfPct = allTodayTasks.length ? Math.round((doneTodayTasks.length/allTodayTasks.length)*100) : 0;
@@ -2821,6 +2822,11 @@ function renderDashboard(){
     <div class="panel">
       <div class="panel-head"><h2>${t("recent_leads")}</h2><a href="#leads" style="font-size:12px;color:var(--gold-bright);">${t("view_all")}</a></div>
       ${recent.length ? leadsTable(recent, true) : emptyState(t("empty_leads_title"), t("empty_leads_sub"))}
+    </div>`,
+    todaystoday: `
+    <div class="panel">
+      <div class="panel-head"><h2>${t("today_tasks_real")}</h2><a href="#tasks" style="font-size:12px;color:var(--gold-bright);">${t("view_all")}</a></div>
+      ${realTodaysTasks.length ? realTodaysTasks.map(taskItem).join("") : emptyState(t("empty_tasks_title"), t("empty_tasks_sub"))}
     </div>`,
     todaytasks: `
     <div class="panel">
@@ -3018,14 +3024,14 @@ function leadsTable(list, compact){
   return `<div class="table-scroll"><table><thead><tr>
     ${canBulk?`<th><input type="checkbox" id="selectAllLeads"></th>`:""}
     <th>${t("col_name")}</th><th>${t("col_phone")}</th>
-    ${compact?"":`<th>${t("col_interest")}</th>`}
+    ${compact?"":`<th>${t("col_interest")}</th><th>${t("f_project")}</th>`}
     <th>${t("col_status")}</th><th>${t("col_rating")}</th>
     ${compact?"":`<th>${t("col_created_at")}</th><th>${t("col_actions")}</th>`}
     </tr></thead><tbody>
     ${list.map(l => `<tr>
       ${canBulk?`<td><input type="checkbox" class="lead-select-cb" value="${l.id}" ${SELECTED_LEAD_IDS.has(l.id)?"checked":""}></td>`:""}
       <td><span class="row-name-link" data-open="${l.id}">${escapeHtml(l.name||"")}</span></td><td>${escapeHtml(l.phone||"")}</td>
-      ${compact?"":`<td>${escapeHtml(l.interest||"—")}</td>`}
+      ${compact?"":`<td>${escapeHtml(l.interest||"—")}</td><td>${escapeHtml(l.project||"—")}</td>`}
       <td><span class="badge ${l.status}">${t('status_'+l.status)}</span></td>
       <td><span class="badge ${l.rating}">${t('rating_'+l.rating)}</span></td>
       ${compact?"":`<td>${fmtDate(l.createdAt)}</td><td class="row-actions">
@@ -5973,15 +5979,18 @@ function hasProfileTabAccess(){
 function applyProfileTabPermissions(){
   const editable = permLevel() >= 3;
   const canViewProfileTab = hasProfileTabAccess();
+  const lead = LEADS.find(l => l.id === DETAIL_LEAD_ID) || {};
+  const isOwner = lead.assignedTo === CURRENT_USER.uid || lead.agentId === CURRENT_USER.uid;
   const form = document.getElementById("detailForm");
   form.querySelectorAll("input, select, textarea").forEach(el => {
     if (el.id === "detailLeadId") return;
     el.disabled = !editable;
   });
+  if (!editable && isOwner) document.getElementById("detailProject").disabled = false;
   document.getElementById("detailTagInput").disabled = !editable;
   document.getElementById("detailTagAddBtn").disabled = !editable;
   document.querySelectorAll("#detailTagList [data-remove-tag]").forEach(btn => btn.disabled = !editable);
-  document.getElementById("detailSaveBtn").style.display = editable ? "inline-flex" : "none";
+  document.getElementById("detailSaveBtn").style.display = (editable || isOwner) ? "inline-flex" : "none";
   document.getElementById("profileReadonlyNotice").style.display = editable ? "none" : "block";
   document.getElementById("profileTabBtn").style.display = canViewProfileTab ? "inline-flex" : "none";
 }
