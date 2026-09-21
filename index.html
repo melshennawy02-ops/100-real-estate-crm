@@ -548,6 +548,10 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
         <span class="ring-mark" id="topHeaderRing" style="width:16px;height:16px;"></span>
         <img id="topHeaderLogo" style="display:none; width:22px; height:22px; border-radius:50%; object-fit:cover;">
         <span id="topHeaderCompanyName">100%</span>
+        <button type="button" id="dupNotifBell" style="display:none; position:relative; background:none; border:none; color:var(--gold-bright); cursor:pointer; padding:4px; margin-inline-start:6px;">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span id="dupNotifBadge" style="display:none; position:absolute; top:-2px; inset-inline-end:-4px; background:var(--danger); color:#fff; font-size:9px; font-weight:800; border-radius:8px; padding:1px 4px; min-width:14px; text-align:center;">0</span>
+        </button>
       </div>
       <div class="top-header-user" id="topHeaderUserBtn">
         <div class="avatar-mini" id="topHeaderAvatar">--</div>
@@ -1226,6 +1230,37 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
   </div>
 </div>
 
+<!-- Modal: Duplicate Phone Numbers (GM/Admin) -->
+<div class="modal-backdrop" id="dupNotifModal">
+  <div class="modal" style="max-width:640px;">
+    <div class="modal-head">
+      <h3 data-i18n="dup_notif_title">Duplicate Numbers</h3>
+      <button class="modal-close" data-close-modal="dupNotifModal">✕</button>
+    </div>
+    <div style="font-size:12px; color:var(--slate); margin-bottom:14px; line-height:1.6;" data-i18n="dup_notif_desc"></div>
+    <div id="dupNotifList"></div>
+  </div>
+</div>
+
+<!-- Modal: Duplicate Phone Blocked -->
+<div class="modal-backdrop" id="dupBlockModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-head">
+      <h3 data-i18n="dup_block_title">Number Already Registered</h3>
+      <button class="modal-close" data-close-modal="dupBlockModal">✕</button>
+    </div>
+    <div style="padding:4px 2px;">
+      <div style="font-size:12.5px; color:var(--slate); margin-bottom:16px; line-height:1.7;" data-i18n="dup_block_desc"></div>
+      <div class="ov-item" style="margin-bottom:10px;"><div class="ov-label" data-i18n="dup_registered_with">Registered with</div><div class="ov-value" id="dupBlockAgent">—</div></div>
+      <div class="ov-item" style="margin-bottom:10px;"><div class="ov-label" data-i18n="dup_interest">Registered for</div><div class="ov-value" id="dupBlockInterest">—</div></div>
+      <div class="ov-item"><div class="ov-label" data-i18n="dup_last_comment">Last Comment</div><div class="ov-value" id="dupBlockComment">—</div></div>
+      <div class="modal-actions" style="margin-top:18px;">
+        <button type="button" class="btn-gold" data-close-modal="dupBlockModal" data-i18n="ok">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: WhatsApp Template Picker -->
 <div class="modal-backdrop" id="templatePickerModal">
   <div class="modal" style="max-width:420px;">
@@ -1540,6 +1575,10 @@ const I18N = {
     settings_browser_notif: "إشعارات المتصفح", settings_browser_notif_sub: "إشعار حقيقي من المتصفح حتى لو التطبيق شغال في الخلفية",
     settings_browser_notif_denied: "لازم توافق على إذن الإشعارات من المتصفح عشان تفعّل الخاصية دي",
     dup_phone_warning: "⚠️ هذا الرقم مسجل بالفعل مع الموظف: {agent}\nهل تريد المتابعة وإضافته كعميل جديد؟",
+    dup_block_title: "الرقم مسجل بالفعل", dup_block_desc: "الرقم ده متسجل قبل كده على النظام، مش هينضاف كعميل جديد. اطّلع على البيانات دي قبل ما تتواصل معاه:",
+    dup_registered_with: "مسجل مع", dup_interest: "مسجل على مشروع/اهتمام", dup_last_comment: "آخر كومنت", dup_no_comment: "لا يوجد كومنتات بعد", ok: "تمام",
+    dup_notif_title: "أرقام مكررة", dup_notif_desc: "أرقام هواتف اتسجلت أكتر من مرة على النظام. راجعها واحذف الزيادة بعد ما تعرف مين ضافها.",
+    dup_notif_empty: "لا يوجد أرقام مكررة حاليًا 🎉", col_dup_phone: "الرقم", col_dup_added_by: "أضافه", col_dup_date: "التاريخ",
     rr_settings_title: "التوزيع التلقائي للعملاء", rr_settings_desc: "تحكم في توزيع العملاء الجدد تلقائيًا على فريق المبيعات بالتساوي.",
     rr_enable: "تفعيل التوزيع التلقائي", rr_agent_pool: "السيلز المشمولين في التوزيع", rr_no_agents: "لا يوجد موظفين سيلز مسجلين بعد",
     rr_pool_hint: "لو مفيش حد متحدد، التوزيع هيشمل كل السيلز تلقائيًا.",
@@ -1815,6 +1854,10 @@ const I18N = {
     settings_browser_notif: "Browser Notifications", settings_browser_notif_sub: "Real browser notification even while the app runs in the background",
     settings_browser_notif_denied: "Please allow notification permission in your browser to enable this",
     dup_phone_warning: "⚠️ This number is already registered with: {agent}\nContinue and add as a new lead anyway?",
+    dup_block_title: "Number Already Registered", dup_block_desc: "This number is already registered in the system, so it won't be added as a new lead. Review this before contacting them:",
+    dup_registered_with: "Registered with", dup_interest: "Registered for (project/interest)", dup_last_comment: "Last Comment", dup_no_comment: "No comments yet", ok: "OK",
+    dup_notif_title: "Duplicate Numbers", dup_notif_desc: "Phone numbers registered more than once in the system. Review and delete the extras once you know who added them.",
+    dup_notif_empty: "No duplicate numbers right now 🎉", col_dup_phone: "Phone", col_dup_added_by: "Added by", col_dup_date: "Date",
     rr_settings_title: "Auto Lead Distribution", rr_settings_desc: "Control how new leads are automatically distributed evenly across the sales team.",
     rr_enable: "Enable auto-distribution", rr_agent_pool: "Sales agents included", rr_no_agents: "No sales agents registered yet",
     rr_pool_hint: "If none are selected, distribution includes all sales agents automatically.",
@@ -2358,6 +2401,7 @@ function attachLeadsListeners(){
   if (isFullAdmin()) {
     leadsUnsubAdmin = db.collection("leads").orderBy("createdAt","desc").onSnapshot(snap => {
       LEADS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      refreshDupBell();
       renderView();
     }, err => console.error("leads error", err));
     return;
@@ -2899,10 +2943,10 @@ function renderLeads(){
   document.getElementById("content").innerHTML = `
     <div class="panel">
       <div class="panel-head">
-        <input type="text" id="leadSearch" placeholder="${t('search_placeholder')}" style="flex:1; min-width:200px; background:var(--navy); border:1px solid var(--navy-line); color:var(--ivory); padding:10px 14px; border-radius:8px; font-size:13px; outline:none;">
+        <input type="text" id="leadSearch" placeholder="${t('search_placeholder')}" value="${escapeHtml(LEAD_SEARCH_QUERY)}" style="flex:1; min-width:200px; background:var(--navy); border:1px solid var(--navy-line); color:var(--ivory); padding:10px 14px; border-radius:8px; font-size:13px; outline:none;">
         <select id="leadFilter" style="background:var(--navy); border:1px solid var(--navy-line); color:var(--ivory); padding:10px 14px; border-radius:8px; font-size:13px;">
           <option value="all">${t("filter_all")}</option>
-          ${STATUSES.map(s => `<option value="${s}">${t('status_'+s)}</option>`).join("")}
+          ${STATUSES.map(s => `<option value="${s}" ${LEAD_STATUS_FILTER===s?'selected':''}>${t('status_'+s)}</option>`).join("")}
         </select>
         <span class="agent-filter-toggle" id="agentFilterToggle">${t("filter_by_agent")} <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></span>
         ${isFullAdmin() ? `<button type="button" class="btn-outline" id="btnUnassignedFilter" style="border-color:${unassignedCount?'var(--danger)':'var(--navy-line)'}; color:${unassignedCount?'var(--danger)':'var(--slate)'};">⚠ ${t("unassigned_leads")} (${unassignedCount})</button>` : ""}
@@ -2920,11 +2964,14 @@ function renderLeads(){
     row.style.display = row.style.display === "none" ? "flex" : "none";
   });
   const unassignedBtn = document.getElementById("btnUnassignedFilter");
-  if (unassignedBtn) unassignedBtn.addEventListener("click", () => {
-    SHOW_UNASSIGNED_ONLY = !SHOW_UNASSIGNED_ONLY;
+  if (unassignedBtn) {
     unassignedBtn.classList.toggle("active", SHOW_UNASSIGNED_ONLY);
-    filterLeadsView();
-  });
+    unassignedBtn.addEventListener("click", () => {
+      SHOW_UNASSIGNED_ONLY = !SHOW_UNASSIGNED_ONLY;
+      unassignedBtn.classList.toggle("active", SHOW_UNASSIGNED_ONLY);
+      filterLeadsView();
+    });
+  }
   document.querySelectorAll(".agent-filter-btn").forEach(btn => {
     btn.classList.toggle("active", SELECTED_FILTER_AGENTS.has(btn.dataset.agent));
     btn.addEventListener("click", () => {
@@ -2938,7 +2985,10 @@ function renderLeads(){
   if (SELECTED_FILTER_AGENTS.size) document.getElementById("agentFilterRow").style.display = "flex";
   if (PENDING_LEAD_FILTER) {
     document.getElementById("leadFilter").value = PENDING_LEAD_FILTER;
+    LEAD_STATUS_FILTER = PENDING_LEAD_FILTER;
     PENDING_LEAD_FILTER = null;
+    filterLeadsView();
+  } else if (LEAD_SEARCH_QUERY || LEAD_STATUS_FILTER !== "all" || SHOW_UNASSIGNED_ONLY) {
     filterLeadsView();
   } else {
     bindLeadRowEvents();
@@ -2946,9 +2996,13 @@ function renderLeads(){
 }
 let SELECTED_FILTER_AGENTS = new Set();
 let SHOW_UNASSIGNED_ONLY = false;
+let LEAD_SEARCH_QUERY = "";
+let LEAD_STATUS_FILTER = "all";
 function filterLeadsView(){
-  const q = document.getElementById("leadSearch").value.trim().toLowerCase();
-  const status = document.getElementById("leadFilter").value;
+  LEAD_SEARCH_QUERY = document.getElementById("leadSearch").value;
+  LEAD_STATUS_FILTER = document.getElementById("leadFilter").value;
+  const q = LEAD_SEARCH_QUERY.trim().toLowerCase();
+  const status = LEAD_STATUS_FILTER;
   const filtered = visibleLeads().filter(l =>
     (!q || (l.name||"").toLowerCase().includes(q) || (l.phone||"").includes(q)) &&
     (status==="all"||l.status===status) &&
@@ -3089,8 +3143,8 @@ document.getElementById("leadForm").addEventListener("submit", async (e) => {
       if (data.phone) {
         const dup = await checkDuplicatePhone(data.phone);
         if (dup) {
-          const proceed = confirm(t("dup_phone_warning").replace("{agent}", dup.agentName || "—"));
-          if (!proceed) return;
+          showDuplicateBlockModal(dup);
+          return;
         }
       }
       if (ROUND_ROBIN_TRIGGER_ROLES.includes(myRole())) {
@@ -3105,7 +3159,7 @@ document.getElementById("leadForm").addEventListener("submit", async (e) => {
       data.tags = [];
       const ref = await db.collection("leads").add(data);
       await logActivity(ref.id, "created", t("act_created"));
-      if (data.phone) registerPhoneIndex(data.phone, ref.id);
+      if (data.phone) registerPhoneIndex(data.phone, ref.id, data);
       toast(t("toast_saved"));
     }
     closeModal("leadModal");
@@ -3123,17 +3177,87 @@ async function checkDuplicatePhone(phone){
   } catch(e) { console.error("dup check failed", e); }
   return null;
 }
-async function registerPhoneIndex(phone, leadId){
+async function registerPhoneIndex(phone, leadId, data){
   const norm = normalizePhone(phone);
   if (!norm) return;
   try {
     await db.collection("phone_index").doc(norm).set({
       leadId, agentId: CURRENT_USER.uid,
       agentName: (myAgentDoc()&&myAgentDoc().name) || CURRENT_USER.email,
+      interest: (data && (data.project || data.interest)) || "",
+      lastComment: "",
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     });
   } catch(e) { console.error("phone index write failed", e); }
 }
+async function updatePhoneIndexComment(phone, commentText){
+  const norm = normalizePhone(phone);
+  if (!norm) return;
+  try {
+    await db.collection("phone_index").doc(norm).set({
+      lastComment: commentText,
+      lastCommentAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+  } catch(e) { console.error("phone index comment update failed", e); }
+}
+function showDuplicateBlockModal(dup){
+  document.getElementById("dupBlockAgent").textContent = dup.agentName || "—";
+  document.getElementById("dupBlockInterest").textContent = dup.interest || "—";
+  document.getElementById("dupBlockComment").textContent = dup.lastComment || t("dup_no_comment");
+  document.getElementById("dupBlockModal").classList.add("show");
+}
+
+function computeDuplicateGroups(){
+  const groups = {};
+  LEADS.forEach(l => {
+    const norm = normalizePhone(l.phone);
+    if (!norm) return;
+    if (!groups[norm]) groups[norm] = [];
+    groups[norm].push(l);
+  });
+  return Object.entries(groups).filter(([,list]) => list.length > 1);
+}
+function refreshDupBell(){
+  const bell = document.getElementById("dupNotifBell");
+  if (!bell) return;
+  if (!isFullAdmin()) { bell.style.display = "none"; return; }
+  bell.style.display = "inline-flex";
+  const groups = computeDuplicateGroups();
+  const extraCount = groups.reduce((sum,[,list]) => sum + (list.length-1), 0);
+  const badge = document.getElementById("dupNotifBadge");
+  badge.style.display = extraCount ? "block" : "none";
+  badge.textContent = extraCount;
+}
+document.getElementById("dupNotifBell").addEventListener("click", () => {
+  const groups = computeDuplicateGroups();
+  const wrap = document.getElementById("dupNotifList");
+  wrap.innerHTML = groups.length ? groups.map(([phone,list]) => `
+    <div class="panel" style="margin-bottom:12px; padding:14px;">
+      <div style="font-weight:800; color:var(--gold-bright); margin-bottom:10px; font-size:13px;">${escapeHtml(phone)}</div>
+      <div class="table-scroll"><table><thead><tr>
+        <th>${t("col_name")}</th><th>${t("col_dup_added_by")}</th><th>${t("col_dup_date")}</th><th>${t("col_actions")}</th>
+      </tr></thead><tbody>
+      ${list.map(l => {
+        const ag = AGENTS.find(a => a.id === l.agentId);
+        return `<tr>
+          <td><span class="row-name-link" data-dup-open="${l.id}">${escapeHtml(l.name||"")}</span></td>
+          <td>${escapeHtml((ag&&(ag.name||ag.email))||l.agentEmail||"—")}</td>
+          <td>${fmtDate(l.createdAt)}</td>
+          <td class="row-actions"><button class="icon-btn" data-dup-delete="${l.id}" style="color:var(--danger);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></td>
+        </tr>`;
+      }).join("")}
+      </tbody></table></div>
+    </div>`).join("") : emptyState(t("dup_notif_empty"), "");
+  document.querySelectorAll("[data-dup-open]").forEach(el => el.addEventListener("click", () => { closeModal("dupNotifModal"); openLeadDetail(el.dataset.dupOpen); }));
+  document.querySelectorAll("[data-dup-delete]").forEach(btn => btn.addEventListener("click", async () => {
+    if (!confirm(t("confirm_delete"))) return;
+    await db.collection("leads").doc(btn.dataset.dupDelete).delete();
+    toast(t("toast_deleted"));
+    document.getElementById("dupNotifBell").click();
+  }));
+  document.getElementById("dupNotifModal").classList.add("show");
+});
+
 function isWithinAssignWindow(){
   if (!ROUND_ROBIN_CONFIG.windowFrom || !ROUND_ROBIN_CONFIG.windowTo) return true;
   const now = new Date();
@@ -4847,6 +4971,7 @@ function applyPermissions(){
   if (teamNav) teamNav.style.display = level >= 3 ? "flex" : "none";
   if (accountsNav) accountsNav.style.display = myRole() === "general_manager" ? "flex" : "none";
   if (reportsNav) reportsNav.style.display = "flex";
+  refreshDupBell();
 
   const mine = myAgentDoc();
   const displayName = (mine && mine.name) || CURRENT_USER.email.split("@")[0];
@@ -5908,6 +6033,7 @@ function subscribeTimeline(leadId){
   if (timelineUnsub) timelineUnsub();
   timelineUnsub = db.collection("leads").doc(leadId).collection("activities").orderBy("createdAt","desc")
     .onSnapshot(snap => {
+      if (DETAIL_LEAD_ID !== leadId) return; // stale snapshot from a lead that's no longer open — ignore it
       const items = snap.docs.map(d => d.data());
       const list = document.getElementById("detailTimelineList");
       if (!items.length) { list.innerHTML = emptyState(t("empty_tasks_title"), t("empty_tasks_sub")); return; }
@@ -5939,6 +6065,8 @@ document.getElementById("detailNoteAddBtn").addEventListener("click", async () =
   const val = input.value.trim();
   if (!val || !DETAIL_LEAD_ID) return;
   await logActivity(DETAIL_LEAD_ID, "note", val);
+  const lead = LEADS.find(l => l.id === DETAIL_LEAD_ID);
+  if (lead && lead.phone) updatePhoneIndexComment(lead.phone, val);
   input.value = "";
 });
 
@@ -5960,7 +6088,7 @@ document.getElementById("quickUpdateBtn").addEventListener("click", async () => 
     const statusChanged = lead.status !== newStatus;
 
     if (statusChanged) await db.collection("leads").doc(DETAIL_LEAD_ID).update({ status: newStatus });
-    if (summary) await logActivity(DETAIL_LEAD_ID, "note", summary);
+    if (summary) { await logActivity(DETAIL_LEAD_ID, "note", summary); if (lead.phone) updatePhoneIndexComment(lead.phone, summary); }
     if (statusChanged) await logActivity(DETAIL_LEAD_ID, "status", t("act_status") + " " + t("status_"+newStatus));
 
     if (newStatus !== "lost" && followupDt) {
