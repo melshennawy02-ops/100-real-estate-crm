@@ -1688,7 +1688,7 @@ const I18N = {
     f_tag_add_placeholder: "مثال: VIP أو يفضل_المساء", f_add_note_placeholder: "اكتب ملاحظة...",
     f_tags_hint: "استخدمها لتمييز العميل بعلامة سريعة تسهّل البحث والفرز لاحقًا — مثال: #VIP، #يفضل_التواصل_مساءً، #من_معرض_الساحل",
     add: "إضافة", new_task: "+ مهمة جديدة", unassigned: "غير معيّن", none: "—",
-    act_created: "تم إنشاء العميل", act_call: "تم تسجيل مكالمة", act_auto_reassigned: "سُحب تلقائيًا لعدم الرد وأُعيد توزيعه من",
+    act_created: "تم إنشاء العميل", act_call: "تم تسجيل مكالمة", act_auto_reassigned: "سُحب تلقائيًا لعدم الرد وأُعيد توزيعه من", act_task_done: "تم إنجاز مهمة",
     act_whatsapp: "تم فتح واتساب", act_sms: "تم فتح رسالة نصية",
     act_status: "تم تغيير الحالة إلى", act_updated: "تم تحديث بيانات العميل",
     call: "اتصال", whatsapp: "واتساب", sms: "رسالة",
@@ -1967,7 +1967,7 @@ const I18N = {
     f_tag_add_placeholder: "e.g. VIP or Prefers_Evening", f_add_note_placeholder: "Add a note...",
     f_tags_hint: "Use it to flag a lead for quick searching and filtering later — e.g. #VIP, #Prefers_Evening_Calls, #From_Coast_Exhibition",
     add: "Add", new_task: "+ New Task", unassigned: "Unassigned", none: "—",
-    act_created: "Lead created", act_call: "Call logged", act_auto_reassigned: "Auto-reclaimed for no response and reassigned from",
+    act_created: "Lead created", act_call: "Call logged", act_auto_reassigned: "Auto-reclaimed for no response and reassigned from", act_task_done: "Task completed",
     act_whatsapp: "WhatsApp opened", act_sms: "SMS opened",
     act_status: "Status changed to", act_updated: "Lead details updated",
     call: "Call", whatsapp: "WhatsApp", sms: "SMS",
@@ -2711,7 +2711,15 @@ function renderDashboard(){
   const todaysTasks = [...TASKS].filter(tk => !tk.done).sort((a,b) => new Date(a.due) - new Date(b.due)).slice(0,5);
   const realTodaysTasks = TASKS.filter(tk => !tk.done && isToday(tk.due)).sort((a,b) => new Date(a.due) - new Date(b.due)).slice(0,5);
   const allTodayTasks = TASKS.filter(tk => isToday(tk.due));
-  const doneTodayTasks = allTodayTasks.filter(tk => tk.done);
+  const todayStr = new Date().toISOString().slice(0,10);
+  const leadsWithActionToday = new Set(
+    ALL_ACTIVITIES.filter(a => {
+      if (!a.createdAt || !["call","whatsapp","sms","note","task_done"].includes(a.type)) return false;
+      const d = a.createdAt.seconds ? new Date(a.createdAt.seconds*1000) : new Date(a.createdAt);
+      return d.toISOString().slice(0,10) === todayStr;
+    }).map(a => a.leadId)
+  );
+  const doneTodayTasks = allTodayTasks.filter(tk => tk.done || (tk.leadId && leadsWithActionToday.has(tk.leadId)));
   const perfPct = allTodayTasks.length ? Math.round((doneTodayTasks.length/allTodayTasks.length)*100) : 0;
   const overdueCount = TASKS.filter(tk => !tk.done && tk.due && new Date(tk.due) < new Date()).length;
   if (overdueCount > 0 && getNotifSound() && !sessionStorage.getItem("overdue_beeped")) {
@@ -4092,7 +4100,13 @@ function taskItem(tk){
 }
 function bindTaskEvents(){
   document.querySelectorAll("[data-toggle]").forEach(el => el.addEventListener("click", async () => {
-    const done = el.dataset.done==="true"; await db.collection("tasks").doc(el.dataset.toggle).update({done:!done});
+    const done = el.dataset.done==="true";
+    const taskId = el.dataset.toggle;
+    await db.collection("tasks").doc(taskId).update({done:!done});
+    if (!done) {
+      const tk = TASKS.find(x => x.id === taskId);
+      if (tk && tk.leadId) await logActivity(tk.leadId, "task_done", `${t("act_task_done")}: ${tk.title||""}`);
+    }
   }));
   document.querySelectorAll(".task-item [data-open]").forEach(el => el.addEventListener("click", () => openLeadDetail(el.dataset.open)));
   document.querySelectorAll("[data-delete-task]").forEach(el => el.addEventListener("click", async () => {
@@ -5791,6 +5805,7 @@ const ACT_ICONS = {
   status: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>',
   note: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>',
   task: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
+  task_done: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
   updated: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
   auto_reassigned: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>',
 };
