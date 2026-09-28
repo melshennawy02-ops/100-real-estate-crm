@@ -1254,6 +1254,17 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
     </div>
     <div style="font-size:12px; color:var(--slate); margin-bottom:14px; line-height:1.6;" data-i18n="dup_notif_desc"></div>
     <button type="button" class="btn-outline" id="dupSyncBtn" style="margin-bottom:14px;" data-i18n="dup_sync_btn">Sync phone index</button>
+    <div id="dupGlobalBar" style="display:none; background:rgba(201,162,75,.08); border:1px solid var(--gold-dim); border-radius:10px; padding:12px; margin-bottom:16px;">
+      <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; color:var(--ivory); margin-bottom:10px; cursor:pointer;">
+        <input type="checkbox" id="dupSelectAllGlobal"> <span data-i18n="dup_select_all_global">Select all across every duplicate number</span>
+      </label>
+      <div style="display:flex; flex-wrap:wrap; gap:8px;">
+        <button type="button" class="btn-outline" id="dupGlobalDeleteSelected" style="color:var(--danger); border-color:var(--danger);">🗑 <span data-i18n="dup_delete_selected">Delete selected</span></button>
+        <button type="button" class="btn-outline" id="dupGlobalDeleteAll" style="color:var(--danger); border-color:var(--danger);" data-i18n="dup_delete_all_global">Delete all extras everywhere</button>
+        <button type="button" class="btn-outline" id="dupGlobalKeepOld" data-i18n="dup_keep_old_global">Keep oldest in every group</button>
+        <button type="button" class="btn-outline" id="dupGlobalKeepNew" data-i18n="dup_keep_new_global">Keep newest in every group</button>
+      </div>
+    </div>
     <div id="dupNotifList"></div>
   </div>
 </div>
@@ -1599,6 +1610,8 @@ const I18N = {
     dup_select_all: "تحديد الكل", dup_oldest: "الأقدم", dup_newest: "الأحدث",
     dup_delete_selected: "حذف المحدد", dup_delete_all: "حذف الكل", dup_keep_old: "الاحتفاظ بالأقدم وحذف الباقي", dup_keep_new: "الاحتفاظ بالأحدث وحذف الباقي",
     dup_select_at_least_one: "حدد عنصر واحد على الأقل",
+    dup_select_all_global: "تحديد الكل من كل الأرقام المكررة", dup_delete_all_global: "حذف كل الزيادة من كل الأرقام",
+    dup_keep_old_global: "الاحتفاظ بالأقدم في كل مجموعة وحذف الباقي", dup_keep_new_global: "الاحتفاظ بالأحدث في كل مجموعة وحذف الباقي",
     rr_settings_title: "التوزيع التلقائي للعملاء", rr_settings_desc: "تحكم في توزيع العملاء الجدد تلقائيًا على فريق المبيعات بالتساوي.",
     rr_enable: "تفعيل التوزيع التلقائي", rr_agent_pool: "السيلز المشمولين في التوزيع", rr_no_agents: "لا يوجد موظفين سيلز مسجلين بعد",
     rr_pool_hint: "لو مفيش حد متحدد، التوزيع هيشمل كل السيلز تلقائيًا.",
@@ -1882,6 +1895,8 @@ const I18N = {
     dup_select_all: "Select all", dup_oldest: "Oldest", dup_newest: "Newest",
     dup_delete_selected: "Delete selected", dup_delete_all: "Delete all", dup_keep_old: "Keep oldest, delete the rest", dup_keep_new: "Keep newest, delete the rest",
     dup_select_at_least_one: "Select at least one item",
+    dup_select_all_global: "Select all across every duplicate number", dup_delete_all_global: "Delete all extras everywhere",
+    dup_keep_old_global: "Keep oldest in every group, delete the rest", dup_keep_new_global: "Keep newest in every group, delete the rest",
     rr_settings_title: "Auto Lead Distribution", rr_settings_desc: "Control how new leads are automatically distributed evenly across the sales team.",
     rr_enable: "Enable auto-distribution", rr_agent_pool: "Sales agents included", rr_no_agents: "No sales agents registered yet",
     rr_pool_hint: "If none are selected, distribution includes all sales agents automatically.",
@@ -3393,9 +3408,19 @@ function refreshDupBell(){
   badge.textContent = extraCount;
 }
 document.getElementById("dupSyncBtn").addEventListener("click", syncPhoneIndex);
+function bulkDeleteLeads(list, btn){
+  return (async () => {
+    const original = btn ? btn.textContent : "";
+    if (btn) { btn.disabled = true; btn.textContent = t("saving"); }
+    for (const l of list) await deleteLeadCascade(l.id);
+    if (btn) { btn.disabled = false; btn.textContent = original; }
+  })();
+}
 function renderDupNotifList(){
   const groups = computeDuplicateGroups();
   const wrap = document.getElementById("dupNotifList");
+  document.getElementById("dupGlobalBar").style.display = groups.length ? "block" : "none";
+  document.getElementById("dupSelectAllGlobal").checked = false;
   wrap.innerHTML = groups.length ? groups.map(([phone,list]) => {
     const sorted = [...list].sort((a,b) => msOf(a.createdAt) - msOf(b.createdAt));
     return `
@@ -3420,12 +3445,6 @@ function renderDupNotifList(){
         </tr>`;
       }).join("")}
       </tbody></table></div>
-      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;">
-        <button type="button" class="btn-outline" data-dup-action="deleteSelected" data-group="${phone}" style="color:var(--danger); border-color:var(--danger);">🗑 ${t("dup_delete_selected")}</button>
-        <button type="button" class="btn-outline" data-dup-action="deleteAll" data-group="${phone}" style="color:var(--danger); border-color:var(--danger);">${t("dup_delete_all")}</button>
-        <button type="button" class="btn-outline" data-dup-action="keepOld" data-group="${phone}">${t("dup_keep_old")}</button>
-        <button type="button" class="btn-outline" data-dup-action="keepNew" data-group="${phone}">${t("dup_keep_new")}</button>
-      </div>
     </div>`;
   }).join("") : emptyState(t("dup_notif_empty"), "");
 
@@ -3435,33 +3454,55 @@ function renderDupNotifList(){
     await deleteLeadCascade(btn.dataset.dupDelete);
     toast(t("toast_deleted"));
     renderDupNotifList();
+    refreshDupBell();
   }));
   document.querySelectorAll(".dup-select-all").forEach(cb => cb.addEventListener("change", (e) => {
     document.querySelectorAll(`.dup-select-row[data-group="${CSS.escape(cb.dataset.group)}"]`).forEach(row => row.checked = e.target.checked);
   }));
-  document.querySelectorAll('[data-dup-action]').forEach(btn => btn.addEventListener("click", async () => {
-    const phone = btn.dataset.group;
-    const groups = computeDuplicateGroups();
-    const entry = groups.find(([p]) => p === phone);
-    if (!entry) return;
-    const sorted = [...entry[1]].sort((a,b) => msOf(a.createdAt) - msOf(b.createdAt));
-    let toDelete = [];
-    const action = btn.dataset.action;
-    if (action === "deleteAll") toDelete = sorted;
-    else if (action === "keepOld") toDelete = sorted.slice(1);
-    else if (action === "keepNew") toDelete = sorted.slice(0, -1);
-    else if (action === "deleteSelected") {
-      const ids = new Set([...document.querySelectorAll(`.dup-select-row[data-group="${CSS.escape(phone)}"]:checked`)].map(cb => cb.value));
-      if (!ids.size) { alert(t("dup_select_at_least_one")); return; }
-      toDelete = sorted.filter(l => ids.has(l.id));
-    }
-    if (!toDelete.length) return;
-    if (!confirm(`${t("confirm_delete")} (${toDelete.length})`)) return;
-    for (const l of toDelete) await deleteLeadCascade(l.id);
-    toast(t("toast_deleted"));
-    renderDupNotifList();
-  }));
 }
+
+document.getElementById("dupSelectAllGlobal").addEventListener("change", (e) => {
+  document.querySelectorAll(".dup-select-row, .dup-select-all").forEach(cb => cb.checked = e.target.checked);
+});
+document.getElementById("dupGlobalDeleteSelected").addEventListener("click", async (e) => {
+  const ids = new Set([...document.querySelectorAll(".dup-select-row:checked")].map(cb => cb.value));
+  if (!ids.size) { alert(t("dup_select_at_least_one")); return; }
+  const all = computeDuplicateGroups().flatMap(([,list]) => list).filter(l => ids.has(l.id));
+  if (!confirm(`${t("confirm_delete")} (${all.length})`)) return;
+  await bulkDeleteLeads(all, e.currentTarget);
+  toast(t("toast_deleted"));
+  renderDupNotifList();
+  refreshDupBell();
+});
+document.getElementById("dupGlobalDeleteAll").addEventListener("click", async (e) => {
+  const all = computeDuplicateGroups().flatMap(([,list]) => list);
+  if (!all.length) return;
+  if (!confirm(`${t("confirm_delete")} (${all.length})`)) return;
+  await bulkDeleteLeads(all, e.currentTarget);
+  toast(t("toast_deleted"));
+  renderDupNotifList();
+  refreshDupBell();
+});
+document.getElementById("dupGlobalKeepOld").addEventListener("click", async (e) => {
+  const groups = computeDuplicateGroups();
+  const toDelete = groups.flatMap(([,list]) => [...list].sort((a,b) => msOf(a.createdAt)-msOf(b.createdAt)).slice(1));
+  if (!toDelete.length) return;
+  if (!confirm(`${t("confirm_delete")} (${toDelete.length})`)) return;
+  await bulkDeleteLeads(toDelete, e.currentTarget);
+  toast(t("toast_deleted"));
+  renderDupNotifList();
+  refreshDupBell();
+});
+document.getElementById("dupGlobalKeepNew").addEventListener("click", async (e) => {
+  const groups = computeDuplicateGroups();
+  const toDelete = groups.flatMap(([,list]) => [...list].sort((a,b) => msOf(a.createdAt)-msOf(b.createdAt)).slice(0,-1));
+  if (!toDelete.length) return;
+  if (!confirm(`${t("confirm_delete")} (${toDelete.length})`)) return;
+  await bulkDeleteLeads(toDelete, e.currentTarget);
+  toast(t("toast_deleted"));
+  renderDupNotifList();
+  refreshDupBell();
+});
 document.getElementById("dupNotifBell").addEventListener("click", () => {
   renderDupNotifList();
   document.getElementById("dupNotifModal").classList.add("show");
