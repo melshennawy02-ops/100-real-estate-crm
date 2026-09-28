@@ -818,6 +818,10 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
             <label data-i18n="f_name">Client Name</label>
             <input type="text" id="detailName">
           </div>
+          <div class="field" id="detailPhoneField" style="display:none;">
+            <label data-i18n="f_phone">Phone Number</label>
+            <input type="tel" id="detailPhone">
+          </div>
           <div class="field">
             <label data-i18n="f_status">Status</label>
             <select id="detailStatus">
@@ -1230,6 +1234,17 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
   </div>
 </div>
 
+<!-- Modal: Agent detailed report -->
+<div class="modal-backdrop" id="agentReportModal">
+  <div class="modal" style="max-width:640px;">
+    <div class="modal-head">
+      <h3 id="agentReportTitle">—</h3>
+      <button class="modal-close" data-close-modal="agentReportModal">✕</button>
+    </div>
+    <div id="agentReportBody"></div>
+  </div>
+</div>
+
 <!-- Modal: Duplicate Phone Numbers (GM/Admin) -->
 <div class="modal-backdrop" id="dupNotifModal">
   <div class="modal" style="max-width:640px;">
@@ -1238,6 +1253,7 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
       <button class="modal-close" data-close-modal="dupNotifModal">✕</button>
     </div>
     <div style="font-size:12px; color:var(--slate); margin-bottom:14px; line-height:1.6;" data-i18n="dup_notif_desc"></div>
+    <button type="button" class="btn-outline" id="dupSyncBtn" style="margin-bottom:14px;" data-i18n="dup_sync_btn">Sync phone index</button>
     <div id="dupNotifList"></div>
   </div>
 </div>
@@ -1578,6 +1594,7 @@ const I18N = {
     dup_block_title: "الرقم مسجل بالفعل", dup_block_desc: "الرقم ده متسجل قبل كده على النظام، مش هينضاف كعميل جديد. اطّلع على البيانات دي قبل ما تتواصل معاه:",
     dup_registered_with: "مسجل مع", dup_interest: "مسجل على مشروع/اهتمام", dup_last_comment: "آخر كومنت", dup_no_comment: "لا يوجد كومنتات بعد", ok: "تمام",
     dup_notif_title: "أرقام مكررة", dup_notif_desc: "أرقام هواتف اتسجلت أكتر من مرة على النظام. راجعها واحذف الزيادة بعد ما تعرف مين ضافها.",
+    saving: "جاري الحفظ...", dup_sync_btn: "مزامنة فهرس الأرقام (لمنع تكرار أرقام العملاء القدام)", dup_sync_done: "تمت إضافة أرقام للفهرس",
     dup_notif_empty: "لا يوجد أرقام مكررة حاليًا 🎉", col_dup_phone: "الرقم", col_dup_added_by: "أضافه", col_dup_date: "التاريخ",
     rr_settings_title: "التوزيع التلقائي للعملاء", rr_settings_desc: "تحكم في توزيع العملاء الجدد تلقائيًا على فريق المبيعات بالتساوي.",
     rr_enable: "تفعيل التوزيع التلقائي", rr_agent_pool: "السيلز المشمولين في التوزيع", rr_no_agents: "لا يوجد موظفين سيلز مسجلين بعد",
@@ -1688,7 +1705,7 @@ const I18N = {
     f_tag_add_placeholder: "مثال: VIP أو يفضل_المساء", f_add_note_placeholder: "اكتب ملاحظة...",
     f_tags_hint: "استخدمها لتمييز العميل بعلامة سريعة تسهّل البحث والفرز لاحقًا — مثال: #VIP، #يفضل_التواصل_مساءً، #من_معرض_الساحل",
     add: "إضافة", new_task: "+ مهمة جديدة", unassigned: "غير معيّن", none: "—",
-    act_created: "تم إنشاء العميل", act_call: "تم تسجيل مكالمة", act_auto_reassigned: "سُحب تلقائيًا لعدم الرد وأُعيد توزيعه من", act_task_done: "تم إنجاز مهمة",
+    act_created: "تم إنشاء العميل", act_call: "تم تسجيل مكالمة", act_auto_reassigned: "سُحب تلقائيًا لعدم الرد وأُعيد توزيعه من", act_task_done: "تم إنجاز مهمة", act_phone_changed: "تم تعديل الرقم",
     act_whatsapp: "تم فتح واتساب", act_sms: "تم فتح رسالة نصية",
     act_status: "تم تغيير الحالة إلى", act_updated: "تم تحديث بيانات العميل",
     call: "اتصال", whatsapp: "واتساب", sms: "رسالة",
@@ -1857,6 +1874,7 @@ const I18N = {
     dup_block_title: "Number Already Registered", dup_block_desc: "This number is already registered in the system, so it won't be added as a new lead. Review this before contacting them:",
     dup_registered_with: "Registered with", dup_interest: "Registered for (project/interest)", dup_last_comment: "Last Comment", dup_no_comment: "No comments yet", ok: "OK",
     dup_notif_title: "Duplicate Numbers", dup_notif_desc: "Phone numbers registered more than once in the system. Review and delete the extras once you know who added them.",
+    saving: "Saving...", dup_sync_btn: "Sync phone index (block duplicates of existing leads)", dup_sync_done: "Numbers added to the index",
     dup_notif_empty: "No duplicate numbers right now 🎉", col_dup_phone: "Phone", col_dup_added_by: "Added by", col_dup_date: "Date",
     rr_settings_title: "Auto Lead Distribution", rr_settings_desc: "Control how new leads are automatically distributed evenly across the sales team.",
     rr_enable: "Enable auto-distribution", rr_agent_pool: "Sales agents included", rr_no_agents: "No sales agents registered yet",
@@ -1967,7 +1985,7 @@ const I18N = {
     f_tag_add_placeholder: "e.g. VIP or Prefers_Evening", f_add_note_placeholder: "Add a note...",
     f_tags_hint: "Use it to flag a lead for quick searching and filtering later — e.g. #VIP, #Prefers_Evening_Calls, #From_Coast_Exhibition",
     add: "Add", new_task: "+ New Task", unassigned: "Unassigned", none: "—",
-    act_created: "Lead created", act_call: "Call logged", act_auto_reassigned: "Auto-reclaimed for no response and reassigned from", act_task_done: "Task completed",
+    act_created: "Lead created", act_call: "Call logged", act_auto_reassigned: "Auto-reclaimed for no response and reassigned from", act_task_done: "Task completed", act_phone_changed: "Phone number changed",
     act_whatsapp: "WhatsApp opened", act_sms: "SMS opened",
     act_status: "Status changed to", act_updated: "Lead details updated",
     call: "Call", whatsapp: "WhatsApp", sms: "SMS",
@@ -2598,11 +2616,26 @@ function handleRoute(){
   }
   document.querySelectorAll(".nav-item").forEach(el => el.classList.toggle("active", el.dataset.view === currentView));
   document.querySelectorAll(".bn-item[data-view]").forEach(el => el.classList.toggle("active", el.dataset.view === currentView));
-  renderView();
+  renderView(true);
 }
-document.addEventListener("langchange", () => { if (CURRENT_USER) renderView(); });
+document.addEventListener("langchange", () => { if (CURRENT_USER) renderView(true); });
 
-function renderView(){
+let RENDER_TIMER = null, RENDER_PENDING = false;
+function isHeavyModalOpen(){
+  return ["leadModal","importModal"].some(id => { const el = document.getElementById(id); return el && el.classList.contains("show"); });
+}
+function renderView(immediate){
+  if (immediate === true) { clearTimeout(RENDER_TIMER); RENDER_TIMER = null; RENDER_PENDING = false; return renderViewNow(); }
+  if (RENDER_TIMER) return;
+  RENDER_TIMER = setTimeout(() => {
+    RENDER_TIMER = null;
+    if (isHeavyModalOpen()) { RENDER_PENDING = true; return; } // don't re-draw the page behind the add-lead / import form
+    RENDER_PENDING = false;
+    renderViewNow();
+  }, 250);
+}
+function flushPendingRender(){ if (RENDER_PENDING && !isHeavyModalOpen()) { RENDER_PENDING = false; renderViewNow(); } }
+function renderViewNow(){
   const title = document.getElementById("pageTitle");
   const sub = document.getElementById("pageSub");
   const actions = document.getElementById("topbarActions");
@@ -3110,6 +3143,10 @@ function openLeadModal(id){
   const wrap = document.getElementById("leadPhonesWrap");
   wrap.innerHTML = "";
   phones.forEach((p,i) => addPhoneRow(p, i===0));
+  const lockPhones = !!id && myRole() !== "general_manager";
+  wrap.querySelectorAll(".phone-input").forEach(inp => { inp.disabled = lockPhones; });
+  wrap.querySelectorAll(".remove-phone-btn").forEach(b => { b.style.display = lockPhones ? "none" : ""; });
+  document.getElementById("addPhoneBtn").style.display = lockPhones ? "none" : "";
   document.getElementById("leadModal").classList.add("show");
 }
 function addPhoneRow(value, isPrimary){
@@ -3124,6 +3161,8 @@ function addPhoneRow(value, isPrimary){
 document.getElementById("addPhoneBtn").addEventListener("click", () => addPhoneRow("", false));
 document.getElementById("leadForm").addEventListener("submit", async (e) => {
   e.preventDefault();
+  const submitBtn = e.submitter || document.querySelector("#leadForm button[type=submit]");
+  if (submitBtn && submitBtn.disabled) return;
   const id = document.getElementById("leadId").value;
   const phoneInputs = Array.from(document.querySelectorAll("#leadPhonesWrap .phone-input")).map(el => el.value.trim()).filter(Boolean);
   const data = {
@@ -3149,18 +3188,29 @@ document.getElementById("leadForm").addEventListener("submit", async (e) => {
     dealValue: document.getElementById("leadDealValue").value.trim(),
     lostReason: document.getElementById("leadLostReason").value,
     notes: document.getElementById("leadNotes").value.trim(),
-    agentId: CURRENT_USER.uid, agentEmail: CURRENT_USER.email,
   };
+  const originalLabel = submitBtn ? submitBtn.textContent : "";
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = t("saving"); }
   try {
-    if (id) { await db.collection("leads").doc(id).update(data); toast(t("toast_updated")); }
-    else {
+    if (id) {
+      // Editing: never overwrite who created the lead, and only the General Manager may change phone numbers.
+      const existing = LEADS.find(l => l.id === id) || {};
+      const isGM = myRole() === "general_manager";
+      const phoneChanged = isGM && data.phone && normalizePhone(data.phone) !== normalizePhone(existing.phone);
+      if (!isGM) { delete data.phone; delete data.extraPhones; }
+      if (phoneChanged) {
+        const dup = await checkDuplicatePhone(data.phone);
+        if (dup && dup.leadId !== id) { showDuplicateBlockModal(dup); return; }
+      }
+      await db.collection("leads").doc(id).update(data);
+      if (phoneChanged) await migratePhoneIndex(existing.phone, data.phone, id, existing);
+      toast(t("toast_updated"));
+    } else {
       if (data.phone) {
         const dup = await checkDuplicatePhone(data.phone);
-        if (dup) {
-          showDuplicateBlockModal(dup);
-          return;
-        }
+        if (dup) { showDuplicateBlockModal(dup); return; }
       }
+      data.agentId = CURRENT_USER.uid; data.agentEmail = CURRENT_USER.email;
       if (ROUND_ROBIN_TRIGGER_ROLES.includes(myRole())) {
         const nextAgent = await getNextRoundRobinAgent();
         if (nextAgent) { data.assignedTo = nextAgent.id; data.assignedAt = firebase.firestore.FieldValue.serverTimestamp(); }
@@ -3171,17 +3221,95 @@ document.getElementById("leadForm").addEventListener("submit", async (e) => {
       }
       data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       data.tags = [];
-      const ref = await db.collection("leads").add(data);
-      await logActivity(ref.id, "created", t("act_created"));
-      if (data.phone) registerPhoneIndex(data.phone, ref.id, data);
+      // One round-trip: lead + phone index are written together; the timeline entry is written in the background.
+      const ref = db.collection("leads").doc();
+      const batch = db.batch();
+      batch.set(ref, data);
+      const norm = normalizePhone(data.phone);
+      if (norm) batch.set(db.collection("phone_index").doc(norm), {
+        leadId: ref.id, agentId: CURRENT_USER.uid,
+        agentName: (myAgentDoc()&&myAgentDoc().name) || CURRENT_USER.email,
+        interest: data.project || data.interest || "", lastComment: "",
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+      await batch.commit();
+      logActivity(ref.id, "created", t("act_created"));
       toast(t("toast_saved"));
     }
     closeModal("leadModal");
   } catch (err) { console.error(err); alert(err.message); }
+  finally { if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = originalLabel; } }
 });
 
 /* ---------- Duplicate detection & round-robin auto-assignment ---------- */
 function normalizePhone(p){ return (p||"").replace(/[^\d]/g,""); }
+async function migratePhoneIndex(oldPhone, newPhone, leadId, lead){
+  const oldN = normalizePhone(oldPhone), newN = normalizePhone(newPhone);
+  if (!newN) return;
+  try {
+    let old = null;
+    if (oldN) { const d = await db.collection("phone_index").doc(oldN).get(); if (d.exists && d.data().leadId === leadId) old = d.data(); }
+    const creator = AGENTS.find(a => a.id === lead.agentId);
+    const batch = db.batch();
+    if (old && oldN !== newN) batch.delete(db.collection("phone_index").doc(oldN));
+    batch.set(db.collection("phone_index").doc(newN), {
+      leadId, agentId: (old && old.agentId) || lead.agentId || "",
+      agentName: (old && old.agentName) || (creator && (creator.name||creator.email)) || lead.agentEmail || "",
+      interest: lead.project || lead.interest || "", lastComment: (old && old.lastComment) || "",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    await batch.commit();
+  } catch(e) { console.error("phone index migrate failed", e); }
+}
+async function removePhoneIndexFor(lead){
+  const n = normalizePhone(lead && lead.phone);
+  if (!n) return;
+  try {
+    const d = await db.collection("phone_index").doc(n).get();
+    if (d.exists && d.data().leadId === lead.id) await db.collection("phone_index").doc(n).delete();
+  } catch(e) { console.error(e); }
+}
+async function deleteLeadCascade(id){
+  const lead = LEADS.find(l => l.id === id);
+  await db.collection("leads").doc(id).delete();
+  if (lead) await removePhoneIndexFor(lead);
+}
+async function syncPhoneIndex(){
+  if (!isFullAdmin()) return;
+  const btn = document.getElementById("dupSyncBtn");
+  if (btn) { btn.disabled = true; btn.textContent = t("saving"); }
+  try {
+    const existing = new Set();
+    (await db.collection("phone_index").get()).forEach(d => existing.add(d.id));
+    const lastNote = {};
+    ALL_ACTIVITIES.filter(a => a.type === "note" && a.createdAt && a.createdAt.seconds).forEach(a => {
+      if (!lastNote[a.leadId] || a.createdAt.seconds > lastNote[a.leadId].s) lastNote[a.leadId] = { s: a.createdAt.seconds, text: a.text || "" };
+    });
+    const groups = {};
+    LEADS.forEach(l => { const n = normalizePhone(l.phone); if (n) (groups[n] = groups[n] || []).push(l); });
+    const todo = [];
+    Object.entries(groups).forEach(([n, list]) => {
+      if (existing.has(n)) return;
+      list.sort((a,b) => ((a.createdAt&&a.createdAt.seconds)||0) - ((b.createdAt&&b.createdAt.seconds)||0));
+      todo.push([n, list[0]]);
+    });
+    for (let i = 0; i < todo.length; i += 400) {
+      const batch = db.batch();
+      todo.slice(i, i+400).forEach(([n, l]) => {
+        const creator = AGENTS.find(a => a.id === l.agentId);
+        batch.set(db.collection("phone_index").doc(n), {
+          leadId: l.id, agentId: l.agentId || "",
+          agentName: (creator && (creator.name||creator.email)) || l.agentEmail || "",
+          interest: l.project || l.interest || "", lastComment: (lastNote[l.id] && lastNote[l.id].text) || "",
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+      });
+      await batch.commit();
+    }
+    toast(`${t("dup_sync_done")}: ${todo.length}`);
+  } catch(e) { console.error(e); alert(e.message); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = t("dup_sync_btn"); } }
+}
 async function checkDuplicatePhone(phone){
   const norm = normalizePhone(phone);
   if (!norm) return null;
@@ -3242,6 +3370,7 @@ function refreshDupBell(){
   badge.style.display = extraCount ? "block" : "none";
   badge.textContent = extraCount;
 }
+document.getElementById("dupSyncBtn").addEventListener("click", syncPhoneIndex);
 document.getElementById("dupNotifBell").addEventListener("click", () => {
   const groups = computeDuplicateGroups();
   const wrap = document.getElementById("dupNotifList");
@@ -3265,7 +3394,7 @@ document.getElementById("dupNotifBell").addEventListener("click", () => {
   document.querySelectorAll("[data-dup-open]").forEach(el => el.addEventListener("click", () => { closeModal("dupNotifModal"); openLeadDetail(el.dataset.dupOpen); }));
   document.querySelectorAll("[data-dup-delete]").forEach(btn => btn.addEventListener("click", async () => {
     if (!confirm(t("confirm_delete"))) return;
-    await db.collection("leads").doc(btn.dataset.dupDelete).delete();
+    await deleteLeadCascade(btn.dataset.dupDelete);
     toast(t("toast_deleted"));
     document.getElementById("dupNotifBell").click();
   }));
@@ -3289,25 +3418,22 @@ async function getNextRoundRobinAgent(){
   const pool = AGENTS.filter(a => a.role === "sales_agent" && (!poolIds || poolIds.includes(a.id)))
     .sort((a,b) => (a.id||"").localeCompare(b.id||""));
   if (!pool.length) return null;
-  let lastId = null;
-  try {
-    const doc = await db.collection("settings").doc("roundRobin").get();
-    if (doc.exists) lastId = doc.data().lastAgentId;
-  } catch(e) { /* ignore */ }
+  const lastId = ROUND_ROBIN_CONFIG.lastAgentId; // kept fresh by the settings listener, no extra round-trip needed
   let nextIdx = 0;
   if (lastId) {
     const idx = pool.findIndex(a => a.id === lastId);
     if (idx >= 0) nextIdx = (idx + 1) % pool.length;
   }
   const nextAgent = pool[nextIdx];
-  try { await db.collection("settings").doc("roundRobin").set({ lastAgentId: nextAgent.id }, { merge:true }); } catch(e) { /* ignore */ }
+  ROUND_ROBIN_CONFIG.lastAgentId = nextAgent.id;
+  db.collection("settings").doc("roundRobin").set({ lastAgentId: nextAgent.id }, { merge:true }).catch(e => console.error(e));
   return nextAgent;
 }
 
 async function deleteLead(id){
   if (myRole() !== "general_manager") return;
   if (!confirm(t("confirm_delete"))) return;
-  await db.collection("leads").doc(id).delete();
+  await deleteLeadCascade(id);
   toast(t("toast_deleted"));
 }
 
@@ -4308,15 +4434,12 @@ function renderAggregateReports(){
   const overdueTasks = TASKS.filter(tk => !tk.done && tk.due && new Date(tk.due) < new Date())
     .sort((a,b) => new Date(a.due) - new Date(b.due));
 
-  const STALE_DAYS = 5;
-  const staleLeads = LEADS.filter(l => !["won","rental","resale","lost"].includes(l.status)).map(l => {
-    const acts = ALL_ACTIVITIES.filter(a => a.leadId === l.id);
-    let lastMs = 0;
-    acts.forEach(a => { const t = a.createdAt&&a.createdAt.seconds?a.createdAt.seconds*1000:0; if (t>lastMs) lastMs=t; });
-    if (!lastMs) { const cd = leadDate(l); lastMs = cd ? cd.getTime() : 0; }
-    const daysSince = lastMs ? Math.floor((Date.now()-lastMs)/86400000) : null;
+  const actIdx = buildActivityIndex();
+  const staleLeads = LEADS.filter(l => !TERMINAL_STATUSES.includes(l.status)).map(l => {
+    const last = (actIdx[l.id]||{}).lastTouchMs || msOf(l.createdAt);
+    const daysSince = last ? Math.floor((Date.now()-last)/86400000) : null;
     return { lead:l, daysSince };
-  }).filter(x => x.daysSince === null || x.daysSince >= STALE_DAYS)
+  }).filter(x => x.daysSince === null || x.daysSince >= STALE_DAYS_LIMIT)
     .sort((a,b) => (b.daysSince||999) - (a.daysSince||999));
 
   const newLeadsThis = countInMonth(LEADS, leadDate, 0);
@@ -4342,6 +4465,7 @@ function renderAggregateReports(){
       <div class="stat-card-v2"><div><div class="sc-label">${t("qs_closed")}</div><div class="sc-value">${wonThisMonth}</div><div class="sc-unit">${deltaBadge(wonThisMonth, wonLastMonth)} ${t("vs_last_month")}</div></div><div class="stat-icon-badge green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></div></div>
     </div>
 
+    ${isFullAdmin() ? teamIntelligenceHtml() : `<div class="panel" style="font-size:12px; color:var(--slate); line-height:1.7;">${TI("الأرقام والتقارير دي بتعرض العملاء اللي إنت ضفتهم أو المتخصصين لك بس. التحليل المفصل لأداء الفريق متاح للمدير العام والأدمن.","These reports only include leads you added or that are assigned to you. Detailed team analytics is available to the General Manager and Admin.")}</div>`}
     <div class="panel"><div class="panel-head"><h2>${t("stale_leads_report")}</h2></div>${staleLeadsTable(staleLeads)}</div>
     <div class="panel"><div class="panel-head"><h2>${t("sales_team_report")}</h2></div>${teamReportTable(salesRows, true)}</div>
     <div class="panel"><div class="panel-head"><h2>${t("marketing_team_report")}</h2></div>${teamReportTable(marketingRows, false)}</div>
@@ -4365,6 +4489,382 @@ function renderAggregateReports(){
     renderReports();
   });
   document.querySelectorAll("[data-open-stale]").forEach(el => el.addEventListener("click", () => openLeadDetail(el.dataset.openStale)));
+  if (isFullAdmin()) bindTeamIntelligence();
+}
+
+/* ---------- Team Intelligence (advanced analytics for GM / Admin) ---------- */
+const TI = (ar, en) => (getLang() === "ar" ? ar : en);
+const CONTACT_TYPES = ["call","whatsapp","sms"];
+const WORK_TYPES = ["call","whatsapp","sms","note","task_done","status"];
+const TERMINAL_STATUSES = ["won","rental","resale","lost"];
+const QUALIFIED_PLUS = ["qualified","matched","meeting","offer","negotiation","booking","contract","won","rental","resale"];
+const MEETING_PLUS = ["meeting","offer","negotiation","booking","contract","won","rental","resale"];
+const STALE_DAYS_LIMIT = 5;
+let TEAM_ANALYTICS = null;
+
+function median(arr){
+  if (!arr.length) return null;
+  const s = [...arr].sort((a,b) => a-b), m = Math.floor(s.length/2);
+  return s.length % 2 ? s[m] : (s[m-1]+s[m])/2;
+}
+function fmtMinutes(m){
+  if (m === null || m === undefined) return "—";
+  if (m < 1) return TI("أقل من دقيقة", "< 1 min");
+  if (m < 60) return Math.round(m) + TI(" د", " min");
+  const h = m/60;
+  if (h < 24) return h.toFixed(1) + TI(" س", " h");
+  return (h/24).toFixed(1) + TI(" يوم", " d");
+}
+function localDayKey(d){ return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
+function msOf(ts){ return ts && ts.seconds ? ts.seconds*1000 : 0; }
+function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+function pct(n, d){ return d ? Math.round((n/d)*100) : 0; }
+
+// One pass over all activities → per-lead last touch / first contact (replaces the old O(leads × activities) scan)
+function buildActivityIndex(){
+  const byLead = {};
+  ALL_ACTIVITIES.forEach(a => {
+    const ms = msOf(a.createdAt);
+    if (!ms) return;
+    const e = byLead[a.leadId] || (byLead[a.leadId] = { lastTouchMs: 0, firstContactMs: 0 });
+    if (WORK_TYPES.includes(a.type) && ms > e.lastTouchMs) e.lastTouchMs = ms;
+    if (CONTACT_TYPES.includes(a.type) && (!e.firstContactMs || ms < e.firstContactMs)) e.firstContactMs = ms;
+  });
+  return byLead;
+}
+
+function computeTeamAnalytics(){
+  const start = getPeriodRange(REPORT_PERIOD);
+  const now = Date.now();
+  const idx = buildActivityIndex();
+  const slaMin = ROUND_ROBIN_CONFIG.slaMinutes || 30;
+  const inPeriod = l => { if (!start) return true; const d = leadDate(l); return d && d >= start; };
+  const periodLeads = LEADS.filter(inPeriod);
+  const openLeads = LEADS.filter(l => !TERMINAL_STATUSES.includes(l.status));
+  const emailToAgent = {};
+  AGENTS.forEach(a => { if (a.email) emailToAgent[a.email.toLowerCase()] = a; });
+
+  const dayKeys = [];
+  for (let i = 13; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate()-i); dayKeys.push(localDayKey(d)); }
+  const act = {}, daily = {};
+  ALL_ACTIVITIES.forEach(a => {
+    const ms = msOf(a.createdAt);
+    if (!ms) return;
+    const ag = emailToAgent[(a.agentEmail||"").toLowerCase()];
+    if (!ag) return;
+    const d = new Date(ms);
+    if (!start || d >= start) {
+      const o = act[ag.id] || (act[ag.id] = { call:0, whatsapp:0, sms:0, note:0, task_done:0, status:0, total:0 });
+      if (o[a.type] !== undefined) { o[a.type]++; o.total++; }
+    }
+    if (WORK_TYPES.includes(a.type)) {
+      const k = localDayKey(d);
+      if (dayKeys.includes(k)) { const dd = daily[ag.id] || (daily[ag.id] = {}); dd[k] = (dd[k]||0) + 1; }
+    }
+  });
+
+  const phoneGroups = {};
+  LEADS.forEach(l => { const n = normalizePhone(l.phone); if (n) (phoneGroups[n] = phoneGroups[n] || []).push(l); });
+  const dupByCreator = {};
+  Object.values(phoneGroups).forEach(list => {
+    if (list.length < 2) return;
+    list.sort((a,b) => msOf(a.createdAt) - msOf(b.createdAt));
+    list.slice(1).forEach(l => { dupByCreator[l.agentId] = (dupByCreator[l.agentId]||0) + 1; });
+  });
+
+  const assignedMs = l => msOf(l.assignedAt) || msOf(l.createdAt);
+  const firstContactOf = l => msOf(l.firstContactAt) || ((idx[l.id]||{}).firstContactMs || 0);
+  const hasContact = l => !!firstContactOf(l) || !["new","no_response"].includes(l.status);
+  const lastTouchOf = l => (idx[l.id]||{}).lastTouchMs || msOf(l.createdAt);
+
+  const salesRows = AGENTS.filter(a => SALES_ROLES.includes(a.role)).map(a => {
+    const periodAssigned = periodLeads.filter(l => l.assignedTo === a.id);
+    const open = openLeads.filter(l => l.assignedTo === a.id);
+    const won = periodAssigned.filter(l => l.status === "won");
+    const lost = periodAssigned.filter(l => l.status === "lost");
+    const wonValue = won.reduce((s,l) => s + (parseFloat(l.dealValue)||0), 0);
+    const speeds = []; let contacted = 0, withinSla = 0;
+    periodAssigned.forEach(l => {
+      const fc = firstContactOf(l), as = assignedMs(l);
+      if (hasContact(l)) contacted++;
+      if (fc && as && fc >= as) { const m = (fc-as)/60000; speeds.push(m); if (m <= slaMin) withinSla++; }
+    });
+    const untouched = open.filter(l => l.status === "new" && !firstContactOf(l) && assignedMs(l) && (now-assignedMs(l)) > 24*3600000);
+    const noResponse = open.filter(l => l.status === "no_response");
+    const stale = open.filter(l => { const last = lastTouchOf(l); return last && (now-last) > STALE_DAYS_LIMIT*86400000; });
+    const overdue = TASKS.filter(tk => tk.agentId === a.id && !tk.done && tk.due && new Date(tk.due) < new Date()).length;
+    const acts = act[a.id] || { call:0, whatsapp:0, sms:0, note:0, task_done:0, status:0, total:0 };
+    return {
+      kind: "sales", id: a.id, name: a.name || a.email, role: a.role,
+      periodAssigned, open, won, lost, wonValue, contacted, speeds, withinSla,
+      medianSpeed: median(speeds), untouched, noResponse, stale, overdue, acts,
+      perLead: open.length ? acts.total/open.length : 0,
+      conv: pct(won.length, periodAssigned.length),
+      contactRate: pct(contacted, periodAssigned.length),
+      daily: daily[a.id] || {},
+    };
+  });
+
+  const totalOpen = salesRows.reduce((s,r) => s + r.open.length, 0);
+  const totalActs = salesRows.reduce((s,r) => s + r.acts.total, 0);
+  const totalAssigned = salesRows.reduce((s,r) => s + r.periodAssigned.length, 0);
+  const totalWon = salesRows.reduce((s,r) => s + r.won.length, 0);
+  const teamPerLead = totalOpen ? totalActs/totalOpen : 0;
+  const teamConv = totalAssigned ? (totalWon/totalAssigned)*100 : 0;
+
+  salesRows.forEach(r => {
+    const speedScore = r.medianSpeed === null ? 0.5 : clamp01(1 - (r.medianSpeed - slaMin)/(slaMin*3));
+    const coverage = r.open.length ? 1 - r.untouched.length/r.open.length : 1;
+    const activity = teamPerLead > 0 ? clamp01(r.perLead/teamPerLead) : 0.5;
+    const staleRate = r.open.length ? r.stale.length/r.open.length : 0;
+    const discipline = 1 - clamp01(0.5*(r.overdue/8) + 0.5*staleRate);
+    const results = (r.periodAssigned.length >= 5 && teamConv > 0) ? clamp01(r.conv/teamConv) : 0.5;
+    r.score = Math.round(100*(0.25*speedScore + 0.20*coverage + 0.20*activity + 0.15*discipline + 0.20*results));
+    r.flags = [];
+    if (r.medianSpeed !== null && r.medianSpeed > slaMin*2) r.flags.push({ sev:"danger", text: TI(`أول تواصل بطيء (${fmtMinutes(r.medianSpeed)})`, `Slow first contact (${fmtMinutes(r.medianSpeed)})`) });
+    else if (r.medianSpeed !== null && r.medianSpeed > slaMin) r.flags.push({ sev:"warn", text: TI(`أول تواصل أبطأ من ${slaMin} د`, `First contact slower than ${slaMin} min`) });
+    if (r.untouched.length >= 8) r.flags.push({ sev:"danger", text: TI(`${r.untouched.length} عميل جديد بدون أي تواصل`, `${r.untouched.length} new leads never contacted`) });
+    else if (r.untouched.length >= 3) r.flags.push({ sev:"warn", text: TI(`${r.untouched.length} عملاء جدد بدون تواصل`, `${r.untouched.length} new leads not contacted`) });
+    if (teamPerLead > 0 && r.open.length >= 5 && r.perLead < teamPerLead*0.5) r.flags.push({ sev:"warn", text: TI("نشاط أقل من نص متوسط الفريق", "Activity under half of team average") });
+    if (r.overdue >= 6) r.flags.push({ sev:"danger", text: TI(`${r.overdue} متابعة متأخرة`, `${r.overdue} overdue follow-ups`) });
+    else if (r.overdue >= 3) r.flags.push({ sev:"warn", text: TI(`${r.overdue} متابعات متأخرة`, `${r.overdue} overdue follow-ups`) });
+    if (r.stale.length >= 5 && staleRate >= 0.25) r.flags.push({ sev:"warn", text: TI(`${r.stale.length} عميل راكد +${STALE_DAYS_LIMIT} أيام`, `${r.stale.length} stale leads (${STALE_DAYS_LIMIT}+ days)`) });
+    if (r.periodAssigned.length >= 8 && teamConv > 0 && r.conv < teamConv*0.5) r.flags.push({ sev:"warn", text: TI("تحويل أقل من نص متوسط الفريق", "Conversion under half of team average") });
+    if (r.open.length >= 5 && r.noResponse.length/r.open.length >= 0.4) r.flags.push({ sev:"warn", text: TI("نسبة \"لم يتم الرد\" عالية", "High share of 'no response'") });
+  });
+
+  const marketingRows = AGENTS.filter(a => MARKETING_ROLES.includes(a.role)).map(a => {
+    const created = periodLeads.filter(l => l.agentId === a.id);
+    const qualified = created.filter(l => QUALIFIED_PLUS.includes(l.status));
+    const noResp = created.filter(l => l.status === "no_response");
+    const lost = created.filter(l => l.status === "lost");
+    const won = created.filter(l => l.status === "won");
+    const complete = created.filter(l => (l.project || l.interest) && l.source && (l.budgetFrom || l.budgetTo)).length;
+    const lostReasons = {}; lost.forEach(l => { if (l.lostReason) lostReasons[l.lostReason] = (lostReasons[l.lostReason]||0) + 1; });
+    const bySource = {}; created.forEach(l => { const s = l.source || "other"; bySource[s] = (bySource[s]||0) + 1; });
+    const r = {
+      kind: "marketing", id: a.id, name: a.name || a.email, role: a.role,
+      created, qualified, noResp, lost, won, dups: dupByCreator[a.id] || 0, lostReasons, bySource,
+      qualityRate: pct(qualified.length, created.length), noRespRate: pct(noResp.length, created.length),
+      lostRate: pct(lost.length, created.length), completeRate: pct(complete, created.length),
+      daily: daily[a.id] || {}, acts: act[a.id] || { total: 0 },
+    };
+    r.flags = [];
+    if (created.length >= 10 && r.qualityRate < 8) r.flags.push({ sev:"danger", text: TI(`جودة العملاء ضعيفة جدًا (${r.qualityRate}%)`, `Very low lead quality (${r.qualityRate}%)`) });
+    else if (created.length >= 10 && r.qualityRate < 15) r.flags.push({ sev:"warn", text: TI(`جودة العملاء منخفضة (${r.qualityRate}%)`, `Low lead quality (${r.qualityRate}%)`) });
+    if (created.length >= 10 && r.noRespRate >= 40) r.flags.push({ sev:"danger", text: TI(`${r.noRespRate}% من عملائه "لم يتم الرد"`, `${r.noRespRate}% of his leads are 'no response'`) });
+    else if (created.length >= 10 && r.noRespRate >= 25) r.flags.push({ sev:"warn", text: TI(`${r.noRespRate}% "لم يتم الرد"`, `${r.noRespRate}% 'no response'`) });
+    if (created.length >= 10 && r.completeRate < 60) r.flags.push({ sev:"warn", text: TI(`بيانات العملاء ناقصة (${r.completeRate}% مكتملة)`, `Incomplete lead data (${r.completeRate}% complete)`) });
+    if (r.dups >= 3) r.flags.push({ sev:"warn", text: TI(`${r.dups} رقم مكرر`, `${r.dups} duplicate numbers`) });
+    if (created.length >= 10 && r.lostRate >= 40) r.flags.push({ sev:"warn", text: TI(`نسبة الخسارة ${r.lostRate}%`, `Lost rate ${r.lostRate}%`) });
+    return r;
+  });
+
+  const allSpeeds = salesRows.flatMap(r => r.speeds);
+  const contactedAll = periodLeads.filter(hasContact).length;
+  const funnel = [
+    { key:"created",   label: TI("عملاء جدد","New leads"),          n: periodLeads.length },
+    { key:"contacted", label: TI("تم التواصل","Contacted"),         n: contactedAll },
+    { key:"qualified", label: TI("مؤهل فأعلى","Qualified+"),        n: periodLeads.filter(l => QUALIFIED_PLUS.includes(l.status)).length },
+    { key:"meeting",   label: TI("معاينة فأعلى","Meeting+"),        n: periodLeads.filter(l => MEETING_PLUS.includes(l.status)).length },
+    { key:"won",       label: TI("مُغلق (فايز)","Closed won"),      n: periodLeads.filter(l => l.status === "won").length },
+  ];
+  let worst = null;
+  for (let i = 1; i < funnel.length; i++) {
+    const prev = funnel[i-1].n, cur = funnel[i].n;
+    if (prev >= 5) { const drop = 1 - cur/prev; if (!worst || drop > worst.drop) worst = { from: funnel[i-1].label, to: funnel[i].label, drop: Math.round(drop*100) }; }
+  }
+
+  const overdueAll = TASKS.filter(tk => !tk.done && tk.due && new Date(tk.due) < new Date()).length;
+  const team = {
+    total: periodLeads.length,
+    contactRate: pct(contactedAll, periodLeads.length),
+    medianSpeed: median(allSpeeds),
+    withinSlaRate: pct(allSpeeds.filter(m => m <= slaMin).length, allSpeeds.length),
+    untouched: salesRows.reduce((s,r) => s + r.untouched.length, 0),
+    stale: salesRows.reduce((s,r) => s + r.stale.length, 0),
+    overdue: overdueAll,
+    conv: pct(periodLeads.filter(l => l.status === "won").length, periodLeads.length),
+    slaMin,
+  };
+
+  const priorities = [];
+  [...salesRows, ...marketingRows].forEach(r => r.flags.forEach(f => priorities.push({ sev: f.sev, name: r.name, text: f.text, kind: r.kind })));
+  priorities.sort((a,b) => (a.sev === b.sev ? 0 : a.sev === "danger" ? -1 : 1));
+
+  TEAM_ANALYTICS = { salesRows, marketingRows, funnel, worst, team, priorities, dayKeys, idx };
+  return TEAM_ANALYTICS;
+}
+
+function flagPills(flags){
+  if (!flags.length) return `<span style="font-size:11px; color:var(--success); font-weight:700;">✓ ${TI("ممتاز","Good")}</span>`;
+  return flags.slice(0,3).map(f => `<span style="display:inline-block; margin:2px 3px; padding:2px 8px; border-radius:10px; font-size:10.5px; font-weight:700; background:${f.sev==="danger"?"rgba(166,57,44,.12)":"rgba(201,162,75,.16)"}; color:${f.sev==="danger"?"var(--danger)":"var(--gold-bright)"};">${escapeHtml(f.text)}</span>`).join("") + (flags.length > 3 ? `<span style="font-size:10.5px; color:var(--slate);">+${flags.length-3}</span>` : "");
+}
+function scoreBar(score){
+  const color = score >= 70 ? "var(--success)" : score >= 45 ? "var(--gold-bright)" : "var(--danger)";
+  return `<div style="display:flex; align-items:center; gap:6px; min-width:90px;"><div style="flex:1; height:7px; background:rgba(91,107,140,.15); border-radius:4px; overflow:hidden;"><div style="height:100%; width:${score}%; background:${color};"></div></div><span style="font-size:11.5px; font-weight:800; color:${color};">${score}</span></div>`;
+}
+function funnelBars(funnel){
+  const max = Math.max(1, funnel[0].n);
+  return funnel.map((f,i) => {
+    const conv = i === 0 ? "" : ` <span style="color:var(--slate); font-weight:600;">(${pct(f.n, funnel[i-1].n)}% ${TI("من المرحلة اللي قبلها","of previous")})</span>`;
+    return `<div style="margin-bottom:12px;">
+      <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:5px;"><span style="color:var(--ivory); font-weight:700;">${escapeHtml(f.label)}${conv}</span><span style="color:var(--gold-bright); font-weight:800;">${f.n}</span></div>
+      <div style="height:9px; background:rgba(91,107,140,.12); border-radius:6px; overflow:hidden;"><div style="height:100%; width:${(f.n/max)*100}%; background:linear-gradient(90deg, var(--gold), var(--gold-bright)); border-radius:6px;"></div></div>
+    </div>`;
+  }).join("");
+}
+
+function teamIntelligenceHtml(){
+  const A = computeTeamAnalytics();
+  const T = A.team;
+  const kpi = (label, value, sub) => `<div class="stat-card-v2"><div><div class="sc-label">${label}</div><div class="sc-value" style="font-size:22px;">${value}</div>${sub?`<div class="sc-unit">${sub}</div>`:""}</div></div>`;
+  const salesTable = A.salesRows.length ? `<div class="table-scroll"><table><thead><tr>
+      <th>${TI("الموظف","Agent")}</th><th>${TI("درجة الأداء","Score")}</th><th>${TI("عملاء الفترة","Leads")}</th><th>${TI("مفتوح","Open")}</th>
+      <th>${TI("تواصل %","Contact %")}</th><th>${TI("سرعة أول تواصل","Speed")}</th><th>${TI("بدون تواصل","Untouched")}</th>
+      <th>${TI("متأخرة","Overdue")}</th><th>${TI("راكد","Stale")}</th><th>${TI("أكشن/عميل","Acts/lead")}</th><th>${TI("تحويل %","Conv %")}</th><th>${TI("نقاط الضعف","Weak points")}</th>
+    </tr></thead><tbody>
+    ${A.salesRows.slice().sort((a,b) => a.score - b.score).map(r => `<tr>
+      <td><span class="row-name-link" data-agent-report="${r.id}">${escapeHtml(r.name)}</span></td><td>${scoreBar(r.score)}</td>
+      <td>${r.periodAssigned.length}</td><td>${r.open.length}</td><td>${r.contactRate}%</td><td>${fmtMinutes(r.medianSpeed)}</td>
+      <td style="${r.untouched.length>=3?"color:var(--danger); font-weight:700;":""}">${r.untouched.length}</td>
+      <td style="${r.overdue>=3?"color:var(--danger); font-weight:700;":""}">${r.overdue}</td><td>${r.stale.length}</td>
+      <td>${r.perLead.toFixed(1)}</td><td>${r.conv}%</td><td>${flagPills(r.flags)}</td>
+    </tr>`).join("")}
+    </tbody></table></div>` : emptyState(t("empty_leads_title"), "");
+  const mkTable = A.marketingRows.length ? `<div class="table-scroll"><table><thead><tr>
+      <th>${TI("الموظف","Agent")}</th><th>${TI("عملاء جابهم","Leads")}</th><th>${TI("جودة %","Quality %")}</th><th>${TI("لم يتم الرد %","No-resp %")}</th>
+      <th>${TI("خسارة %","Lost %")}</th><th>${TI("اكتمال البيانات %","Data %")}</th><th>${TI("أرقام مكررة","Dups")}</th><th>${TI("فايز","Won")}</th><th>${TI("نقاط الضعف","Weak points")}</th>
+    </tr></thead><tbody>
+    ${A.marketingRows.map(r => `<tr>
+      <td><span class="row-name-link" data-agent-report="${r.id}">${escapeHtml(r.name)}</span></td><td>${r.created.length}</td>
+      <td>${r.qualityRate}%</td><td style="${r.noRespRate>=40?"color:var(--danger); font-weight:700;":""}">${r.noRespRate}%</td><td>${r.lostRate}%</td><td>${r.completeRate}%</td>
+      <td>${r.dups}</td><td>${r.won.length}</td><td>${flagPills(r.flags)}</td>
+    </tr>`).join("")}
+    </tbody></table></div>` : emptyState(t("empty_leads_title"), "");
+  const prio = A.priorities.length ? A.priorities.slice(0,10).map(p => `
+    <div style="display:flex; gap:10px; align-items:flex-start; padding:9px 0; border-bottom:1px solid var(--navy-line); font-size:12.5px;">
+      <span style="flex-shrink:0; width:9px; height:9px; margin-top:5px; border-radius:50%; background:${p.sev==="danger"?"var(--danger)":"var(--gold-bright)"};"></span>
+      <div><strong style="color:var(--ivory);">${escapeHtml(p.name)}</strong> <span style="color:var(--slate);">${p.kind==="sales"?TI("(مبيعات)","(sales)"):TI("(تسويق)","(marketing)")}</span><br><span style="color:var(--ivory);">${escapeHtml(p.text)}</span></div>
+    </div>`).join("") : `<div style="font-size:12.5px; color:var(--success);">✓ ${TI("مفيش نقاط ضعف واضحة في الفترة دي","No clear weak points in this period")}</div>`;
+
+  return `
+    <div class="panel">
+      <div class="panel-head" style="justify-content:space-between;"><h2>🧠 ${TI("ذكاء الفريق","Team Intelligence")}</h2>
+        <button type="button" class="btn-outline" id="teamExportBtn">⬇ ${TI("تصدير Excel","Export Excel")}</button></div>
+      <div style="font-size:11.5px; color:var(--slate); line-height:1.7;">${TI(
+        `الأرقام دي مبنية على الأكشنز اللي بتتسجل جوه النظام (اتصال/واتساب/كومنت/مهام). معيار السرعة المستهدف: أول تواصل خلال ${T.slaMin} دقيقة من التوزيع. درجة الأداء (٠-١٠٠) = سرعة ٢٥٪ + تغطية العملاء ٢٠٪ + النشاط ٢٠٪ + الانضباط ١٥٪ + النتائج ٢٠٪.`,
+        `Based on actions logged in the system (calls / WhatsApp / notes / tasks). Target speed: first contact within ${T.slaMin} min of assignment. Score (0-100) = speed 25% + coverage 20% + activity 20% + discipline 15% + results 20%.`)}</div>
+    </div>
+    <div class="stat-grid">
+      ${kpi(TI("نسبة التواصل","Contact rate"), T.contactRate + "%", `${T.total} ${TI("عميل في الفترة","leads in period")}`)}
+      ${kpi(TI("سرعة أول تواصل (وسيط)","Median first contact"), fmtMinutes(T.medianSpeed), `${T.withinSlaRate}% ${TI("خلال","within")} ${T.slaMin} ${TI("د","min")}`)}
+      ${kpi(TI("جدد بدون تواصل +24س","New, untouched 24h+"), T.untouched, "")}
+      ${kpi(TI("متابعات متأخرة","Overdue follow-ups"), T.overdue, "")}
+      ${kpi(TI("عملاء راكدين","Stale leads"), T.stale, `${STALE_DAYS_LIMIT}+ ${TI("أيام بدون أكشن","days no action")}`)}
+      ${kpi(TI("نسبة التحويل","Conversion"), T.conv + "%", "")}
+    </div>
+    <div class="panel"><div class="panel-head"><h2>${TI("قمع المبيعات","Sales funnel")}</h2></div>${funnelBars(A.funnel)}
+      ${A.worst ? `<div style="margin-top:6px; padding:10px 12px; border-radius:10px; background:rgba(166,57,44,.08); font-size:12px; color:var(--ivory);">⚠ ${TI(`أكبر تسرّب: من "${A.worst.from}" إلى "${A.worst.to}" — ضايع ${A.worst.drop}%`, `Biggest drop-off: "${A.worst.from}" → "${A.worst.to}" — ${A.worst.drop}% lost`)}</div>` : ""}</div>
+    <div class="panel"><div class="panel-head"><h2>🎯 ${TI("أولويات التطوير (نقاط الضعف)","Priorities to fix (weak points)")}</h2></div>${prio}</div>
+    <div class="panel"><div class="panel-head"><h2>${TI("تقييم فريق المبيعات (اضغط على الاسم للتفاصيل)","Sales scorecard (tap a name for details)")}</h2></div>${salesTable}</div>
+    <div class="panel"><div class="panel-head"><h2>${TI("تقييم فريق التسويق (جودة العملاء)","Marketing scorecard (lead quality)")}</h2></div>${mkTable}</div>`;
+}
+
+function bindTeamIntelligence(){
+  document.querySelectorAll("[data-agent-report]").forEach(el => el.addEventListener("click", () => openAgentReport(el.dataset.agentReport)));
+  const ex = document.getElementById("teamExportBtn");
+  if (ex) ex.addEventListener("click", exportTeamReport);
+}
+
+function miniBars(dayKeys, dailyMap){
+  const vals = dayKeys.map(k => dailyMap[k] || 0);
+  const max = Math.max(1, ...vals);
+  return `<div style="display:flex; align-items:flex-end; gap:4px; height:70px;">${vals.map((v,i) => `<div title="${dayKeys[i]}: ${v}" style="flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; height:100%;">
+    <div style="width:100%; height:${Math.max(3,(v/max)*100)}%; background:${v?"linear-gradient(180deg, var(--gold-bright), var(--gold))":"rgba(91,107,140,.2)"}; border-radius:3px 3px 0 0;"></div></div>`).join("")}</div>
+    <div style="display:flex; justify-content:space-between; font-size:9.5px; color:var(--slate); margin-top:3px;"><span>${dayKeys[0].slice(5)}</span><span>${dayKeys[dayKeys.length-1].slice(5)}</span></div>`;
+}
+
+function openAgentReport(agentId){
+  const A = TEAM_ANALYTICS || computeTeamAnalytics();
+  const r = A.salesRows.find(x => x.id === agentId) || A.marketingRows.find(x => x.id === agentId);
+  if (!r) return;
+  const now = Date.now();
+  const mini = (label, value) => `<div class="ov-item" style="margin-bottom:8px;"><div class="ov-label">${label}</div><div class="ov-value">${value}</div></div>`;
+  let body = `<div style="font-size:12px; color:var(--slate); margin-bottom:10px;">${escapeHtml(t('role_'+r.role))}</div>
+    <div style="margin-bottom:12px;">${flagPills(r.flags)}</div>`;
+  if (r.kind === "sales") {
+    const attention = [
+      ...r.untouched.map(l => ({ l, why: TI("بدون أي تواصل","Never contacted"), since: assignedSince(l, now) })),
+      ...r.stale.filter(l => !r.untouched.includes(l)).map(l => ({ l, why: TI("راكد","Stale"), since: staleSince(l, A.idx, now) })),
+    ].slice(0, 12);
+    body += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+      ${mini(TI("درجة الأداء","Score"), r.score + "/100")}${mini(TI("عملاء الفترة","Leads in period"), r.periodAssigned.length)}
+      ${mini(TI("عملاء مفتوحين","Open leads"), r.open.length)}${mini(TI("نسبة التواصل","Contact rate"), r.contactRate + "%")}
+      ${mini(TI("سرعة أول تواصل","First contact (median)"), fmtMinutes(r.medianSpeed))}${mini(TI("تحويل","Conversion"), r.conv + "% (" + r.won.length + " " + TI("فايز","won") + ")")}
+      ${mini(TI("قيمة الصفقات","Won value"), r.wonValue ? r.wonValue.toLocaleString() : "—")}${mini(TI("متابعات متأخرة","Overdue"), r.overdue)}
+    </div>
+    <div class="panel" style="margin-top:12px; padding:14px;"><div class="panel-head"><h2>${TI("الأكشنز في الفترة","Actions in period")}</h2></div>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; font-size:12px; text-align:center;">
+        <div>📞<br><strong>${r.acts.call}</strong><br>${TI("اتصال","Calls")}</div><div>💬<br><strong>${r.acts.whatsapp}</strong><br>${TI("واتساب","WhatsApp")}</div><div>✉️<br><strong>${r.acts.sms}</strong><br>SMS</div>
+        <div>📝<br><strong>${r.acts.note}</strong><br>${TI("كومنت","Notes")}</div><div>✅<br><strong>${r.acts.task_done}</strong><br>${TI("مهام","Tasks")}</div><div>🔄<br><strong>${r.acts.status}</strong><br>${TI("تغيير حالة","Status")}</div>
+      </div></div>
+    <div class="panel" style="padding:14px;"><div class="panel-head"><h2>${TI("النشاط آخر ١٤ يوم","Activity, last 14 days")}</h2></div>${miniBars(A.dayKeys, r.daily)}</div>
+    <div class="panel" style="padding:14px;"><div class="panel-head"><h2>${TI("توزيع عملائه المفتوحين","Open leads by stage")}</h2></div>
+      ${barList(STATUSES.filter(s => !TERMINAL_STATUSES.includes(s)).map(s => [t('status_'+s), r.open.filter(l => l.status===s).length]))}</div>
+    <div class="panel" style="padding:14px;"><div class="panel-head"><h2>${TI("عملاء محتاجين تدخل","Leads needing attention")}</h2></div>
+      ${attention.length ? `<div class="table-scroll"><table><thead><tr><th>${t("col_lead_name")}</th><th>${t("col_status")}</th><th>${TI("السبب","Reason")}</th><th>${TI("من","For")}</th></tr></thead><tbody>
+        ${attention.map(x => `<tr><td><span class="row-name-link" data-ar-open="${x.l.id}">${escapeHtml(x.l.name||"")}</span></td><td><span class="badge ${x.l.status}">${t('status_'+x.l.status)}</span></td><td>${x.why}</td><td style="color:var(--danger); font-weight:700;">${x.since}</td></tr>`).join("")}
+      </tbody></table></div>` : `<div style="font-size:12.5px; color:var(--success);">✓ ${TI("مفيش عملاء متأخرين","No neglected leads")}</div>`}</div>`;
+  } else {
+    const lostPairs = Object.entries(r.lostReasons).map(([k,v]) => [t('lost_'+k) || k, v]);
+    body += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+      ${mini(TI("عملاء جابهم","Leads sourced"), r.created.length)}${mini(TI("جودة العملاء","Lead quality"), r.qualityRate + "%")}
+      ${mini(TI("لم يتم الرد","No response"), r.noRespRate + "%")}${mini(TI("نسبة الخسارة","Lost rate"), r.lostRate + "%")}
+      ${mini(TI("اكتمال البيانات","Data completeness"), r.completeRate + "%")}${mini(TI("أرقام مكررة","Duplicate numbers"), r.dups)}
+      ${mini(TI("وصلوا لفايز","Closed won"), r.won.length)}${mini(TI("مؤهل فأعلى","Qualified+"), r.qualified.length)}
+    </div>
+    <div class="panel" style="margin-top:12px; padding:14px;"><div class="panel-head"><h2>${TI("عملاءه حسب المصدر","Leads by source")}</h2></div>
+      ${barList(Object.entries(r.bySource).map(([k,v]) => [t('source_'+k) || k, v]))}</div>
+    <div class="panel" style="padding:14px;"><div class="panel-head"><h2>${TI("عملاءه حسب الحالة","Leads by stage")}</h2></div>
+      ${barList(STATUSES.map(s => [t('status_'+s), r.created.filter(l => l.status===s).length]).filter(p => p[1] > 0))}</div>
+    <div class="panel" style="padding:14px;"><div class="panel-head"><h2>${TI("أسباب الخسارة","Lost reasons")}</h2></div>${barList(lostPairs)}</div>`;
+  }
+  document.getElementById("agentReportTitle").textContent = r.name;
+  document.getElementById("agentReportBody").innerHTML = body;
+  document.querySelectorAll("[data-ar-open]").forEach(el => el.addEventListener("click", () => { closeModal("agentReportModal"); openLeadDetail(el.dataset.arOpen); }));
+  document.getElementById("agentReportModal").classList.add("show");
+}
+function assignedSince(l, now){
+  const as = msOf(l.assignedAt) || msOf(l.createdAt);
+  return as ? fmtMinutes((now-as)/60000) : "—";
+}
+function staleSince(l, idx, now){
+  const last = (idx[l.id]||{}).lastTouchMs || msOf(l.createdAt);
+  return last ? Math.floor((now-last)/86400000) + TI(" يوم"," d") : "—";
+}
+
+function exportTeamReport(){
+  if (!isFullAdmin()) return;
+  const A = TEAM_ANALYTICS || computeTeamAnalytics();
+  const sales = A.salesRows.map(r => ({
+    [TI("الموظف","Agent")]: r.name, [TI("درجة الأداء","Score")]: r.score, [TI("عملاء الفترة","Leads in period")]: r.periodAssigned.length,
+    [TI("مفتوح","Open")]: r.open.length, [TI("نسبة التواصل %","Contact %")]: r.contactRate,
+    [TI("سرعة أول تواصل (دقيقة)","First contact (min)")]: r.medianSpeed === null ? "" : Math.round(r.medianSpeed),
+    [TI("بدون تواصل","Untouched")]: r.untouched.length, [TI("متابعات متأخرة","Overdue")]: r.overdue, [TI("راكد","Stale")]: r.stale.length,
+    [TI("أكشن لكل عميل","Actions per lead")]: Number(r.perLead.toFixed(2)), [TI("اتصال","Calls")]: r.acts.call, [TI("واتساب","WhatsApp")]: r.acts.whatsapp,
+    [TI("كومنت","Notes")]: r.acts.note, [TI("تحويل %","Conversion %")]: r.conv, [TI("فايز","Won")]: r.won.length,
+    [TI("قيمة الصفقات","Won value")]: r.wonValue, [TI("نقاط الضعف","Weak points")]: r.flags.map(f => f.text).join(" | "),
+  }));
+  const mk = A.marketingRows.map(r => ({
+    [TI("الموظف","Agent")]: r.name, [TI("عملاء جابهم","Leads")]: r.created.length, [TI("جودة %","Quality %")]: r.qualityRate,
+    [TI("لم يتم الرد %","No response %")]: r.noRespRate, [TI("خسارة %","Lost %")]: r.lostRate, [TI("اكتمال البيانات %","Data complete %")]: r.completeRate,
+    [TI("أرقام مكررة","Duplicates")]: r.dups, [TI("فايز","Won")]: r.won.length, [TI("نقاط الضعف","Weak points")]: r.flags.map(f => f.text).join(" | "),
+  }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(sales), "Sales");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(mk), "Marketing");
+  XLSX.writeFile(wb, `team-report-${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
 function staleLeadsTable(rows){
@@ -5891,11 +6391,14 @@ function openLeadDetail(id){
   deleteBtn.style.display = myRole() === "general_manager" ? "inline-flex" : "none";
   deleteBtn.onclick = async () => {
     if (!confirm(t("confirm_delete"))) return;
-    await db.collection("leads").doc(id).delete();
+    await deleteLeadCascade(id);
     toast(t("toast_deleted"));
     closeModal("leadDetailModal");
   };
   document.getElementById("detailName").value = lead.name || "";
+  const phoneField = document.getElementById("detailPhoneField");
+  phoneField.style.display = myRole() === "general_manager" ? "" : "none";
+  document.getElementById("detailPhone").value = lead.phone || "";
   document.getElementById("detailLeadId").value = id;
   document.getElementById("detailStatus").value = lead.status || "new";
   document.getElementById("detailRating").value = lead.rating || "warm";
@@ -6177,7 +6680,18 @@ document.getElementById("detailForm").addEventListener("submit", async (e) => {
   };
   if (assignedToChanged) data.assignedAt = firebase.firestore.FieldValue.serverTimestamp();
   try {
+    let phoneChanged = false;
+    if (myRole() === "general_manager") {
+      const newPhone = document.getElementById("detailPhone").value.trim();
+      if (newPhone && normalizePhone(newPhone) !== normalizePhone(lead.phone)) {
+        const dup = await checkDuplicatePhone(newPhone);
+        if (dup && dup.leadId !== id) { showDuplicateBlockModal(dup); return; }
+        data.phone = newPhone;
+        phoneChanged = true;
+      }
+    }
     await db.collection("leads").doc(id).update(data);
+    if (phoneChanged) { await migratePhoneIndex(lead.phone, data.phone, id, lead); await logActivity(id, "updated", `${t("act_phone_changed")}: ${lead.phone||"—"} → ${data.phone}`); }
     if (statusChanged) {
       let msg = t("act_status") + " " + t("status_"+newStatus);
       if (newStatus === "lost" && data.lostReason) msg += " (" + t("lost_"+data.lostReason) + ")";
@@ -6193,9 +6707,10 @@ document.getElementById("detailForm").addEventListener("submit", async (e) => {
 function closeModal(id){
   document.getElementById(id).classList.remove("show");
   if (id === "leadDetailModal" && timelineUnsub) { timelineUnsub(); timelineUnsub = null; }
+  if (id === "leadModal" || id === "importModal") setTimeout(flushPendingRender, 50);
 }
 document.querySelectorAll("[data-close-modal]").forEach(btn => btn.addEventListener("click", () => closeModal(btn.dataset.closeModal)));
-document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.addEventListener("click", e => { if (e.target===backdrop) backdrop.classList.remove("show"); }));
+document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.addEventListener("click", e => { if (e.target===backdrop) { backdrop.classList.remove("show"); setTimeout(flushPendingRender, 50); } }));
 </script>
 </body>
 </html>
