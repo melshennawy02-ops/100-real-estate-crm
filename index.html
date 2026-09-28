@@ -1596,6 +1596,9 @@ const I18N = {
     dup_notif_title: "أرقام مكررة", dup_notif_desc: "أرقام هواتف اتسجلت أكتر من مرة على النظام. راجعها واحذف الزيادة بعد ما تعرف مين ضافها.",
     saving: "جاري الحفظ...", dup_sync_btn: "مزامنة فهرس الأرقام (لمنع تكرار أرقام العملاء القدام)", dup_sync_done: "تمت إضافة أرقام للفهرس",
     dup_notif_empty: "لا يوجد أرقام مكررة حاليًا 🎉", col_dup_phone: "الرقم", col_dup_added_by: "أضافه", col_dup_date: "التاريخ",
+    dup_select_all: "تحديد الكل", dup_oldest: "الأقدم", dup_newest: "الأحدث",
+    dup_delete_selected: "حذف المحدد", dup_delete_all: "حذف الكل", dup_keep_old: "الاحتفاظ بالأقدم وحذف الباقي", dup_keep_new: "الاحتفاظ بالأحدث وحذف الباقي",
+    dup_select_at_least_one: "حدد عنصر واحد على الأقل",
     rr_settings_title: "التوزيع التلقائي للعملاء", rr_settings_desc: "تحكم في توزيع العملاء الجدد تلقائيًا على فريق المبيعات بالتساوي.",
     rr_enable: "تفعيل التوزيع التلقائي", rr_agent_pool: "السيلز المشمولين في التوزيع", rr_no_agents: "لا يوجد موظفين سيلز مسجلين بعد",
     rr_pool_hint: "لو مفيش حد متحدد، التوزيع هيشمل كل السيلز تلقائيًا.",
@@ -1876,6 +1879,9 @@ const I18N = {
     dup_notif_title: "Duplicate Numbers", dup_notif_desc: "Phone numbers registered more than once in the system. Review and delete the extras once you know who added them.",
     saving: "Saving...", dup_sync_btn: "Sync phone index (block duplicates of existing leads)", dup_sync_done: "Numbers added to the index",
     dup_notif_empty: "No duplicate numbers right now 🎉", col_dup_phone: "Phone", col_dup_added_by: "Added by", col_dup_date: "Date",
+    dup_select_all: "Select all", dup_oldest: "Oldest", dup_newest: "Newest",
+    dup_delete_selected: "Delete selected", dup_delete_all: "Delete all", dup_keep_old: "Keep oldest, delete the rest", dup_keep_new: "Keep newest, delete the rest",
+    dup_select_at_least_one: "Select at least one item",
     rr_settings_title: "Auto Lead Distribution", rr_settings_desc: "Control how new leads are automatically distributed evenly across the sales team.",
     rr_enable: "Enable auto-distribution", rr_agent_pool: "Sales agents included", rr_no_agents: "No sales agents registered yet",
     rr_pool_hint: "If none are selected, distribution includes all sales agents automatically.",
@@ -3002,7 +3008,7 @@ function renderLeads(){
         ${AGENTS.map(a => `<button type="button" class="agent-filter-btn" data-agent="${a.id}">${escapeHtml(a.name||a.email)}</button>`).join("")}
       </div>
       <div id="bulkBar" style="display:none;"></div>
-      <div id="leadsTableWrap" style="margin-top:16px;">${visibleLeads().length ? leadsTable(visibleLeads()) : emptyState(t("empty_leads_title"), t("empty_leads_sub"))}</div>
+      <div id="leadsTableWrap" style="margin-top:16px;"></div>
     </div>`;
   document.getElementById("leadSearch").addEventListener("input", filterLeadsView);
   document.getElementById("leadFilter").addEventListener("change", filterLeadsView);
@@ -3034,20 +3040,19 @@ function renderLeads(){
     document.getElementById("leadFilter").value = PENDING_LEAD_FILTER;
     LEAD_STATUS_FILTER = PENDING_LEAD_FILTER;
     PENDING_LEAD_FILTER = null;
-    filterLeadsView();
-  } else if (LEAD_SEARCH_QUERY || LEAD_STATUS_FILTER !== "all" || SHOW_UNASSIGNED_ONLY) {
-    filterLeadsView();
-  } else {
-    bindLeadRowEvents();
   }
+  filterLeadsView(true);
 }
 let SELECTED_FILTER_AGENTS = new Set();
 let SHOW_UNASSIGNED_ONLY = false;
 let LEAD_SEARCH_QUERY = "";
 let LEAD_STATUS_FILTER = "all";
-function filterLeadsView(){
+let LEADS_PAGE_SIZE = 25;
+let LEADS_CURRENT_PAGE = 1;
+function filterLeadsView(keepPage){
   LEAD_SEARCH_QUERY = document.getElementById("leadSearch").value;
   LEAD_STATUS_FILTER = document.getElementById("leadFilter").value;
+  if (keepPage !== true) LEADS_CURRENT_PAGE = 1;
   const q = LEAD_SEARCH_QUERY.trim().toLowerCase();
   const status = LEAD_STATUS_FILTER;
   const filtered = visibleLeads().filter(l =>
@@ -3056,8 +3061,25 @@ function filterLeadsView(){
     (SELECTED_FILTER_AGENTS.size===0 || SELECTED_FILTER_AGENTS.has(l.assignedTo)) &&
     (!SHOW_UNASSIGNED_ONLY || !l.assignedTo)
   );
-  document.getElementById("leadsTableWrap").innerHTML = filtered.length ? leadsTable(filtered) : emptyState(t("empty_leads_title"), t("empty_leads_sub"));
+  const totalPages = Math.max(1, Math.ceil(filtered.length / LEADS_PAGE_SIZE));
+  if (LEADS_CURRENT_PAGE > totalPages) LEADS_CURRENT_PAGE = totalPages;
+  const startIdx = (LEADS_CURRENT_PAGE-1) * LEADS_PAGE_SIZE;
+  const pageItems = filtered.slice(startIdx, startIdx + LEADS_PAGE_SIZE);
+  const wrap = document.getElementById("leadsTableWrap");
+  if (!filtered.length) { wrap.innerHTML = emptyState(t("empty_leads_title"), t("empty_leads_sub")); return; }
+  wrap.innerHTML = `
+    <div class="pipe-results-summary">${t("pipe_showing")} ${startIdx+1}–${Math.min(startIdx+LEADS_PAGE_SIZE, filtered.length)} ${t("pipe_of")} ${filtered.length} ${t("pipe_results")}</div>
+    ${leadsTable(pageItems)}
+    <div class="pipe-pagination">
+      <button type="button" class="pipe-page-arrow" id="leadsPrevPage" ${LEADS_CURRENT_PAGE<=1?"disabled":""}>›</button>
+      <div class="pipe-page-info">${t("pipe_page")} ${LEADS_CURRENT_PAGE} / ${totalPages}</div>
+      <button type="button" class="pipe-page-arrow" id="leadsNextPage" ${LEADS_CURRENT_PAGE>=totalPages?"disabled":""}>‹</button>
+    </div>`;
   bindLeadRowEvents();
+  const prevBtn = document.getElementById("leadsPrevPage");
+  const nextBtn = document.getElementById("leadsNextPage");
+  if (prevBtn) prevBtn.addEventListener("click", () => { if (LEADS_CURRENT_PAGE>1) { LEADS_CURRENT_PAGE--; filterLeadsView(true); } });
+  if (nextBtn) nextBtn.addEventListener("click", () => { if (LEADS_CURRENT_PAGE<totalPages) { LEADS_CURRENT_PAGE++; filterLeadsView(true); } });
 }
 function leadsTable(list, compact){
   const canBulk = !compact && canBulkReassign();
@@ -3371,33 +3393,77 @@ function refreshDupBell(){
   badge.textContent = extraCount;
 }
 document.getElementById("dupSyncBtn").addEventListener("click", syncPhoneIndex);
-document.getElementById("dupNotifBell").addEventListener("click", () => {
+function renderDupNotifList(){
   const groups = computeDuplicateGroups();
   const wrap = document.getElementById("dupNotifList");
-  wrap.innerHTML = groups.length ? groups.map(([phone,list]) => `
-    <div class="panel" style="margin-bottom:12px; padding:14px;">
-      <div style="font-weight:800; color:var(--gold-bright); margin-bottom:10px; font-size:13px;">${escapeHtml(phone)}</div>
+  wrap.innerHTML = groups.length ? groups.map(([phone,list]) => {
+    const sorted = [...list].sort((a,b) => msOf(a.createdAt) - msOf(b.createdAt));
+    return `
+    <div class="panel" style="margin-bottom:12px; padding:14px;" data-dup-group="${phone}">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <div style="font-weight:800; color:var(--gold-bright); font-size:13px;">${escapeHtml(phone)}</div>
+        <label style="display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--slate); cursor:pointer;">
+          <input type="checkbox" class="dup-select-all" data-group="${phone}"> ${t("dup_select_all")}
+        </label>
+      </div>
       <div class="table-scroll"><table><thead><tr>
-        <th>${t("col_name")}</th><th>${t("col_dup_added_by")}</th><th>${t("col_dup_date")}</th><th>${t("col_actions")}</th>
+        <th></th><th>${t("col_name")}</th><th>${t("col_dup_added_by")}</th><th>${t("col_dup_date")}</th><th>${t("col_actions")}</th>
       </tr></thead><tbody>
-      ${list.map(l => {
+      ${sorted.map((l,i) => {
         const ag = AGENTS.find(a => a.id === l.agentId);
         return `<tr>
-          <td><span class="row-name-link" data-dup-open="${l.id}">${escapeHtml(l.name||"")}</span></td>
+          <td><input type="checkbox" class="dup-select-row" data-group="${phone}" value="${l.id}"></td>
+          <td><span class="row-name-link" data-dup-open="${l.id}">${escapeHtml(l.name||"")}</span> ${i===0?`<span style="font-size:10px; color:var(--slate);">(${t("dup_oldest")})</span>`:""}${i===sorted.length-1&&sorted.length>1?`<span style="font-size:10px; color:var(--slate);">(${t("dup_newest")})</span>`:""}</td>
           <td>${escapeHtml((ag&&(ag.name||ag.email))||l.agentEmail||"—")}</td>
           <td>${fmtDate(l.createdAt)}</td>
           <td class="row-actions"><button class="icon-btn" data-dup-delete="${l.id}" style="color:var(--danger);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></td>
         </tr>`;
       }).join("")}
       </tbody></table></div>
-    </div>`).join("") : emptyState(t("dup_notif_empty"), "");
+      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;">
+        <button type="button" class="btn-outline" data-dup-action="deleteSelected" data-group="${phone}" style="color:var(--danger); border-color:var(--danger);">🗑 ${t("dup_delete_selected")}</button>
+        <button type="button" class="btn-outline" data-dup-action="deleteAll" data-group="${phone}" style="color:var(--danger); border-color:var(--danger);">${t("dup_delete_all")}</button>
+        <button type="button" class="btn-outline" data-dup-action="keepOld" data-group="${phone}">${t("dup_keep_old")}</button>
+        <button type="button" class="btn-outline" data-dup-action="keepNew" data-group="${phone}">${t("dup_keep_new")}</button>
+      </div>
+    </div>`;
+  }).join("") : emptyState(t("dup_notif_empty"), "");
+
   document.querySelectorAll("[data-dup-open]").forEach(el => el.addEventListener("click", () => { closeModal("dupNotifModal"); openLeadDetail(el.dataset.dupOpen); }));
   document.querySelectorAll("[data-dup-delete]").forEach(btn => btn.addEventListener("click", async () => {
     if (!confirm(t("confirm_delete"))) return;
     await deleteLeadCascade(btn.dataset.dupDelete);
     toast(t("toast_deleted"));
-    document.getElementById("dupNotifBell").click();
+    renderDupNotifList();
   }));
+  document.querySelectorAll(".dup-select-all").forEach(cb => cb.addEventListener("change", (e) => {
+    document.querySelectorAll(`.dup-select-row[data-group="${CSS.escape(cb.dataset.group)}"]`).forEach(row => row.checked = e.target.checked);
+  }));
+  document.querySelectorAll('[data-dup-action]').forEach(btn => btn.addEventListener("click", async () => {
+    const phone = btn.dataset.group;
+    const groups = computeDuplicateGroups();
+    const entry = groups.find(([p]) => p === phone);
+    if (!entry) return;
+    const sorted = [...entry[1]].sort((a,b) => msOf(a.createdAt) - msOf(b.createdAt));
+    let toDelete = [];
+    const action = btn.dataset.action;
+    if (action === "deleteAll") toDelete = sorted;
+    else if (action === "keepOld") toDelete = sorted.slice(1);
+    else if (action === "keepNew") toDelete = sorted.slice(0, -1);
+    else if (action === "deleteSelected") {
+      const ids = new Set([...document.querySelectorAll(`.dup-select-row[data-group="${CSS.escape(phone)}"]:checked`)].map(cb => cb.value));
+      if (!ids.size) { alert(t("dup_select_at_least_one")); return; }
+      toDelete = sorted.filter(l => ids.has(l.id));
+    }
+    if (!toDelete.length) return;
+    if (!confirm(`${t("confirm_delete")} (${toDelete.length})`)) return;
+    for (const l of toDelete) await deleteLeadCascade(l.id);
+    toast(t("toast_deleted"));
+    renderDupNotifList();
+  }));
+}
+document.getElementById("dupNotifBell").addEventListener("click", () => {
+  renderDupNotifList();
   document.getElementById("dupNotifModal").classList.add("show");
 });
 
