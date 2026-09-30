@@ -6888,6 +6888,11 @@ document.getElementById("detailForm").addEventListener("submit", async (e) => {
     tags: DETAIL_TAGS,
   };
   if (assignedToChanged) data.assignedAt = firebase.firestore.FieldValue.serverTimestamp();
+  // A non-admin owner can only ever change status/project (per the security rules) — trim the payload
+  // so we never accidentally "set" an untouched field from undefined to "" and get rejected for it.
+  if (permLevel() < 3) {
+    Object.keys(data).forEach(k => { if (!["status","project"].includes(k)) delete data[k]; });
+  }
   try {
     let phoneChanged = false;
     if (myRole() === "general_manager") {
