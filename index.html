@@ -1359,6 +1359,8 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
       <h3 data-i18n="edit_agent">Edit Employee</h3>
       <button class="modal-close" data-close-modal="editAgentModal">✕</button>
     </div>
+    <div id="editAgentSnapshot" style="display:flex; gap:8px; margin-bottom:16px;"></div>
+    <div id="editAgentSuspendedNotice" style="display:none; background:rgba(166,57,44,.1); border:1px solid var(--danger); color:var(--danger); border-radius:8px; padding:10px 12px; font-size:12px; font-weight:700; margin-bottom:14px;" data-i18n="agent_suspended_notice"></div>
     <form id="editAgentForm">
       <input type="hidden" id="editAgentId">
       <div class="field"><label data-i18n="f_employee_name">Employee Name</label><input type="text" id="editAgentName" required></div>
@@ -1378,11 +1380,19 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
         </select>
       </div>
       <div class="field"><label data-i18n="f_monthly_target">Monthly Target (Deals)</label><input type="number" id="editAgentTarget" min="0"></div>
+      <div class="settings-row">
+        <div><div class="sr-label" data-i18n="f_suspend_account">Suspend account</div><div class="sr-sub" data-i18n="f_suspend_account_sub">Blocks sign-in and hides them from auto-distribution</div></div>
+        <label class="toggle-switch"><input type="checkbox" id="editAgentSuspended"><span class="ts-slider"></span></label>
+      </div>
       <div class="modal-actions">
         <button type="button" class="btn-outline" data-close-modal="editAgentModal" data-i18n="cancel">Cancel</button>
         <button type="submit" class="btn-gold" data-i18n="save">Save</button>
       </div>
     </form>
+    <div style="border-top:1px solid var(--navy-line); margin-top:18px; padding-top:16px; display:flex; flex-wrap:wrap; gap:8px;">
+      <button type="button" class="btn-outline" id="editAgentResetPwBtn">🔑 <span data-i18n="f_reset_password">Send password reset</span></button>
+      <button type="button" class="btn-outline" id="editAgentDeleteBtn" style="color:var(--danger); border-color:var(--danger);">🗑 <span data-i18n="f_delete_employee">Delete employee</span></button>
+    </div>
   </div>
 </div>
 
@@ -1548,6 +1558,15 @@ const I18N = {
     vs_last_month: "عن الشهر اللي فات", my_target_title: "المستهدف الشهري",
     my_target_sub: "نسبة إنجازك من المستهدف بتاعك هذا الشهر", no_target_set: "لسه مفيش مستهدف محدد لك — كلّم مديرك يحدده",
     f_monthly_target: "المستهدف الشهري (عدد الصفقات)",
+    f_suspend_account: "تعليق الحساب", f_suspend_account_sub: "بيمنعه من تسجيل الدخول وبيستبعده من التوزيع التلقائي للعملاء الجدد",
+    f_reset_password: "إرسال رابط تغيير كلمة المرور", f_delete_employee: "حذف الموظف",
+    agent_suspended_notice: "⚠ الحساب ده معلّق حاليًا، صاحبه مش هيقدر يسجل دخول.",
+    account_suspended_alert: "حسابك معلّق حاليًا. تواصل مع الإدارة لمزيد من التفاصيل.",
+    cannot_suspend_self: "متقدرش تعلّق حسابك انت بنفسك.", cannot_delete_self: "متقدرش تحذف حسابك انت بنفسك.",
+    confirm_reset_password: "هل تريد إرسال رابط إعادة تعيين كلمة المرور إلى",
+    confirm_delete_employee: "هل أنت متأكد من حذف الموظف؟ العملاء المتخصصين له هيرجعوا \"غير مخصصين\" تلقائيًا:",
+    toast_reset_sent: "تم إرسال رابط تغيير كلمة المرور بنجاح",
+    agent_snap_assigned: "عملاء متخصصين له", agent_snap_open: "عملاء مفتوحين", agent_snap_overdue: "متابعات متأخرة",
     col_target: "المستهدف", col_achievement: "نسبة الإنجاز",
     download_template_btn: "تحميل نموذج شيت العملاء",
     template_instructions_title: "تعليمات تعبئة الشيت — من فضلك استخدم القيم دي بالظبط في الأعمدة المطابقة",
@@ -1722,6 +1741,7 @@ const I18N = {
     f_tags_hint: "استخدمها لتمييز العميل بعلامة سريعة تسهّل البحث والفرز لاحقًا — مثال: #VIP، #يفضل_التواصل_مساءً، #من_معرض_الساحل",
     add: "إضافة", new_task: "+ مهمة جديدة", unassigned: "غير معيّن", none: "—",
     act_created: "تم إنشاء العميل", act_call: "تم تسجيل مكالمة", act_auto_reassigned: "سُحب تلقائيًا لعدم الرد وأُعيد توزيعه من", act_task_done: "تم إنجاز مهمة", act_phone_changed: "تم تعديل الرقم",
+    sla_reassigned_summary: "عملاء اتسحبوا تلقائيًا لعدم الرد وأُعيد توزيعهم",
     act_whatsapp: "تم فتح واتساب", act_sms: "تم فتح رسالة نصية",
     act_status: "تم تغيير الحالة إلى", act_updated: "تم تحديث بيانات العميل",
     call: "اتصال", whatsapp: "واتساب", sms: "رسالة",
@@ -1833,6 +1853,15 @@ const I18N = {
     vs_last_month: "vs last month", my_target_title: "Monthly Target",
     my_target_sub: "Your achievement rate toward this month's target", no_target_set: "No target set for you yet — ask your manager to set one",
     f_monthly_target: "Monthly Target (Deals)",
+    f_suspend_account: "Suspend account", f_suspend_account_sub: "Blocks sign-in and excludes them from auto-distribution of new leads",
+    f_reset_password: "Send password reset link", f_delete_employee: "Delete employee",
+    agent_suspended_notice: "⚠ This account is currently suspended; they cannot sign in.",
+    account_suspended_alert: "Your account is currently suspended. Please contact management for details.",
+    cannot_suspend_self: "You can't suspend your own account.", cannot_delete_self: "You can't delete your own account.",
+    confirm_reset_password: "Send a password reset link to",
+    confirm_delete_employee: "Delete this employee? Their assigned leads will become \"unassigned\":",
+    toast_reset_sent: "Password reset link sent successfully",
+    agent_snap_assigned: "Assigned leads", agent_snap_open: "Open leads", agent_snap_overdue: "Overdue follow-ups",
     col_target: "Target", col_achievement: "Achievement",
     download_template_btn: "Download Standard Leads Template",
     template_instructions_title: "Sheet instructions — please use these exact values in the matching columns",
@@ -2007,6 +2036,7 @@ const I18N = {
     f_tags_hint: "Use it to flag a lead for quick searching and filtering later — e.g. #VIP, #Prefers_Evening_Calls, #From_Coast_Exhibition",
     add: "Add", new_task: "+ New Task", unassigned: "Unassigned", none: "—",
     act_created: "Lead created", act_call: "Call logged", act_auto_reassigned: "Auto-reclaimed for no response and reassigned from", act_task_done: "Task completed", act_phone_changed: "Phone number changed",
+    sla_reassigned_summary: "leads auto-reclaimed for no response and reassigned",
     act_whatsapp: "WhatsApp opened", act_sms: "SMS opened",
     act_status: "Status changed to", act_updated: "Lead details updated",
     call: "Call", whatsapp: "WhatsApp", sms: "SMS",
@@ -2076,11 +2106,13 @@ async function checkSlaEscalations(){
     if (!assignedAt) return false;
     return (now - assignedAt) > slaMs;
   });
+  if (!overdue.length) return;
+  let reassignedCount = 0;
   for (const lead of overdue) {
     SLA_PROCESSING.add(lead.id);
     try {
       const poolIds = ROUND_ROBIN_CONFIG.agentPool && ROUND_ROBIN_CONFIG.agentPool.length ? ROUND_ROBIN_CONFIG.agentPool : null;
-      const pool = AGENTS.filter(a => a.role === "sales_agent" && (!poolIds || poolIds.includes(a.id)) && a.id !== lead.assignedTo)
+      const pool = AGENTS.filter(a => a.role === "sales_agent" && !a.disabled && (!poolIds || poolIds.includes(a.id)) && a.id !== lead.assignedTo)
         .sort((a,b) => (a.id||"").localeCompare(b.id||""));
       if (!pool.length) continue;
       let lastId = null;
@@ -2098,10 +2130,12 @@ async function checkSlaEscalations(){
       });
       await db.collection("settings").doc("roundRobin").set({ lastAgentId: nextAgent.id }, { merge:true });
       await logActivity(lead.id, "auto_reassigned", `${t("act_auto_reassigned")} ${(prevAgent&&(prevAgent.name||prevAgent.email))||"—"} → ${nextAgent.name||nextAgent.email}`);
-      toast(`⏱ ${lead.name||""}: ${t("act_auto_reassigned")}`);
+      reassignedCount++;
     } catch(err) { console.error("sla escalation error", err); }
     finally { SLA_PROCESSING.delete(lead.id); }
   }
+  if (reassignedCount === 1) toast(`⏱ ${t("act_auto_reassigned")}: ${overdue[0].name||""}`);
+  else if (reassignedCount > 1) toast(`⏱ ${reassignedCount} ${t("sla_reassigned_summary")}`);
 }
 function playAlertBeep(){
   try {
@@ -2489,6 +2523,12 @@ function subscribeData(){
 
   db.collection("agents").orderBy("createdAt","desc").onSnapshot(snap => {
     AGENTS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    const mine = myAgentDoc();
+    if (mine && mine.disabled === true) {
+      alert(t("account_suspended_alert"));
+      auth.signOut();
+      return;
+    }
     applyPermissions();
     const nowAdmin = isFullAdmin();
     if (nowAdmin !== LAST_ADMIN_STATE) {
@@ -2714,11 +2754,22 @@ function renderViewNow(){
 }
 
 /* ---------- Helpers ---------- */
+let TOAST_QUEUE = [], TOAST_SHOWING = false;
 function toast(msg){
+  TOAST_QUEUE.push(msg);
+  if (!TOAST_SHOWING) showNextToast();
+}
+function showNextToast(){
+  const msg = TOAST_QUEUE.shift();
+  if (msg === undefined) { TOAST_SHOWING = false; return; }
+  TOAST_SHOWING = true;
   const el = document.getElementById("toast");
   el.textContent = msg;
   el.classList.add("show");
-  setTimeout(() => el.classList.remove("show"), 2400);
+  setTimeout(() => {
+    el.classList.remove("show");
+    setTimeout(showNextToast, 250);
+  }, 2400);
 }
 function fmtDate(v){
   if (!v) return "—";
@@ -3522,7 +3573,7 @@ async function getNextRoundRobinAgent(){
   if (!ROUND_ROBIN_CONFIG.enabled) return null;
   if (!isWithinAssignWindow() && ROUND_ROBIN_CONFIG.outsideAction === "skip") return null;
   const poolIds = ROUND_ROBIN_CONFIG.agentPool && ROUND_ROBIN_CONFIG.agentPool.length ? ROUND_ROBIN_CONFIG.agentPool : null;
-  const pool = AGENTS.filter(a => a.role === "sales_agent" && (!poolIds || poolIds.includes(a.id)))
+  const pool = AGENTS.filter(a => a.role === "sales_agent" && !a.disabled && (!poolIds || poolIds.includes(a.id)))
     .sort((a,b) => (a.id||"").localeCompare(b.id||""));
   if (!pool.length) return null;
   const lastId = ROUND_ROBIN_CONFIG.lastAgentId; // kept fresh by the settings listener, no extra round-trip needed
@@ -3783,7 +3834,7 @@ async function computeRoundRobinBatch(count){
   if (!ROUND_ROBIN_CONFIG.enabled) return new Array(count).fill(null);
   if (!isWithinAssignWindow() && ROUND_ROBIN_CONFIG.outsideAction === "skip") return new Array(count).fill(null);
   const poolIds = ROUND_ROBIN_CONFIG.agentPool && ROUND_ROBIN_CONFIG.agentPool.length ? ROUND_ROBIN_CONFIG.agentPool : null;
-  const pool = AGENTS.filter(a => a.role === "sales_agent" && (!poolIds || poolIds.includes(a.id)))
+  const pool = AGENTS.filter(a => a.role === "sales_agent" && !a.disabled && (!poolIds || poolIds.includes(a.id)))
     .sort((a,b) => (a.id||"").localeCompare(b.id||""));
   if (!pool.length) return new Array(count).fill(null);
   let lastId = null;
@@ -5519,14 +5570,25 @@ function openPermissionModal(key){
 function teamRow(a, level){
   const avatar = a.avatarBase64 ? `<img src="${a.avatarBase64}" style="width:100%;height:100%;object-fit:cover;">` : (a.name||a.email||"?").charAt(0).toUpperCase();
   const editBtn = level >= 3 ? `<button class="icon-btn" data-edit-agent="${a.id}" style="margin-inline-start:auto;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>` : "";
-  return `<div class="team-row">
+  const suspendedBadge = a.disabled === true ? `<span class="badge lost" style="margin-inline-start:8px;">${t("f_suspend_account")}</span>` : "";
+  return `<div class="team-row" style="${a.disabled===true?'opacity:.55;':''}">
     <div class="team-avatar" style="overflow:hidden;">${avatar}</div>
     <div class="team-info">
-      <div class="name">${escapeHtml(a.name||"—")}</div>
+      <div class="name">${escapeHtml(a.name||"—")}${suspendedBadge}</div>
       <div class="email">${escapeHtml(a.email||"")}${a.role ? " · " + t("role_"+a.role) : ""}</div>
     </div>
     ${editBtn}
   </div>`;
+}
+function agentSnapshotHtml(a){
+  const assigned = LEADS.filter(l => l.assignedTo === a.id);
+  const open = assigned.filter(l => !TERMINAL_STATUSES.includes(l.status));
+  const overdue = TASKS.filter(tk => tk.agentId === a.id && !tk.done && tk.due && new Date(tk.due) < new Date()).length;
+  const box = (label, value) => `<div style="flex:1; background:var(--navy-panel); border:1px solid var(--navy-line); border-radius:10px; padding:10px; text-align:center;">
+    <div style="font-size:18px; font-weight:800; color:var(--gold-bright);">${value}</div>
+    <div style="font-size:10px; color:var(--slate); margin-top:2px;">${label}</div>
+  </div>`;
+  return box(t("agent_snap_assigned"), assigned.length) + box(t("agent_snap_open"), open.length) + box(t("agent_snap_overdue"), overdue);
 }
 function openEditAgentModal(id){
   const a = AGENTS.find(x => x.id===id);
@@ -5535,18 +5597,58 @@ function openEditAgentModal(id){
   document.getElementById("editAgentName").value = a.name || "";
   document.getElementById("editAgentRole").value = a.role || "sales_agent";
   document.getElementById("editAgentTarget").value = a.monthlyTarget || 0;
+  document.getElementById("editAgentSuspended").checked = a.disabled === true;
+  document.getElementById("editAgentSuspendedNotice").textContent = t("agent_suspended_notice");
+  document.getElementById("editAgentSuspendedNotice").style.display = a.disabled === true ? "block" : "none";
+  document.getElementById("editAgentSnapshot").innerHTML = agentSnapshotHtml(a);
   document.getElementById("editAgentModal").classList.add("show");
 }
 document.getElementById("editAgentForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const id = document.getElementById("editAgentId").value;
+  if (id === CURRENT_USER.uid && document.getElementById("editAgentSuspended").checked) {
+    alert(t("cannot_suspend_self"));
+    return;
+  }
   await db.collection("agents").doc(id).update({
     name: document.getElementById("editAgentName").value.trim(),
     role: document.getElementById("editAgentRole").value,
     monthlyTarget: parseInt(document.getElementById("editAgentTarget").value, 10) || 0,
+    disabled: document.getElementById("editAgentSuspended").checked,
   });
   toast(t("toast_updated"));
   closeModal("editAgentModal");
+});
+document.getElementById("editAgentResetPwBtn").addEventListener("click", async () => {
+  const id = document.getElementById("editAgentId").value;
+  const a = AGENTS.find(x => x.id===id);
+  if (!a || !a.email) return;
+  if (!confirm(`${t("confirm_reset_password")} ${a.email}?`)) return;
+  try {
+    await auth.sendPasswordResetEmail(a.email);
+    toast(t("toast_reset_sent"));
+  } catch(err) { alert(err.message); }
+});
+document.getElementById("editAgentDeleteBtn").addEventListener("click", async () => {
+  const id = document.getElementById("editAgentId").value;
+  const a = AGENTS.find(x => x.id===id);
+  if (!a) return;
+  if (id === CURRENT_USER.uid) { alert(t("cannot_delete_self")); return; }
+  if (!confirm(`${t("confirm_delete_employee")} ${a.name||a.email}?`)) return;
+  const btn = document.getElementById("editAgentDeleteBtn");
+  btn.disabled = true;
+  try {
+    const theirLeads = LEADS.filter(l => l.assignedTo === id);
+    for (let i = 0; i < theirLeads.length; i += 400) {
+      const batch = db.batch();
+      theirLeads.slice(i, i+400).forEach(l => batch.update(db.collection("leads").doc(l.id), { assignedTo: null }));
+      await batch.commit();
+    }
+    await db.collection("agents").doc(id).delete();
+    toast(t("toast_deleted"));
+    closeModal("editAgentModal");
+  } catch(err) { alert(err.message); }
+  finally { btn.disabled = false; }
 });
 
 /* ---------- My Profile ---------- */
