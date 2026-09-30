@@ -2879,13 +2879,19 @@ function renderDashboard(){
     <div class="leader-grid">
       <div class="leader-card">
         <div class="leader-label">🏆 ${t("top_seller_today")}</div>
-        <div class="leader-name">${lb.today ? escapeHtml(lb.today.name) : "—"}</div>
-        <div class="leader-count">${lb.today ? lb.today.count + " " + t("actions") : t("no_activity_yet")}</div>
+        ${lb.top3Today.length ? `<div style="margin-top:8px;">${lb.top3Today.map((r,i) => `
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 0; ${i<lb.top3Today.length-1?'border-bottom:1px solid var(--navy-line);':''}">
+            <span style="font-size:12.5px; font-weight:700; color:var(--ivory);">${["🥇","🥈","🥉"][i]} ${escapeHtml(r.name)}</span>
+            <span style="font-size:11.5px; color:var(--gold-bright); font-weight:700;">${r.count} ${t("actions")}</span>
+          </div>`).join("")}</div>` : `<div class="leader-name">—</div><div class="leader-count">${t("no_activity_yet")}</div>`}
       </div>
       <div class="leader-card">
         <div class="leader-label">⭐ ${t("top_seller_month")}</div>
-        <div class="leader-name">${lb.month ? escapeHtml(lb.month.name) : "—"}</div>
-        <div class="leader-count">${lb.month ? lb.month.count + " " + t("actions") : t("no_activity_yet")}</div>
+        ${lb.top3Month.length ? `<div style="margin-top:8px;">${lb.top3Month.map((r,i) => `
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 0; ${i<lb.top3Month.length-1?'border-bottom:1px solid var(--navy-line);':''}">
+            <span style="font-size:12.5px; font-weight:700; color:var(--ivory);">${["🥇","🥈","🥉"][i]} ${escapeHtml(r.name)}</span>
+            <span style="font-size:11.5px; color:var(--gold-bright); font-weight:700;">${r.count} ${t("actions")}</span>
+          </div>`).join("")}</div>` : `<div class="leader-name">—</div><div class="leader-count">${t("no_activity_yet")}</div>`}
       </div>
     </div>`,
     stages: `
@@ -3040,15 +3046,18 @@ function computeLeaderboard(){
     if (dayStr === todayStr) todayCounts[a.agentEmail] = (todayCounts[a.agentEmail]||0)+1;
     if (mStr === monthStr) monthCounts[a.agentEmail] = (monthCounts[a.agentEmail]||0)+1;
   });
-  const topOf = (counts) => {
-    const entries = Object.entries(counts);
-    if (!entries.length) return null;
-    entries.sort((a,b) => b[1]-a[1]);
-    const [email, count] = entries[0];
-    const agent = AGENTS.find(a => a.email === email);
-    return { name: (agent && agent.name) || email, count };
+  const topNOf = (counts, n) => {
+    const entries = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0,n);
+    return entries.map(([email,count]) => {
+      const agent = AGENTS.find(a => a.email === email);
+      return { name: (agent && agent.name) || email, count };
+    });
   };
-  return { today: topOf(todayCounts), month: topOf(monthCounts) };
+  const top3Today = topNOf(todayCounts, 3), top3Month = topNOf(monthCounts, 3);
+  return {
+    today: top3Today[0] || null, month: top3Month[0] || null,
+    top3Today, top3Month,
+  };
 }
 function statCard(label,value,kind){
   const clickable = kind ? ` data-stat-kind="${kind}" style="cursor:pointer;"` : "";
