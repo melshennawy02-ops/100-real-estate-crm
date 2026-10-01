@@ -293,6 +293,9 @@ tbody tr:last-child td{ border-bottom:none; }
 
 .toast{ position:fixed; bottom:24px; inset-inline-end:24px; background:var(--navy-panel-2); border:1px solid var(--gold-dim); color:var(--ivory); padding:13px 18px; border-radius:var(--radius-sm); font-size:13px; font-weight:600; box-shadow:var(--shadow); transform:translateY(20px); opacity:0; transition:.2s; z-index:200; pointer-events:none; }
 .toast.show{ transform:translateY(0); opacity:1; }
+.undo-toast{ position:fixed; bottom:88px; inset-inline-start:24px; inset-inline-end:24px; max-width:420px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:14px; background:var(--navy-panel-2); border:1px solid var(--danger); color:var(--ivory); padding:13px 16px; border-radius:var(--radius-sm); font-size:12.5px; font-weight:600; box-shadow:var(--shadow); transform:translateY(20px); opacity:0; transition:.2s; z-index:201; pointer-events:none; }
+.undo-toast.show{ transform:translateY(0); opacity:1; pointer-events:auto; }
+.undo-toast #undoToastBtn{ background:var(--gold); color:#fff; border:none; border-radius:8px; padding:7px 14px; font-size:12px; font-weight:800; cursor:pointer; flex-shrink:0; }
 
 @media (max-width:1100px){
   .sidebar{ position:fixed; left:0; right:auto; top:0; z-index:50; height:100vh; transform:translateX(-110%); transition:.2s; }
@@ -1421,6 +1424,10 @@ html[dir="ltr"] .toggle-switch input:checked + .ts-slider::before{ transform:tra
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="undo-toast" id="undoToast">
+  <span id="undoToastMsg"></span>
+  <button type="button" id="undoToastBtn" data-i18n="undo">Undo</button>
+</div>
 
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -1677,6 +1684,12 @@ const I18N = {
     reports_title: "التقارير", reports_sub: "أداء المبيعات والفريق",
     by_status: "توزيع العملاء حسب الحالة", by_source: "توزيع العملاء حسب المصدر", by_agent: "أداء الموظفين",
     confirm_delete: "هل أنت متأكد من الحذف؟", toast_saved: "تم الحفظ بنجاح", toast_deleted: "تم الحذف", toast_updated: "تم التحديث",
+    undo: "تراجع", toast_deleted_one: "تم حذف", toast_deleted_many: "تم حذف عدة عملاء", toast_undo_done: "تم التراجع عن الحذف", audit_leads_plural: "عملاء",
+    audit_log_title: "سجل التدقيق الإداري", audit_log_desc: "سجل بكل العمليات الإدارية الحساسة (تغيير الأدوار، التعليق، الحذف، التوزيع الجماعي) — للمدير العام فقط.",
+    col_audit_time: "الوقت", col_audit_actor: "نفّذها", col_audit_action: "العملية", audit_log_empty: "لا يوجد سجل بعد",
+    audit_type_role_changed: "تغيير دور", audit_type_agent_suspended: "تعليق حساب", audit_type_agent_reactivated: "إلغاء تعليق حساب",
+    audit_type_agent_deleted: "حذف موظف", audit_type_lead_deleted: "حذف عميل", audit_type_bulk_reassign: "توزيع جماعي",
+    audit_unassigned_suffix: "أصبحوا غير مخصصين",
     delete_lead_btn: "حذف العميل",
     team_title: "الفريق", team_sub: "إدارة حسابات الموظفين", add_employee: "إضافة موظف",
     modal_add_employee: "إضافة موظف جديد", f_employee_name: "اسم الموظف",
@@ -1972,6 +1985,12 @@ const I18N = {
     reports_title: "Reports", reports_sub: "Sales & team performance",
     by_status: "Leads by Status", by_source: "Leads by Source", by_agent: "Agent Performance",
     confirm_delete: "Are you sure you want to delete this?", toast_saved: "Saved successfully", toast_deleted: "Deleted", toast_updated: "Updated",
+    undo: "Undo", toast_deleted_one: "Deleted", toast_deleted_many: "Deleted multiple leads", toast_undo_done: "Deletion undone", audit_leads_plural: "leads",
+    audit_log_title: "Admin Audit Log", audit_log_desc: "A log of sensitive admin actions (role changes, suspensions, deletions, bulk reassignment) — General Manager only.",
+    col_audit_time: "Time", col_audit_actor: "Performed by", col_audit_action: "Action", audit_log_empty: "No entries yet",
+    audit_type_role_changed: "Role changed", audit_type_agent_suspended: "Account suspended", audit_type_agent_reactivated: "Account reactivated",
+    audit_type_agent_deleted: "Employee deleted", audit_type_lead_deleted: "Lead deleted", audit_type_bulk_reassign: "Bulk reassignment",
+    audit_unassigned_suffix: "became unassigned",
     delete_lead_btn: "Delete Client",
     team_title: "Team", team_sub: "Manage employee accounts", add_employee: "Add Employee",
     modal_add_employee: "Add New Employee", f_employee_name: "Employee Name",
@@ -2454,6 +2473,11 @@ let leadsUnsubA = null, leadsUnsubB = null, leadsUnsubAdmin = null;
 let tasksUnsubOwn = null, tasksUnsubAdmin = null;
 let activitiesUnsub = null;
 let LEADS_A = {}, LEADS_B = {};
+let RAW_ADMIN_LEADS = [];
+let HIDDEN_LEAD_IDS = new Set();
+let PENDING_DELETE_IDS = new Set();
+let PENDING_DELETE_TIMER = null;
+const UNDO_WINDOW_MS = 6000;
 let LAST_ADMIN_STATE = null;
 
 function mergeAndSetLeads(){
@@ -2473,7 +2497,8 @@ function attachLeadsListeners(){
 
   if (isFullAdmin()) {
     leadsUnsubAdmin = db.collection("leads").orderBy("createdAt","desc").onSnapshot(snap => {
-      LEADS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      RAW_ADMIN_LEADS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      reapplyHiddenLeads();
       refreshDupBell();
       renderView();
     }, err => console.error("leads error", err));
@@ -2508,18 +2533,41 @@ function attachTasksListeners(){
   }, err => console.error("tasks error", err));
 }
 
+const ACTIVITIES_LIMIT = 4000;
 function attachActivitiesListener(){
   if (activitiesUnsub) { activitiesUnsub(); activitiesUnsub = null; }
-  activitiesUnsub = db.collectionGroup("activities").onSnapshot(snap => {
+  // Capped + ordered query (needs a one-time Firestore collection-group index on activities.createdAt,
+  // which Firebase offers to auto-create via a link in the console error the first time this runs).
+  activitiesUnsub = db.collectionGroup("activities").orderBy("createdAt","desc").limit(ACTIVITIES_LIMIT).onSnapshot(snap => {
     ALL_ACTIVITIES = snap.docs.map(d => ({ ...d.data(), leadId: d.ref.parent.parent.id }));
     if (currentView === "dashboard") renderView();
-  }, err => console.error("activities collection group error", err));
+  }, err => {
+    console.error("activities collection group error (falling back to the unindexed full query):", err);
+    // Safety net so the dashboard never silently breaks while the index above is missing/building.
+    if (activitiesUnsub) activitiesUnsub();
+    activitiesUnsub = db.collectionGroup("activities").onSnapshot(snap => {
+      ALL_ACTIVITIES = snap.docs.map(d => ({ ...d.data(), leadId: d.ref.parent.parent.id }));
+      if (currentView === "dashboard") renderView();
+    }, err2 => console.error("activities fallback error", err2));
+  });
+}
+
+let ALL_AUDIT_LOG = [];
+let auditLogUnsub = null;
+function attachAuditLogListener(){
+  if (auditLogUnsub) { auditLogUnsub(); auditLogUnsub = null; }
+  if (!isFullAdmin()) { ALL_AUDIT_LOG = []; return; }
+  auditLogUnsub = db.collection("audit_log").orderBy("createdAt","desc").limit(300).onSnapshot(snap => {
+    ALL_AUDIT_LOG = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    if (currentView === "settings") renderView();
+  }, err => console.error("audit log error", err));
 }
 
 function subscribeData(){
   attachLeadsListeners();
   attachTasksListeners();
   attachActivitiesListener();
+  attachAuditLogListener();
 
   db.collection("agents").orderBy("createdAt","desc").onSnapshot(snap => {
     AGENTS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
@@ -2536,6 +2584,7 @@ function subscribeData(){
       attachLeadsListeners();
       attachTasksListeners();
       attachActivitiesListener();
+      attachAuditLogListener();
     }
     renderView();
   }, err => console.error("agents error", err));
@@ -2775,6 +2824,12 @@ function fmtDate(v){
   if (!v) return "—";
   const d = v.seconds ? new Date(v.seconds*1000) : new Date(v);
   return d.toLocaleDateString(getLang()==="ar"?"ar-EG":"en-GB", { day:"2-digit", month:"short", year:"numeric" });
+}
+function fmtDateTime(v){
+  if (!v) return "—";
+  const d = v.seconds ? new Date(v.seconds*1000) : new Date(v);
+  return d.toLocaleDateString(getLang()==="ar"?"ar-EG":"en-GB", { day:"2-digit", month:"short", year:"numeric" }) + " · " +
+         d.toLocaleTimeString(getLang()==="ar"?"ar-EG":"en-GB", { hour:"2-digit", minute:"2-digit" });
 }
 function fmtTaskDue(dueStr){
   if (!dueStr) return "—";
@@ -3366,10 +3421,77 @@ async function removePhoneIndexFor(lead){
     if (d.exists && d.data().leadId === lead.id) await db.collection("phone_index").doc(n).delete();
   } catch(e) { console.error(e); }
 }
-async function deleteLeadCascade(id){
-  const lead = LEADS.find(l => l.id === id);
-  await db.collection("leads").doc(id).delete();
-  if (lead) await removePhoneIndexFor(lead);
+function logAudit(type, text){
+  try {
+    db.collection("audit_log").add({
+      type, text,
+      actorId: CURRENT_USER ? CURRENT_USER.uid : "",
+      actorName: (myAgentDoc() && myAgentDoc().name) || (CURRENT_USER && CURRENT_USER.email) || "",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+  } catch(e) { console.error("audit log error", e); }
+}
+function reapplyHiddenLeads(){
+  if (isFullAdmin()) LEADS = RAW_ADMIN_LEADS.filter(l => !HIDDEN_LEAD_IDS.has(l.id));
+}
+function findLeadAnywhere(id){
+  return LEADS.find(l => l.id === id) || RAW_ADMIN_LEADS.find(l => l.id === id);
+}
+function deleteLeadCascade(id){
+  const lead = findLeadAnywhere(id);
+  if (!lead || PENDING_DELETE_IDS.has(id)) return;
+  HIDDEN_LEAD_IDS.add(id);
+  PENDING_DELETE_IDS.add(id);
+  reapplyHiddenLeads();
+  renderView(true);
+  if (PENDING_DELETE_TIMER) clearTimeout(PENDING_DELETE_TIMER);
+  PENDING_DELETE_TIMER = setTimeout(commitPendingDeletes, UNDO_WINDOW_MS);
+  showUndoToast(
+    PENDING_DELETE_IDS.size === 1
+      ? `${t("toast_deleted_one")}: ${lead.name || lead.phone || ""}`
+      : `${t("toast_deleted_many")} (${PENDING_DELETE_IDS.size})`,
+    undoPendingDeletes
+  );
+}
+async function commitPendingDeletes(){
+  const ids = [...PENDING_DELETE_IDS];
+  PENDING_DELETE_IDS = new Set();
+  PENDING_DELETE_TIMER = null;
+  const names = [];
+  for (const id of ids) {
+    const lead = RAW_ADMIN_LEADS.find(l => l.id === id);
+    if (lead) names.push(lead.name || lead.phone || id);
+    try {
+      await db.collection("leads").doc(id).delete();
+      if (lead) await removePhoneIndexFor(lead);
+    } catch(e) { console.error("commit delete failed", e); }
+    HIDDEN_LEAD_IDS.delete(id);
+  }
+  if (names.length) logAudit("lead_deleted", names.length === 1 ? names[0] : `${names.length} ${t("audit_leads_plural")}: ${names.slice(0,5).join("، ")}${names.length>5?"…":""}`);
+  reapplyHiddenLeads();
+}
+function undoPendingDeletes(){
+  if (PENDING_DELETE_TIMER) { clearTimeout(PENDING_DELETE_TIMER); PENDING_DELETE_TIMER = null; }
+  PENDING_DELETE_IDS.forEach(id => HIDDEN_LEAD_IDS.delete(id));
+  PENDING_DELETE_IDS = new Set();
+  reapplyHiddenLeads();
+  renderView(true);
+  hideUndoToast();
+  toast(t("toast_undo_done"));
+}
+let UNDO_TOAST_TIMER = null;
+function showUndoToast(message, onUndo){
+  const el = document.getElementById("undoToast");
+  document.getElementById("undoToastMsg").textContent = message;
+  el.classList.add("show");
+  const btn = document.getElementById("undoToastBtn");
+  btn.onclick = onUndo;
+  if (UNDO_TOAST_TIMER) clearTimeout(UNDO_TOAST_TIMER);
+  UNDO_TOAST_TIMER = setTimeout(hideUndoToast, UNDO_WINDOW_MS);
+}
+function hideUndoToast(){
+  document.getElementById("undoToast").classList.remove("show");
+  if (UNDO_TOAST_TIMER) { clearTimeout(UNDO_TOAST_TIMER); UNDO_TOAST_TIMER = null; }
 }
 async function syncPhoneIndex(){
   if (!isFullAdmin()) return;
@@ -3509,10 +3631,8 @@ function renderDupNotifList(){
   }).join("") : emptyState(t("dup_notif_empty"), "");
 
   document.querySelectorAll("[data-dup-open]").forEach(el => el.addEventListener("click", () => { closeModal("dupNotifModal"); openLeadDetail(el.dataset.dupOpen); }));
-  document.querySelectorAll("[data-dup-delete]").forEach(btn => btn.addEventListener("click", async () => {
-    if (!confirm(t("confirm_delete"))) return;
-    await deleteLeadCascade(btn.dataset.dupDelete);
-    toast(t("toast_deleted"));
+  document.querySelectorAll("[data-dup-delete]").forEach(btn => btn.addEventListener("click", () => {
+    deleteLeadCascade(btn.dataset.dupDelete);
     renderDupNotifList();
     refreshDupBell();
   }));
@@ -3530,7 +3650,6 @@ document.getElementById("dupGlobalDeleteSelected").addEventListener("click", asy
   const all = computeDuplicateGroups().flatMap(([,list]) => list).filter(l => ids.has(l.id));
   if (!confirm(`${t("confirm_delete")} (${all.length})`)) return;
   await bulkDeleteLeads(all, e.currentTarget);
-  toast(t("toast_deleted"));
   renderDupNotifList();
   refreshDupBell();
 });
@@ -3539,7 +3658,6 @@ document.getElementById("dupGlobalDeleteAll").addEventListener("click", async (e
   if (!all.length) return;
   if (!confirm(`${t("confirm_delete")} (${all.length})`)) return;
   await bulkDeleteLeads(all, e.currentTarget);
-  toast(t("toast_deleted"));
   renderDupNotifList();
   refreshDupBell();
 });
@@ -3549,7 +3667,6 @@ document.getElementById("dupGlobalKeepOld").addEventListener("click", async (e) 
   if (!toDelete.length) return;
   if (!confirm(`${t("confirm_delete")} (${toDelete.length})`)) return;
   await bulkDeleteLeads(toDelete, e.currentTarget);
-  toast(t("toast_deleted"));
   renderDupNotifList();
   refreshDupBell();
 });
@@ -3559,7 +3676,6 @@ document.getElementById("dupGlobalKeepNew").addEventListener("click", async (e) 
   if (!toDelete.length) return;
   if (!confirm(`${t("confirm_delete")} (${toDelete.length})`)) return;
   await bulkDeleteLeads(toDelete, e.currentTarget);
-  toast(t("toast_deleted"));
   renderDupNotifList();
   refreshDupBell();
 });
@@ -3597,11 +3713,9 @@ async function getNextRoundRobinAgent(){
   return nextAgent;
 }
 
-async function deleteLead(id){
+function deleteLead(id){
   if (myRole() !== "general_manager") return;
-  if (!confirm(t("confirm_delete"))) return;
-  await deleteLeadCascade(id);
-  toast(t("toast_deleted"));
+  deleteLeadCascade(id);
 }
 
 function renderBulkBar(){
@@ -3632,6 +3746,8 @@ function renderBulkBar(){
       const batch = db.batch();
       SELECTED_LEAD_IDS.forEach(id => batch.update(db.collection("leads").doc(id), { assignedTo: agentId, assignedAt: firebase.firestore.FieldValue.serverTimestamp() }));
       await batch.commit();
+      const targetAgent = AGENTS.find(a => a.id === agentId);
+      logAudit("bulk_reassign", `${SELECTED_LEAD_IDS.size} ${t("audit_leads_plural")} → ${(targetAgent&&(targetAgent.name||targetAgent.email))||agentId}`);
       toast(t("toast_bulk_assigned"));
       SELECTED_LEAD_IDS.clear();
       filterLeadsView();
@@ -5346,6 +5462,22 @@ function renderSettings(){
     </div>`;
   }
 
+  if (level >= 3) {
+    html += `<div class="panel">
+      <div class="panel-head" style="justify-content:space-between;"><h2>📋 ${t("audit_log_title")}</h2></div>
+      <div style="font-size:11.5px; color:var(--slate); margin-bottom:14px; line-height:1.6;">${t("audit_log_desc")}</div>
+      <div class="table-scroll"><table><thead><tr>
+        <th>${t("col_audit_time")}</th><th>${t("col_audit_actor")}</th><th>${t("col_audit_action")}</th>
+      </tr></thead><tbody>
+      ${ALL_AUDIT_LOG.length ? ALL_AUDIT_LOG.map(a => `<tr>
+          <td style="white-space:nowrap;">${fmtDateTime(a.createdAt)}</td>
+          <td>${escapeHtml(a.actorName||"—")}</td>
+          <td>${escapeHtml(t('audit_type_'+a.type) !== 'audit_type_'+a.type ? t('audit_type_'+a.type) : a.type)} — ${escapeHtml(a.text||"")}</td>
+        </tr>`).join("") : `<tr><td colspan="3">${t("audit_log_empty")}</td></tr>`}
+      </tbody></table></div>
+    </div>`;
+  }
+
   document.getElementById("content").innerHTML = html;
 
   if (level >= 3 || isManager()) {
@@ -5619,12 +5751,18 @@ document.getElementById("editAgentForm").addEventListener("submit", async (e) =>
     alert(t("cannot_suspend_self"));
     return;
   }
+  const before = AGENTS.find(x => x.id===id) || {};
+  const newRole = document.getElementById("editAgentRole").value;
+  const newSuspended = document.getElementById("editAgentSuspended").checked;
   await db.collection("agents").doc(id).update({
     name: document.getElementById("editAgentName").value.trim(),
-    role: document.getElementById("editAgentRole").value,
+    role: newRole,
     monthlyTarget: parseInt(document.getElementById("editAgentTarget").value, 10) || 0,
-    disabled: document.getElementById("editAgentSuspended").checked,
+    disabled: newSuspended,
   });
+  const whoName = before.name || before.email || id;
+  if (before.role !== newRole) logAudit("role_changed", `${whoName}: ${t('role_'+(before.role||'sales_agent'))} ← ${t('role_'+newRole)}`);
+  if ((before.disabled===true) !== newSuspended) logAudit(newSuspended ? "agent_suspended" : "agent_reactivated", whoName);
   toast(t("toast_updated"));
   closeModal("editAgentModal");
 });
@@ -5654,6 +5792,7 @@ document.getElementById("editAgentDeleteBtn").addEventListener("click", async ()
       await batch.commit();
     }
     await db.collection("agents").doc(id).delete();
+    logAudit("agent_deleted", `${a.name||a.email} (${theirLeads.length} ${t("audit_leads_plural")} ${t("audit_unassigned_suffix")})`);
     toast(t("toast_deleted"));
     closeModal("editAgentModal");
   } catch(err) { alert(err.message); }
@@ -6607,10 +6746,8 @@ function openLeadDetail(id){
   document.getElementById("detailLeadName").textContent = lead.name || "—";
   const deleteBtn = document.getElementById("detailDeleteLeadBtn");
   deleteBtn.style.display = myRole() === "general_manager" ? "inline-flex" : "none";
-  deleteBtn.onclick = async () => {
-    if (!confirm(t("confirm_delete"))) return;
-    await deleteLeadCascade(id);
-    toast(t("toast_deleted"));
+  deleteBtn.onclick = () => {
+    deleteLeadCascade(id);
     closeModal("leadDetailModal");
   };
   document.getElementById("detailName").value = lead.name || "";
