@@ -4998,6 +4998,60 @@ function funnelBars(funnel){
   }).join("");
 }
 
+function computeWeeklyTrend(weeks){
+  weeks = weeks || 6;
+  const idx = buildActivityIndex();
+  const now = new Date();
+  const buckets = [];
+  for (let w = weeks-1; w >= 0; w--) {
+    const end = new Date(now.getTime() - w*7*86400000);
+    const start = new Date(end.getTime() - 7*86400000);
+    buckets.push({ start, end, label: w===0 ? TI("الحالي","Now") : TI(`-${w}أ`,`-${w}w`) });
+  }
+  return buckets.map(({start,end,label}) => {
+    const created = LEADS.filter(l => { const d = leadDate(l); return d && d >= start && d < end; });
+    const contacted = created.filter(l => {
+      const fc = (idx[l.id]||{}).firstContactMs;
+      return !!fc || !["new","no_response"].includes(l.status);
+    });
+    const won = created.filter(l => l.status === "won");
+    return { label, total: created.length, contactRate: pct(contacted.length, created.length), conv: pct(won.length, created.length) };
+  });
+}
+function trendDelta(cur, prev, higherIsBetter){
+  if (prev === 0 && cur === 0) return `<span style="color:var(--slate);">—</span>`;
+  const diff = cur - prev;
+  if (diff === 0) return `<span style="color:var(--slate);">= 0</span>`;
+  const better = higherIsBetter ? diff > 0 : diff < 0;
+  const arrow = diff > 0 ? "▲" : "▼";
+  const color = better ? "var(--success)" : "var(--danger)";
+  return `<span style="color:${color}; font-weight:800;">${arrow} ${Math.abs(diff)}</span>`;
+}
+function weeklyTrendHtml(){
+  const rows = computeWeeklyTrend(6);
+  const max = Math.max(1, ...rows.map(r => r.total));
+  const bars = rows.map(r => `<div title="${escapeHtml(r.label)}: ${r.total}" style="flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; height:100%; gap:4px;">
+      <span style="font-size:10px; color:var(--ivory); font-weight:700;">${r.total}</span>
+      <div style="width:70%; height:${Math.max(4,(r.total/max)*100)}%; background:linear-gradient(180deg, var(--gold-bright), var(--gold)); border-radius:4px 4px 0 0;"></div>
+      <span style="font-size:9.5px; color:var(--slate);">${escapeHtml(r.label)}</span>
+    </div>`).join("");
+  const cur = rows[rows.length-1], prev = rows[rows.length-2] || {total:0,contactRate:0,conv:0};
+  const trendCard = (label, curVal, prevVal, higherIsBetter, unit) => `<div class="stat-card-v2"><div>
+      <div class="sc-label">${label}</div>
+      <div class="sc-value" style="font-size:20px;">${curVal}${unit||""}</div>
+      <div class="sc-unit">${TI("مقابل الأسبوع اللي فات","vs last week")}: ${trendDelta(curVal, prevVal, higherIsBetter)}${unit||""}</div>
+    </div></div>`;
+  return `
+    <div class="panel">
+      <div class="panel-head"><h2>📈 ${TI("اتجاه الأداء الأسبوعي (آخر 6 أسابيع)","Weekly performance trend (last 6 weeks)")}</h2></div>
+      <div style="display:flex; align-items:flex-end; gap:10px; height:110px; margin-bottom:18px;">${bars}</div>
+      <div class="stat-grid">
+        ${trendCard(TI("عملاء جدد هذا الأسبوع","New leads this week"), cur.total, prev.total, true, "")}
+        ${trendCard(TI("نسبة التواصل","Contact rate"), cur.contactRate, prev.contactRate, true, "%")}
+        ${trendCard(TI("نسبة التحويل","Conversion"), cur.conv, prev.conv, true, "%")}
+      </div>
+    </div>`;
+}
 function teamIntelligenceHtml(){
   const A = computeTeamAnalytics();
   const T = A.team;
@@ -5047,6 +5101,7 @@ function teamIntelligenceHtml(){
       ${kpi(TI("عملاء راكدين","Stale leads"), T.stale, `${STALE_DAYS_LIMIT}+ ${TI("أيام بدون أكشن","days no action")}`)}
       ${kpi(TI("نسبة التحويل","Conversion"), T.conv + "%", "")}
     </div>
+    ${weeklyTrendHtml()}
     <div class="panel"><div class="panel-head"><h2>${TI("قمع المبيعات","Sales funnel")}</h2></div>${funnelBars(A.funnel)}
       ${A.worst ? `<div style="margin-top:6px; padding:10px 12px; border-radius:10px; background:rgba(166,57,44,.08); font-size:12px; color:var(--ivory);">⚠ ${TI(`أكبر تسرّب: من "${A.worst.from}" إلى "${A.worst.to}" — ضايع ${A.worst.drop}%`, `Biggest drop-off: "${A.worst.from}" → "${A.worst.to}" — ${A.worst.drop}% lost`)}</div>` : ""}</div>
     <div class="panel"><div class="panel-head"><h2>🎯 ${TI("أولويات التطوير (نقاط الضعف)","Priorities to fix (weak points)")}</h2></div>${prio}</div>
