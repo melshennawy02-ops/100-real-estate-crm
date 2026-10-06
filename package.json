@@ -1,0 +1,13 @@
+{
+  "name": "crm-sla-check",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Runs the SLA auto-reassignment check on a schedule via GitHub Actions (no Firebase Blaze plan required).",
+  "main": "sla-check.js",
+  "scripts": {
+    "check": "node sla-check.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}
